@@ -48,16 +48,6 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("4_4qu0l")
 
-[node name="BackgrounDetector" type="Control" parent="UI/InventoryInterface"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-grow_horizontal = 2
-grow_vertical = 2
-
 [node name="PlayerInventory" parent="UI/InventoryInterface" instance=ExtResource("5_nab82")]
 layout_mode = 1
 anchors_preset = 7
@@ -108,5 +98,3 @@ grow_vertical = 0
 visible = false
 texture = SubResource("AtlasTexture_nab82")
 script = ExtResource("14_4qu0l")
-
-[connection signal="gui_input" from="UI/InventoryInterface/BackgrounDetector" to="UI/InventoryInterface" method="_on_backgroun_detector_gui_input"]

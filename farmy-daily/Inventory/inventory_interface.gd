@@ -8,8 +8,6 @@ const PICK_UP = preload("res://Item/pick_up/pick_up.tscn")
 @onready var player_inventory: PanelContainer = $PlayerInventory
 @onready var grabbed_slot: PanelContainer = $GrabbedSlot
 @onready var external_inventory: PanelContainer = $ExternalInventory
-@onready var backgroun_detector: Control = $BackgrounDetector
-
 
 signal hide_inventory()
 
@@ -83,25 +81,6 @@ func update_grabbed_slot() -> void:
 		grabbed_slot.set_slot_data(grabbed_slot_data)
 	else:
 		grabbed_slot.hide()
-
-func _on_background_detector_gui_input(event: InputEvent):
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		if grabbed_slot_data:
-			drop_grabbed_item()
-			return
-
-		tap_count += 1
-		
-		if tap_count == 1:
-			double_tap_timer = DOUBLE_TAP_DELAY
-		
-		elif tap_count == 2:
-			if can_close():
-				hide_inventory.emit()
-			tap_count = 0
-			double_tap_timer = 0.0
-		
-		get_viewport().set_input_as_handled()
 
 func drop_grabbed_item() -> void:
 	var pick_up = PICK_UP.instantiate()
