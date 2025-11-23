@@ -6,15 +6,20 @@ extends Node2D
 @onready var hot_bar_inventory: PanelContainer = $UI/HotBarInventory
 @onready var tile_selector: Sprite2D = $TileSelector
 @onready var ground_layer: TileMapLayer = $Backgrounds/NavRegion/Ground
-@onready var water_layer: TileMapLayer = $Backgrounds/NavRegion/Water
-@onready var decor_layer: TileMapLayer = $Backgrounds/NavRegion/Decor
 
-const HOED_SOURCE_ID = 1
-const HOED_ATLAS_COORDS = Vector2i(11, 0)
+var obstruction_layers: Array[TileMapLayer] = []
+
+@export var HOED_SOURCE_ID: int = 1
+@export var HOED_ATLAS_COORDS: Vector2i = Vector2i(11, 0)
 
 var current_open_chest: StaticBody2D = null
 
 func _ready() -> void:
+	var parent_node = ground_layer.get_parent()
+	for child in parent_node.get_children():
+		if child is TileMapLayer and child != ground_layer:
+			obstruction_layers.append(child)
+
 	player.toggle_inventory.connect(toggle_inventory_interface)
 	inventory_interface.hide_inventory.connect(toggle_inventory_interface)
 	
@@ -97,15 +102,15 @@ func on_chest_closed():
 	refresh_tile_selector()
 
 func is_tile_farmable(global_pos: Vector2) -> bool:
-	var tile_pos = ground_layer.local_to_map(global_pos)
+	var local_pos = ground_layer.to_local(global_pos)
+	var tile_pos = ground_layer.local_to_map(local_pos)
 	
-	if ground_layer.get_cell_source_id(tile_pos) != 1:
+	if ground_layer.get_cell_source_id(tile_pos) != HOED_SOURCE_ID:
 		return false
 
-	if water_layer.get_cell_source_id(tile_pos) != -1:
-		return false
-	if decor_layer.get_cell_source_id(tile_pos) != -1:
-		return false
+	for layer in obstruction_layers:
+		if layer.get_cell_source_id(tile_pos) != -1:
+			return false
 	
 	var tile_data = ground_layer.get_cell_tile_data(tile_pos)
 	if not tile_data:
@@ -115,5 +120,6 @@ func is_tile_farmable(global_pos: Vector2) -> bool:
 
 func use_hoe(global_pos: Vector2) -> void:
 	if is_tile_farmable(global_pos):
-		var tile_pos = ground_layer.local_to_map(global_pos)
+		var local_pos = ground_layer.to_local(global_pos)
+		var tile_pos = ground_layer.local_to_map(local_pos)
 		ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)

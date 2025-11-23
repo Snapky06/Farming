@@ -23,7 +23,7 @@ var is_movement_locked: bool = false
 
 var pending_tool_action_pos: Vector2 = Vector2.ZERO
 var is_moving_to_interact: bool = false
-const TOOL_REACH_DISTANCE = 60.0 
+const TOOL_REACH_DISTANCE = 40.0 
 
 func _ready():
 	agent.target_desired_distance = stop_distance
@@ -51,9 +51,6 @@ func _unhandled_input(event):
 	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.is_pressed():
-			if is_movement_locked:
-				return
-
 			is_moving_to_interact = false 
 			
 			is_holding = true
@@ -105,8 +102,7 @@ func _physics_process(_delta):
 		
 		if is_moving_to_interact:
 			is_moving_to_interact = false
-			if global_position.distance_to(pending_tool_action_pos) <= TOOL_REACH_DISTANCE + 10.0:
-				perform_tool_action(pending_tool_action_pos)
+			perform_tool_action(pending_tool_action_pos)
 
 func update_walk_animation(direction: Vector2):
 	sprite.flip_h = false
@@ -159,18 +155,18 @@ func _on_PlayerHoldTimer_timeout():
 		
 		var mouse_pos = get_global_mouse_position()
 		
-		if equipped_item and equipped_item.name == "Hoe":
-			
+		if not is_movement_locked and equipped_item and equipped_item.name == "Hoe":
 			if not get_parent().is_tile_farmable(mouse_pos):
 				return
 			
 			var dist = global_position.distance_to(mouse_pos)
 			
+			pending_tool_action_pos = mouse_pos
+			
 			if dist <= TOOL_REACH_DISTANCE:
 				perform_tool_action(mouse_pos)
 			else:
 				if not is_movement_locked:
-					pending_tool_action_pos = mouse_pos
 					is_moving_to_interact = true
 					agent.target_position = mouse_pos
 			return
@@ -178,8 +174,15 @@ func _on_PlayerHoldTimer_timeout():
 		interact()
 
 func perform_tool_action(target_pos: Vector2) -> void:
+	if global_position.distance_to(target_pos) > TOOL_REACH_DISTANCE + 10.0:
+		is_movement_locked = false
+		is_moving_to_interact = false
+		return
+
 	is_movement_locked = true
 	velocity = Vector2.ZERO
+	
+	pending_tool_action_pos = target_pos
 	
 	var direction_to_target = (target_pos - global_position).normalized()
 	last_direction = direction_to_target
@@ -197,10 +200,11 @@ func perform_tool_action(target_pos: Vector2) -> void:
 		else:
 			sprite.play("hoe_up")
 	
-	await get_tree().create_timer(0.6).timeout
+	await sprite.animation_finished
 	sprite.flip_h = false
 	
-	get_parent().use_hoe(target_pos)
+	if get_parent().has_method("use_hoe"):
+		get_parent().use_hoe(target_pos)
 	
 	is_movement_locked = false
 	update_idle_animation(last_direction)
