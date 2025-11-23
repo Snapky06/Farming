@@ -274,6 +274,26 @@ region = Rect2(560, 160, 80, 80)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_2t4pl"]
 animations = [{
+"frames": [],
+"loop": true,
+"name": &"axe_down",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"axe_left",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"axe_right",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"axe_up",
+"speed": 5.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_6ecp4")
@@ -533,8 +553,7 @@ radius = 5.0
 height = 14.0
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_pbnk1"]
-radius = 26.0
-height = 54.0
+radius = 15.0
 
 [node name="Player" type="CharacterBody2D"]
 z_index = 2
@@ -547,7 +566,7 @@ inventory_data = ExtResource("2_iwuv1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"hoe_down"
+animation = &"hoe_right"
 autoplay = "idle_down"
 frame = 5
 frame_progress = 1.0
@@ -557,10 +576,11 @@ position = Vector2(-1, 0)
 shape = SubResource("CapsuleShape2D_im8y0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(5, 5)
+zoom = Vector2(6, 6)
 
 [node name="InteractionComponent" type="Area2D" parent="."]
-collision_layer = 8
+collision_layer = 4
+collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionComponent"]
 shape = SubResource("CapsuleShape2D_pbnk1")

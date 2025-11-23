@@ -145,7 +145,7 @@ func interact() -> void:
 				closest_body = body
 	
 	if closest_body:
-		closest_body.interact()
+		closest_body.interact(self)
 
 func _on_PlayerHoldTimer_timeout():
 	if is_holding:

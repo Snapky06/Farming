@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://c07e6ix4x5gmy"]
+[gd_scene load_steps=15 format=3 uid="uid://c07e6ix4x5gmy"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_cu0x5"]
 [ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="2_tuhlx"]
@@ -10,26 +10,13 @@
 [ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="8_u04yj"]
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="9_b3dld"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="10_hr4ad"]
-[ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/seeds.tres" id="11_hlsax"]
-[ext_resource type="PackedScene" uid="uid://cdi6471witlxy" path="res://Item/pick_up/pick_up.tscn" id="12_hfnax"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="13_eimbc"]
 [ext_resource type="Script" uid="uid://bv42jjmia8tkp" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/tile_selector.gd" id="14_4qu0l"]
 
-[sub_resource type="Resource" id="Resource_m1s1m"]
-script = ExtResource("10_hr4ad")
-item_data = ExtResource("11_hlsax")
-quantity = 5
-metadata/_custom_type_script = "uid://cn3th1d7ure5w"
-
-[sub_resource type="Resource" id="Resource_a6xtv"]
+[sub_resource type="Resource" id="Resource_cu0x5"]
 script = ExtResource("9_b3dld")
-slot_datas = Array[ExtResource("10_hr4ad")]([SubResource("Resource_m1s1m"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+slot_datas = Array[ExtResource("10_hr4ad")]([null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
 metadata/_custom_type_script = "uid://b3nysasbdcim0"
-
-[sub_resource type="Resource" id="Resource_kyfyo"]
-script = ExtResource("10_hr4ad")
-item_data = ExtResource("11_hlsax")
-metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nab82"]
 atlas = ExtResource("13_eimbc")
@@ -41,13 +28,12 @@ metadata/_edit_horizontal_guides_ = [-66.0]
 
 [node name="Backgrounds" parent="." instance=ExtResource("3_eimbc")]
 
-[node name="Chest" parent="." instance=ExtResource("8_u04yj")]
-position = Vector2(182, 111)
-collision_layer = 1
-chest_inventory = SubResource("Resource_a6xtv")
-
 [node name="Player" parent="." instance=ExtResource("2_tuhlx")]
 position = Vector2(241, 144)
+
+[node name="Chest" parent="." instance=ExtResource("8_u04yj")]
+position = Vector2(175, 112)
+chest_inventory = SubResource("Resource_cu0x5")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
@@ -117,10 +103,6 @@ offset_right = 32.0
 offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 0
-
-[node name="PickUp" parent="." instance=ExtResource("12_hfnax")]
-position = Vector2(166, 127)
-slot_data = SubResource("Resource_kyfyo")
 
 [node name="TileSelector" type="Sprite2D" parent="."]
 visible = false

@@ -1,7 +1,18 @@
-[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3 uid="uid://clronqqu1fqig"]
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://clronqqu1fqig"]
 
 [ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_u5qe6"]
 
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_u5qe6"]
+load_path = "res://.godot/imported/small stone.png-fd1e9c4d920a1f07e7870d4cc3f098f4.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_o1vpj"]
+atlas = SubResource("CompressedTexture2D_u5qe6")
+region = Rect2(32, 0, 16, 16)
+
 [resource]
 script = ExtResource("1_u5qe6")
+name = "Stone"
+description = "They Could Hurt"
+stackable = true
+texture = SubResource("AtlasTexture_o1vpj")
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

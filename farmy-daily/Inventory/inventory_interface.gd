@@ -43,6 +43,8 @@ func set_external_inventory(external_inventory_data: InventoryData):
 
 	external_inventory.set_inventory_data(inventory_data)
 	external_inventory.show()
+	
+	open()
 
 func clear_external_inventory():
 	if external_inventory_owner:
@@ -53,6 +55,7 @@ func clear_external_inventory():
 	
 		external_inventory.hide()
 		external_inventory_owner = null
+		close()
 
 func set_player_inventory_data(inventory_data: InventoryData) -> void:
 	inventory_data.inventory_interact.connect(on_inventory_interact)
