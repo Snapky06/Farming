@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://bsk7du6nma7c"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_ixkvp"]
+[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_t6tbm"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t6tbm"]
+atlas = ExtResource("2_t6tbm")
+region = Rect2(80, 16, 16, 16)
+
+[resource]
+script = ExtResource("1_ixkvp")
+name = "Hoe"
+description = "Used To Mow Down Dirt"
+texture = SubResource("AtlasTexture_t6tbm")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

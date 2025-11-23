@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://bbxj2ccnl0gen"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_wrxes"]
+[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_wrxes"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wrxes"]
+atlas = ExtResource("2_wrxes")
+region = Rect2(64, 16, 16, 16)
+
+[resource]
+script = ExtResource("1_wrxes")
+name = "Axe"
+description = "Used To Destroy Trees "
+texture = SubResource("AtlasTexture_wrxes")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"
