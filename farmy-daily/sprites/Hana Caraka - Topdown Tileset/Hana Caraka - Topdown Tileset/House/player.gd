@@ -11,6 +11,7 @@ extends CharacterBody2D
 
 var audio_player: AudioStreamPlayer2D
 var sfx_hit_tree: AudioStream
+var sfx_hoe: AudioStream # Added variable for hoe sound
 
 var last_direction := Vector2.DOWN
 signal toggle_inventory()
@@ -39,10 +40,17 @@ func _ready():
 	audio_player = AudioStreamPlayer2D.new()
 	add_child(audio_player)
 	
+	# Load Axe Sounds
 	if FileAccess.file_exists("res://sounds/hit_tree.wav"):
 		sfx_hit_tree = load("res://sounds/hit_tree.wav")
 	elif FileAccess.file_exists("res://sounds/hit_tree.mp3"):
 		sfx_hit_tree = load("res://sounds/hit_tree.mp3")
+
+	# Load Hoe Sounds
+	if FileAccess.file_exists("res://sounds/hoe.wav"):
+		sfx_hoe = load("res://sounds/hoe.wav")
+	elif FileAccess.file_exists("res://sounds/hoe.mp3"):
+		sfx_hoe = load("res://sounds/hoe.mp3")
 
 func reset_states():
 	is_moving_to_interact = false
@@ -200,6 +208,10 @@ func _on_PlayerHoldTimer_timeout():
 					var collider = results[0].collider
 					
 					if collider.has_method("hit"):
+						# Stop interaction if tree is falling
+						if collider.get("is_falling"): 
+							return
+
 						var dist = global_position.distance_to(collider.global_position)
 						
 						if dist <= TOOL_REACH_DISTANCE:
@@ -222,11 +234,19 @@ func execute_pending_action():
 			
 	elif pending_tool_name == "axe":
 		if is_instance_valid(pending_target_body):
+			# Stop interaction if tree started falling while we were moving to it
+			if pending_target_body.get("is_falling"):
+				return
+				
 			if global_position.distance_to(pending_target_body.global_position) <= TOOL_REACH_DISTANCE + 10.0:
 				start_axe_loop(pending_target_body)
 
 func start_axe_loop(target_node):
 	if is_movement_locked: return
+	
+	# Initial check: don't start chopping a falling tree
+	if target_node.get("is_falling"):
+		return
 	
 	is_movement_locked = true
 	velocity = Vector2.ZERO
@@ -234,6 +254,10 @@ func start_axe_loop(target_node):
 	last_direction = (target_node.global_position - global_position).normalized()
 	
 	while is_holding and is_instance_valid(target_node):
+		# Break loop immediately if tree starts falling
+		if target_node.get("is_falling"):
+			break
+			
 		sprite.flip_h = false
 		var anim = "axe_"
 		
@@ -248,6 +272,10 @@ func start_axe_loop(target_node):
 		
 		sprite.play(anim)
 		await sprite.animation_finished
+		
+		# Re-check after animation before hitting
+		if not is_instance_valid(target_node) or target_node.get("is_falling"):
+			break
 		
 		if sfx_hit_tree and audio_player:
 			audio_player.stream = sfx_hit_tree
@@ -289,6 +317,11 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 			anim_name += "down"
 		else:
 			anim_name += "up"
+	
+	# Play sound at the start of the animation
+	if tool_name == "hoe" and sfx_hoe and audio_player:
+		audio_player.stream = sfx_hoe
+		audio_player.play()
 	
 	sprite.play(anim_name)
 	

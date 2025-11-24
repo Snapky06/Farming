@@ -2,10 +2,11 @@ extends StaticBody2D
 
 @export var item_to_pick_up: ItemData 
 @export var quantity_to_pick_up: int = 1 
+@export var pickup_sound: AudioStream #
 
 @onready var sprite_root: Sprite2D = get_parent() as Sprite2D 
 
-var is_picked_up: bool = false 
+var is_picked_up: bool = false  	
 
 func interact(player) -> void:
 	if is_picked_up:
@@ -19,9 +20,20 @@ func interact(player) -> void:
 		if player.inventory_data.pick_up_slot_data(slot_data):
 			is_picked_up = true
 			
+			play_sound() # Play the sound
 			await play_pickup_animation()
 			
 			sprite_root.queue_free()
+
+func play_sound() -> void:
+	if pickup_sound:
+		var temp_player = AudioStreamPlayer2D.new()
+		get_tree().current_scene.add_child(temp_player)
+		temp_player.global_position = global_position
+		temp_player.stream = pickup_sound
+		temp_player.play()
+		# Queue free the audio player when sound finishes
+		temp_player.finished.connect(temp_player.queue_free)
 
 func play_pickup_animation() -> void:
 	if not sprite_root:

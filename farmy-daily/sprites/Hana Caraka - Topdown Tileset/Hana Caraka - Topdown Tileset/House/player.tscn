@@ -688,8 +688,10 @@ inventory_data = ExtResource("2_iwuv1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"hoe_up"
+animation = &"hoe_right"
 autoplay = "idle_down"
+frame = 5
+frame_progress = 1.0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 0)
