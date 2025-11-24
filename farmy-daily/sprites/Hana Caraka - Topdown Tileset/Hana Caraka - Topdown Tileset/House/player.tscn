@@ -1,4 +1,4 @@
-[gd_scene load_steps=102 format=3 uid="uid://buts4ehxirrur"]
+[gd_scene load_steps=96 format=3 uid="uid://buts4ehxirrur"]
 
 [ext_resource type="Script" uid="uid://b45dnx5l0a4v" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.gd" id="1_ktniu"]
 [ext_resource type="Resource" uid="uid://b5f5s6ce6wjb1" path="res://test_inv.tres" id="2_iwuv1"]
@@ -32,30 +32,6 @@ region = Rect2(320, 80, 80, 80)
 [sub_resource type="AtlasTexture" id="AtlasTexture_ntbbq"]
 atlas = ExtResource("3_6ecp4")
 region = Rect2(400, 80, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_w6aqn"]
-atlas = ExtResource("3_6ecp4")
-region = Rect2(0, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_lbydy"]
-atlas = ExtResource("3_6ecp4")
-region = Rect2(80, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_t27h1"]
-atlas = ExtResource("3_6ecp4")
-region = Rect2(160, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_sfb45"]
-atlas = ExtResource("3_6ecp4")
-region = Rect2(240, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_uj7it"]
-atlas = ExtResource("3_6ecp4")
-region = Rect2(320, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_svj5y"]
-atlas = ExtResource("3_6ecp4")
-region = Rect2(400, 0, 80, 80)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_drh4j"]
 atlas = ExtResource("3_6ecp4")
@@ -392,30 +368,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"axe_down",
-"speed": 5.0
-}, {
-"frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_w6aqn")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_lbydy")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_t27h1")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_sfb45")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_uj7it")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_svj5y")
-}],
-"loop": false,
-"name": &"axe_left",
-"speed": 5.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -438,7 +391,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"axe_right",
-"speed": 5.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -461,7 +414,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"axe_up",
-"speed": 5.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -484,7 +437,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"hoe_down",
-"speed": 5.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -507,7 +460,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"hoe_right",
-"speed": 5.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -530,7 +483,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"hoe_up",
-"speed": 5.0
+"speed": 9.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -735,9 +688,8 @@ inventory_data = ExtResource("2_iwuv1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"axe_up"
+animation = &"hoe_up"
 autoplay = "idle_down"
-flip_h = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 0)
