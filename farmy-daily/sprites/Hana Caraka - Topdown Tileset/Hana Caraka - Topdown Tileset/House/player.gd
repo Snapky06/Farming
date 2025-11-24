@@ -9,7 +9,6 @@ extends CharacterBody2D
 @onready var interaction_area: Area2D = $InteractionComponent
 @onready var hold_timer: Timer = $PlayerHoldTimer
 
-# --- AUDIO SETUP ---
 var audio_player: AudioStreamPlayer2D
 var sfx_hit_tree: AudioStream
 
@@ -37,11 +36,9 @@ func _ready():
 	cam.enabled = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	
-	# Create the Audio Player dynamically
 	audio_player = AudioStreamPlayer2D.new()
 	add_child(audio_player)
 	
-	# Load Sound - trying both common extensions just in case
 	if FileAccess.file_exists("res://sounds/hit_tree.wav"):
 		sfx_hit_tree = load("res://sounds/hit_tree.wav")
 	elif FileAccess.file_exists("res://sounds/hit_tree.mp3"):
@@ -173,7 +170,6 @@ func _on_PlayerHoldTimer_timeout():
 		var mouse_pos = get_global_mouse_position()
 		
 		if not is_movement_locked and equipped_item:
-			
 			if equipped_item.name == "Hoe":
 				if not get_parent().is_tile_farmable(mouse_pos):
 					return
@@ -253,13 +249,14 @@ func start_axe_loop(target_node):
 		sprite.play(anim)
 		await sprite.animation_finished
 		
-		# PLAY SOUND (If loaded)
 		if sfx_hit_tree and audio_player:
 			audio_player.stream = sfx_hit_tree
 			audio_player.play()
 		
 		if is_instance_valid(target_node) and target_node.has_method("hit"):
-			target_node.hit()
+			# PASS GLOBAL POSITION SO TREE KNOWS FALL DIRECTION
+			target_node.hit(global_position)
+			
 			if target_node.get("health") <= 0:
 				break
 

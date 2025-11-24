@@ -44,6 +44,7 @@ animations = [{
 radius = 6.0
 
 [node name="LittleSpruceTree" type="AnimatedSprite2D"]
+z_index = 2
 sprite_frames = SubResource("SpriteFrames_17sca")
 animation = &"cycle"
 
