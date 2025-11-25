@@ -8,7 +8,7 @@ extends Node2D
 @onready var ground_layer: TileMapLayer = $Backgrounds/NavRegion/Ground
 
 var obstruction_layers: Array[TileMapLayer] = []
-var hoe_cooldown: bool = false 
+var hoe_cooldown: bool = false # New variable to track cooldown
 
 @export var HOED_SOURCE_ID: int = 1
 @export var HOED_ATLAS_COORDS: Vector2i = Vector2i(11, 0)

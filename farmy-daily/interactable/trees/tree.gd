@@ -37,7 +37,7 @@ func _ready():
 		sprite_root.frame = tree_frame
 		sprite_root.stop()
 
-func hit(attacker_pos: Vector2 = Vector2.ZERO):
+func hit(_attacker_pos: Vector2 = Vector2.ZERO):
 	# INTERACTION LOCK: 
 	# If the tree is currently falling, ignore ALL hits.
 	if is_falling:
