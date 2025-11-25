@@ -15,6 +15,10 @@ run/main_scene="uid://c07e6ix4x5gmy"
 config/features=PackedStringArray("4.5", "Mobile")
 config/icon="res://icon.svg"
 
+[autoload]
+
+TimeManager="*res://Global/time_manager.gd"
+
 [display]
 
 window/main_scene="uid://cki8q0nelsrsa"

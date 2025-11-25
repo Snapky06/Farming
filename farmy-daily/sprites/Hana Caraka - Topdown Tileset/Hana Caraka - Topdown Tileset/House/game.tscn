@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://c07e6ix4x5gmy"]
+[gd_scene load_steps=18 format=3 uid="uid://c07e6ix4x5gmy"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_cu0x5"]
 [ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="2_tuhlx"]
@@ -7,9 +7,11 @@
 [ext_resource type="PackedScene" uid="uid://chqgfuqs3wn4q" path="res://Inventory/inventory.tscn" id="5_nab82"]
 [ext_resource type="PackedScene" uid="uid://bpfmoo7pgcvyl" path="res://Inventory/slot.tscn" id="6_imf8r"]
 [ext_resource type="PackedScene" uid="uid://cy1g05gn51fat" path="res://Inventory/hot_bar_inventory.tscn" id="7_8jbr7"]
+[ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="7_tuhlx"]
 [ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="8_u04yj"]
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="9_b3dld"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="10_hr4ad"]
+[ext_resource type="FontFile" uid="uid://crdu3bmix1jbk" path="res://fonts/MayfairNbpBold-gAA4.ttf" id="12_eimbc"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="13_eimbc"]
 [ext_resource type="Script" uid="uid://bv42jjmia8tkp" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/tile_selector.gd" id="14_4qu0l"]
 
@@ -17,6 +19,9 @@
 script = ExtResource("9_b3dld")
 slot_datas = Array[ExtResource("10_hr4ad")]([null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
 metadata/_custom_type_script = "uid://b3nysasbdcim0"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tuhlx"]
+bg_color = Color(0.4379362, 0.68035144, 0.21081644, 0.16862746)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nab82"]
 atlas = ExtResource("13_eimbc")
@@ -36,6 +41,7 @@ position = Vector2(175, 112)
 chest_inventory = SubResource("Resource_cu0x5")
 
 [node name="UI" type="CanvasLayer" parent="."]
+script = ExtResource("7_tuhlx")
 
 [node name="InventoryInterface" type="Control" parent="UI"]
 visible = false
@@ -95,68 +101,70 @@ grow_horizontal = 2
 grow_vertical = 0
 
 [node name="Time" type="CanvasLayer" parent="."]
+script = ExtResource("7_tuhlx")
 
-[node name="TimeContainer" type="Panel" parent="Time"]
+[node name="TimeAndMonth" type="Panel" parent="Time"]
 anchors_preset = -1
-anchor_left = 0.9904514
+anchor_left = 0.9713542
 anchor_right = 1.0
 anchor_bottom = 0.0030864198
-offset_left = -43.0
-offset_top = 5.0
-offset_right = -3.0
-offset_bottom = 45.0
+offset_left = -97.0
+offset_top = 7.0
+offset_right = -8.0
+offset_bottom = 88.0
 grow_horizontal = 0
-metadata/_edit_use_anchors_ = true
+theme_override_styles/panel = SubResource("StyleBoxFlat_tuhlx")
 
-[node name="ActualTime" type="Label" parent="Time/TimeContainer"]
+[node name="ActualTime" type="Label" parent="Time/TimeAndMonth"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -24.0
-offset_top = -17.5
-offset_right = 24.0
-offset_bottom = 17.5
+offset_left = -18.5
+offset_top = 1.5
+offset_right = 22.5
+offset_bottom = 36.5
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
+theme_override_fonts/font = ExtResource("12_eimbc")
+theme_override_font_sizes/font_size = 20
+text = "T"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="Month" type="Panel" parent="Time"]
+[node name="NameMonthAndDate" type="Label" parent="Time/TimeAndMonth"]
+layout_mode = 1
 anchors_preset = -1
-anchor_left = 0.9600694
-anchor_right = 1.0
-anchor_bottom = 0.015432099
-offset_left = -146.0
-offset_top = 5.0
-offset_right = -80.0
-offset_bottom = 33.0
-grow_horizontal = 0
-metadata/_edit_use_anchors_ = true
-
-[node name="NameMonth" type="Label" parent="Time/Month"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -30.0
-offset_top = -11.5
-offset_right = 30.0
-offset_bottom = 11.5
+anchor_left = 0.55940646
+anchor_top = 0.89759034
+anchor_right = 0.55940646
+anchor_bottom = 0.89759034
+offset_left = -33.5
+offset_top = -68.5
+offset_right = 26.5
+offset_bottom = -45.5
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
+theme_override_fonts/font = ExtResource("12_eimbc")
+theme_override_font_sizes/font_size = 20
+text = "M"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
 
 [node name="Settings" type="CanvasLayer" parent="."]
 
-[node name="TimeContainer" type="Panel" parent="Settings"]
+[node name="OptionsContainer" type="Panel" parent="Settings"]
 offset_left = 3.0
 offset_top = 3.0
 offset_right = 83.0
 offset_bottom = 43.0
 
-[node name="ActualTime" type="Label" parent="Settings/TimeContainer"]
+[node name="X" type="Label" parent="Settings/OptionsContainer"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
