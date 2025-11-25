@@ -10,8 +10,10 @@ extends CharacterBody2D
 @onready var hold_timer: Timer = $PlayerHoldTimer
 
 var audio_player: AudioStreamPlayer2D
+var impact_audio_player: AudioStreamPlayer2D 
 var sfx_hit_tree: AudioStream
-var sfx_hoe: AudioStream # Added variable for hoe sound
+var sfx_hoe: AudioStream 
+var sfx_swing: AudioStream 
 
 var last_direction := Vector2.DOWN
 signal toggle_inventory()
@@ -37,20 +39,28 @@ func _ready():
 	cam.enabled = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	
+	# Setup Audio Players
 	audio_player = AudioStreamPlayer2D.new()
 	add_child(audio_player)
 	
-	# Load Axe Sounds
+	impact_audio_player = AudioStreamPlayer2D.new()
+	add_child(impact_audio_player)
+	
+	# Load Sounds
 	if FileAccess.file_exists("res://sounds/hit_tree.wav"):
 		sfx_hit_tree = load("res://sounds/hit_tree.wav")
 	elif FileAccess.file_exists("res://sounds/hit_tree.mp3"):
 		sfx_hit_tree = load("res://sounds/hit_tree.mp3")
 
-	# Load Hoe Sounds
 	if FileAccess.file_exists("res://sounds/hoe.wav"):
 		sfx_hoe = load("res://sounds/hoe.wav")
 	elif FileAccess.file_exists("res://sounds/hoe.mp3"):
 		sfx_hoe = load("res://sounds/hoe.mp3")
+
+	if FileAccess.file_exists("res://sounds/swing.wav"):
+		sfx_swing = load("res://sounds/swing.wav")
+	elif FileAccess.file_exists("res://sounds/swing.mp3"):
+		sfx_swing = load("res://sounds/swing.mp3")
 
 func reset_states():
 	is_moving_to_interact = false
@@ -208,7 +218,6 @@ func _on_PlayerHoldTimer_timeout():
 					var collider = results[0].collider
 					
 					if collider.has_method("hit"):
-						# Stop interaction if tree is falling
 						if collider.get("is_falling"): 
 							return
 
@@ -234,7 +243,6 @@ func execute_pending_action():
 			
 	elif pending_tool_name == "axe":
 		if is_instance_valid(pending_target_body):
-			# Stop interaction if tree started falling while we were moving to it
 			if pending_target_body.get("is_falling"):
 				return
 				
@@ -244,7 +252,6 @@ func execute_pending_action():
 func start_axe_loop(target_node):
 	if is_movement_locked: return
 	
-	# Initial check: don't start chopping a falling tree
 	if target_node.get("is_falling"):
 		return
 	
@@ -254,7 +261,6 @@ func start_axe_loop(target_node):
 	last_direction = (target_node.global_position - global_position).normalized()
 	
 	while is_holding and is_instance_valid(target_node):
-		# Break loop immediately if tree starts falling
 		if target_node.get("is_falling"):
 			break
 			
@@ -270,19 +276,21 @@ func start_axe_loop(target_node):
 			if last_direction.y > 0: anim += "down"
 			else: anim += "up"
 		
+		if sfx_swing and audio_player:
+			audio_player.stream = sfx_swing
+			audio_player.play()
+		
 		sprite.play(anim)
 		await sprite.animation_finished
 		
-		# Re-check after animation before hitting
 		if not is_instance_valid(target_node) or target_node.get("is_falling"):
 			break
 		
-		if sfx_hit_tree and audio_player:
-			audio_player.stream = sfx_hit_tree
-			audio_player.play()
+		if sfx_hit_tree and impact_audio_player:
+			impact_audio_player.stream = sfx_hit_tree
+			impact_audio_player.play()
 		
 		if is_instance_valid(target_node) and target_node.has_method("hit"):
-			# PASS GLOBAL POSITION SO TREE KNOWS FALL DIRECTION
 			target_node.hit(global_position)
 			
 			if target_node.get("health") <= 0:
@@ -318,19 +326,31 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		else:
 			anim_name += "up"
 	
-	# Play sound at the start of the animation
-	if tool_name == "hoe" and sfx_hoe and audio_player:
-		audio_player.stream = sfx_hoe
+	# 1. Play Swing sound
+	if sfx_swing and audio_player:
+		audio_player.stream = sfx_swing
 		audio_player.play()
 	
 	sprite.play(anim_name)
 	
-	await sprite.animation_finished
-	sprite.flip_h = false
+	# 2. Wait for Impact Frame (Frame 1)
+	# This ensures the sound and effect happen when the hoe hits the ground visually
+	while sprite.is_playing() and sprite.frame < 1:
+		await get_tree().process_frame
 	
+	# 3. Trigger Effect & Sound
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
+		if sfx_hoe and impact_audio_player:
+			impact_audio_player.stream = sfx_hoe
+			impact_audio_player.play()
+			
 		get_parent().use_hoe(target_pos)
 	
+	# 4. Wait for animation to complete
+	if sprite.is_playing():
+		await sprite.animation_finished
+
+	sprite.flip_h = false
 	is_movement_locked = false
 	update_idle_animation(last_direction)
 
