@@ -8,6 +8,7 @@ extends Node2D
 @onready var ground_layer: TileMapLayer = $Backgrounds/NavRegion/Ground
 
 var obstruction_layers: Array[TileMapLayer] = []
+var hoe_cooldown: bool = false # New variable to track cooldown
 
 @export var HOED_SOURCE_ID: int = 1
 @export var HOED_ATLAS_COORDS: Vector2i = Vector2i(11, 0)
@@ -44,7 +45,8 @@ func _on_hotbar_slot_selected(_index: int):
 	refresh_tile_selector()
 
 func refresh_tile_selector():
-	if inventory_interface.visible:
+	# Hide selector if inventory is open OR hoe is on cooldown
+	if inventory_interface.visible or hoe_cooldown:
 		tile_selector.visible = false
 		return
 
@@ -102,6 +104,10 @@ func on_chest_closed():
 	refresh_tile_selector()
 
 func is_tile_farmable(global_pos: Vector2) -> bool:
+	# Prevent interaction if cooldown is active
+	if hoe_cooldown:
+		return false
+
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	
@@ -120,6 +126,35 @@ func is_tile_farmable(global_pos: Vector2) -> bool:
 
 func use_hoe(global_pos: Vector2) -> void:
 	if is_tile_farmable(global_pos):
+		hoe_cooldown = true 
+		refresh_tile_selector() 
+		
 		var local_pos = ground_layer.to_local(global_pos)
 		var tile_pos = ground_layer.local_to_map(local_pos)
-		ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)
+		
+		var source = ground_layer.tile_set.get_source(HOED_SOURCE_ID) as TileSetAtlasSource
+		
+		if source:
+			var temp_sprite = Sprite2D.new()
+			temp_sprite.texture = source.texture
+			temp_sprite.region_enabled = true
+			temp_sprite.region_rect = source.get_tile_texture_region(HOED_ATLAS_COORDS)
+			
+			ground_layer.add_child(temp_sprite)
+			temp_sprite.position = ground_layer.map_to_local(tile_pos)
+			temp_sprite.modulate.a = 0.0 
+			
+			var tween = create_tween()
+			tween.tween_property(temp_sprite, "modulate:a", 1.0, 1.5).set_trans(Tween.TRANS_SINE)
+			
+			tween.tween_callback(func():
+				ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)
+				temp_sprite.queue_free()
+				
+				hoe_cooldown = false
+				refresh_tile_selector()
+			)
+		else:
+			ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)
+			hoe_cooldown = false
+			refresh_tile_selector()
