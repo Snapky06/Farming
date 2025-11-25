@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=4 uid="uid://cawg1tq3uaqq7"]
+[gd_scene load_steps=47 format=4 uid="uid://cawg1tq3uaqq7"]
 
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_lhv7a"]
 [ext_resource type="PackedScene" uid="uid://0fd882p2dmgx" path="res://interactable/littlestones/leftlittlestone.tscn" id="3_ailyb"]
@@ -6,10 +6,11 @@
 [ext_resource type="Texture2D" uid="uid://dgtcbx3lowjrd" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Spring/spring.png" id="4_ailyb"]
 [ext_resource type="Texture2D" uid="uid://qjwciliut5nx" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Spring/spring path 2.png" id="5_tab5i"]
 [ext_resource type="Texture2D" uid="uid://cqmo0v2k2l640" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/House.png" id="6_l7d7m"]
-[ext_resource type="PackedScene" uid="uid://ds6j5kfh3kd1" path="res://interactable/trees/birch_tree.tscn" id="7_tab5i"]
 [ext_resource type="PackedScene" uid="uid://c6l7cs6ihrf0r" path="res://interactable/trees/maple_tree.tscn" id="8_l7d7m"]
-[ext_resource type="PackedScene" uid="uid://dowpyp5bcncry" path="res://interactable/trees/pine_tree.tscn" id="10_l7d7m"]
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="9_l7d7m"]
 [ext_resource type="Texture2D" uid="uid://18vv60a1e6rb" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Grass.png" id="10_lhv7a"]
+[ext_resource type="Texture2D" uid="uid://b0jqir27m4qnt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Tree.png" id="10_thr5e"]
+[ext_resource type="Script" uid="uid://hmb2j5nps2wp" path="res://interactable/trees/tree.gd" id="11_lhv7a"]
 [ext_resource type="Texture2D" uid="uid://c3jahhvfa654h" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Bush.png" id="15_ns4bk"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_b0sm6"]
@@ -607,10 +608,104 @@ texture = ExtResource("6_l7d7m")
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_8hnwi")
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_8q8kk"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(0, 98, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5je3e"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(32, 98, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dvori"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(64, 98, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wmgpl"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(96, 98, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ssho8"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(128, 98, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_46d6k"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(160, 98, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3jekd"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(192, 98, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xc8rr"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(224, 98, 32, 49)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_17sca"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8q8kk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5je3e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dvori")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wmgpl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ssho8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_46d6k")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3jekd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xc8rr")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_sqqn0"]
+load_path = "res://.godot/imported/icon.png-8ed44c380547b6ae4b8a2ee3753cb8ed.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2g3vb"]
+atlas = SubResource("CompressedTexture2D_sqqn0")
+region = Rect2(0, 32, 16, 16)
+
+[sub_resource type="Resource" id="Resource_sfo4m"]
+script = ExtResource("9_l7d7m")
+name = "Birch Log"
+description = "Whiter Then Other Ones"
+stackable = true
+texture = SubResource("AtlasTexture_2g3vb")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_upoyd"]
+radius = 6.0
+
+[sub_resource type="PackedScene" id="PackedScene_thr5e"]
+_bundled = {
+"conn_count": 0,
+"conns": PackedInt32Array(),
+"editable_instances": [],
+"names": PackedStringArray("BirchTree", "sprite_frames", "animation", "AnimatedSprite2D", "StaticBody2D", "z_index", "collision_layer", "collision_mask", "script", "item_to_drop", "quantity_to_drop", "CollisionShape2D", "position", "shape"),
+"node_count": 3,
+"node_paths": [],
+"nodes": PackedInt32Array(-1, -1, 3, 0, -1, 2, 1, 0, 2, 1, 0, 0, 0, 4, 4, -1, 6, 5, 2, 6, 3, 7, 3, 8, 4, 9, 5, 10, 6, 0, 1, 0, 11, 11, -1, 2, 12, 7, 13, 8, 0),
+"variants": [SubResource("SpriteFrames_17sca"), &"cycle", 3, 4, ExtResource("11_lhv7a"), SubResource("Resource_sfo4m"), 2, Vector2(0, 15), SubResource("CircleShape2D_upoyd")],
+"version": 3
+}
+
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_lhv7a"]
-scenes/6/scene = ExtResource("7_tab5i")
+scenes/6/scene = SubResource("PackedScene_thr5e")
 scenes/7/scene = ExtResource("8_l7d7m")
-scenes/8/scene = ExtResource("10_l7d7m")
 
 [sub_resource type="TileSet" id="TileSet_b0sm6"]
 sources/0 = SubResource("TileSetScenesCollectionSource_lhv7a")
@@ -761,7 +856,7 @@ tile_set = SubResource("TileSet_rgosd")
 
 [node name="Trees" type="TileMapLayer" parent="NavRegion"]
 z_index = 3
-tile_map_data = PackedByteArray("AAALAAAAAAAAAAAABgD5//r/AAAAAAAABgD9/wAAAAAAAAAABwAOAP7/AAAAAAAABwACAAIAAAAAAAAACAAIAAEAAAAAAAAACAA=")
+tile_map_data = PackedByteArray("AAALAAAAAAAAAAAABgD5//r/AAAAAAAABgD9/wAAAAAAAAAABwAOAP7/AAAAAAAABwA=")
 tile_set = SubResource("TileSet_b0sm6")
 
 [node name="Ambiance" type="TileMapLayer" parent="NavRegion"]
