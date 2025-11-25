@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=4 uid="uid://cawg1tq3uaqq7"]
+[gd_scene load_steps=46 format=4 uid="uid://cawg1tq3uaqq7"]
 
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_lhv7a"]
 [ext_resource type="PackedScene" uid="uid://0fd882p2dmgx" path="res://interactable/littlestones/leftlittlestone.tscn" id="3_ailyb"]
@@ -10,7 +10,9 @@
 [ext_resource type="PackedScene" uid="uid://c6l7cs6ihrf0r" path="res://interactable/trees/maple_tree.tscn" id="8_l7d7m"]
 [ext_resource type="PackedScene" uid="uid://dowpyp5bcncry" path="res://interactable/trees/pine_tree.tscn" id="10_l7d7m"]
 [ext_resource type="Texture2D" uid="uid://18vv60a1e6rb" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Grass.png" id="10_lhv7a"]
-[ext_resource type="PackedScene" uid="uid://c3dt72nvxb6ky" path="res://interactable/trees/little_pine_tree.tscn" id="10_sfo4m"]
+[ext_resource type="Texture2D" uid="uid://b0jqir27m4qnt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Tree.png" id="10_thr5e"]
+[ext_resource type="Script" uid="uid://hmb2j5nps2wp" path="res://interactable/trees/tree.gd" id="11_lhv7a"]
+[ext_resource type="Resource" uid="uid://dpx6tyqqyyoev" path="res://Item/items/pinelog.tres" id="12_b0sm6"]
 [ext_resource type="Texture2D" uid="uid://c3jahhvfa654h" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Bush.png" id="15_ns4bk"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_b0sm6"]
@@ -608,11 +610,91 @@ texture = ExtResource("6_l7d7m")
 physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_8hnwi")
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_bh36n"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(256, 0, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7uiiu"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(288, 0, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_me7hr"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(320, 0, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n5idu"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(352, 0, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1txvi"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(384, 0, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qs63o"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(416, 0, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k1h21"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(448, 0, 32, 49)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y0lkj"]
+atlas = ExtResource("10_thr5e")
+region = Rect2(480, 0, 32, 49)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_17sca"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bh36n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7uiiu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_me7hr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n5idu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1txvi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qs63o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k1h21")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y0lkj")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_upoyd"]
+radius = 6.0
+
+[sub_resource type="PackedScene" id="PackedScene_urvu3"]
+_bundled = {
+"conn_count": 0,
+"conns": PackedInt32Array(),
+"editable_instances": [],
+"names": PackedStringArray("LittlePineTree", "AnimatedSprite2D", "sprite_frames", "animation", "StaticBody2D", "StaticBody2D", "z_index", "collision_layer", "collision_mask", "script", "item_to_drop", "quantity_to_drop", "health", "CollisionShape2D", "CollisionShape2D", "position", "shape"),
+"node_count": 3,
+"node_paths": [NodePath("."), NodePath("./StaticBody2D")],
+"nodes": PackedInt32Array(-1, -1, 1, 0, -1, 2, 2, 0, 3, 1, 0, 1073741824, 0, 5, 4, -1, 7, 6, 2, 7, 3, 8, 4, 9, 5, 10, 6, 11, 7, 12, 8, 0, 1073741825, 0, 14, 13, -1, 2, 15, 9, 16, 10, 0),
+"variants": [SubResource("SpriteFrames_17sca"), &"cycle", 3, 4, 4, ExtResource("11_lhv7a"), ExtResource("12_b0sm6"), 2, 2, Vector2(0, 15), SubResource("CircleShape2D_upoyd")],
+"version": 3
+}
+
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_lhv7a"]
 scenes/6/scene = ExtResource("7_tab5i")
 scenes/7/scene = ExtResource("8_l7d7m")
 scenes/8/scene = ExtResource("10_l7d7m")
-scenes/9/scene = ExtResource("10_sfo4m")
+scenes/9/scene = SubResource("PackedScene_urvu3")
 
 [sub_resource type="TileSet" id="TileSet_b0sm6"]
 sources/0 = SubResource("TileSetScenesCollectionSource_lhv7a")

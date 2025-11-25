@@ -1,6 +1,7 @@
-[gd_scene load_steps=18 format=3 uid="uid://c07e6ix4x5gmy"]
+[gd_scene load_steps=19 format=3 uid="uid://c07e6ix4x5gmy"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_cu0x5"]
+[ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_4qu0l"]
 [ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="2_tuhlx"]
 [ext_resource type="PackedScene" uid="uid://cawg1tq3uaqq7" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/backgrounds.tscn" id="3_eimbc"]
 [ext_resource type="Script" uid="uid://c1uydoq5x125w" path="res://Inventory/inventory_interface.gd" id="4_4qu0l"]
@@ -11,7 +12,7 @@
 [ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="8_u04yj"]
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="9_b3dld"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="10_hr4ad"]
-[ext_resource type="FontFile" uid="uid://crdu3bmix1jbk" path="res://fonts/MayfairNbpBold-gAA4.ttf" id="12_eimbc"]
+[ext_resource type="FontFile" uid="uid://bvn3wtsegknv" path="res://fonts/MineMouseRegular-BL3DB.ttf" id="12_4qu0l"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="13_eimbc"]
 [ext_resource type="Script" uid="uid://bv42jjmia8tkp" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/tile_selector.gd" id="14_4qu0l"]
 
@@ -30,6 +31,9 @@ region = Rect2(208, 0, 16, 16)
 [node name="Game" type="Node2D"]
 script = ExtResource("1_cu0x5")
 metadata/_edit_horizontal_guides_ = [-66.0]
+
+[node name="DayNightCycle" type="CanvasModulate" parent="."]
+script = ExtResource("2_4qu0l")
 
 [node name="Backgrounds" parent="." instance=ExtResource("3_eimbc")]
 
@@ -129,7 +133,7 @@ offset_bottom = 36.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
-theme_override_fonts/font = ExtResource("12_eimbc")
+theme_override_fonts/font = ExtResource("12_4qu0l")
 theme_override_font_sizes/font_size = 20
 text = "T"
 horizontal_alignment = 1
@@ -149,7 +153,7 @@ offset_bottom = -45.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
-theme_override_fonts/font = ExtResource("12_eimbc")
+theme_override_fonts/font = ExtResource("12_4qu0l")
 theme_override_font_sizes/font_size = 20
 text = "M"
 horizontal_alignment = 1
