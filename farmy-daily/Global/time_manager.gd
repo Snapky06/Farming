@@ -7,7 +7,7 @@ signal season_changed(season: Seasons)
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
 # Configuration
-const REAL_SECONDS_PER_GAME_DAY: float = 1200.0 # 2 Hours
+const REAL_SECONDS_PER_GAME_DAY: float = 20.0 # 2 Hours
 const GAME_SECONDS_PER_DAY: float = 86400.0 # 24 Hours
 
 const TIME_SCALE: float = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY 

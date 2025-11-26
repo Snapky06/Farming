@@ -116,10 +116,6 @@ func can_plant_seed(global_pos: Vector2) -> bool:
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	
-	for layer in obstruction_layers:
-		if layer.get_cell_source_id(tile_pos) != -1:
-			return false
-	
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = get_tile_center_position(global_pos)
@@ -143,16 +139,18 @@ func is_tile_farmable(global_pos: Vector2) -> bool:
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	
-	if ground_layer.get_cell_source_id(tile_pos) == -1:
+	var tile_data = ground_layer.get_cell_tile_data(tile_pos)
+	if not tile_data:
 		return false
-	
-	if ground_layer.get_cell_source_id(tile_pos) == HOED_SOURCE_ID:
+		
+	var can_farm = tile_data.get_custom_data("can_farm")
+	if typeof(can_farm) == TYPE_BOOL and not can_farm:
 		return false
 
-	for layer in obstruction_layers:
-		if layer.get_cell_source_id(tile_pos) != -1:
-			return false
-	
+	var atlas_coords = ground_layer.get_cell_atlas_coords(tile_pos)
+	if atlas_coords == HOED_ATLAS_COORDS:
+		return false
+
 	var space_state = get_world_2d().direct_space_state
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = get_tile_center_position(global_pos)

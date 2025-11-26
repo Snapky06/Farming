@@ -25,19 +25,15 @@ func _process(_delta):
 		return
 
 	var is_valid = false
-	
-	if player and player.equipped_item:
+	if get_parent().has_method("is_tile_farmable") and player and player.equipped_item:
 		var n = player.equipped_item.name
-		
 		if n == "Hoe":
-			if get_parent().has_method("is_tile_farmable"):
-				is_valid = get_parent().is_tile_farmable(target_global_pos)
-				
+			is_valid = get_parent().is_tile_farmable(target_global_pos)
 		elif n == "Tree Seed" or n == "Tree Seeds":
 			if get_parent().has_method("can_plant_seed"):
 				is_valid = get_parent().can_plant_seed(target_global_pos)
 
 	if is_valid:
-		self.modulate = Color(0, 1, 0, 0.5) # Green
+		self.modulate = Color(0, 1, 0, 0.5)
 	else:
-		self.modulate = Color(1, 0, 0, 0.5) # Red
+		self.modulate = Color(1, 0, 0, 0.5)

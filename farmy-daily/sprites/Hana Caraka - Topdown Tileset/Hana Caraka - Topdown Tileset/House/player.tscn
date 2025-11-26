@@ -690,7 +690,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"planting_down",
-"speed": 9.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -707,7 +707,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"planting_right",
-"speed": 9.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -724,7 +724,7 @@ animations = [{
 }],
 "loop": false,
 "name": &"planting_up",
-"speed": 9.0
+"speed": 6.0
 }, {
 "frames": [{
 "duration": 1.0,

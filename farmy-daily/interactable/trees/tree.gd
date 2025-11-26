@@ -1,17 +1,14 @@
 extends StaticBody2D
 
-# --- CONFIGURATION ---
 var TREE_VARIANTS = [
 	{
 		"name": "Maple Tree",
-		"seed_frame": 7, # Frame 7 of "little_cycle"
+		"seed_frame": 7, 
 		
-		# SAPLING FRAMES (little_cycle)
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
 		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
 		"little_winter": 6, "little_winter_spring": 6,
 		
-		# MATURE FRAMES (big_cycle)
 		"big_spring": 0, "big_spring_summer": 1, "big_summer": 2,
 		"big_summer_autumn": 3, "big_autumn": 4, "big_autumn_winter": 5,
 		"big_winter": 6, "big_winter_spring": 6,
@@ -65,7 +62,7 @@ func _ready():
 func setup_as_seed():
 	current_stage = GrowthStage.SEED
 	active_variant = TREE_VARIANTS.pick_random()
-	days_until_next_stage = randi_range(1, 3) # Wait 1-3 days to grow
+	days_until_next_stage = randi_range(1, 3) 
 	randomize_stats()
 	update_visuals()
 
@@ -88,7 +85,7 @@ func _on_day_passed(_date_string):
 func advance_growth():
 	if current_stage == GrowthStage.SEED:
 		current_stage = GrowthStage.SAPLING
-		days_until_next_stage = randi_range(1, 3) # Wait another 1-3 days
+		days_until_next_stage = randi_range(1, 3)
 	elif current_stage == GrowthStage.SAPLING:
 		current_stage = GrowthStage.MATURE
 		randomize_stats()
@@ -102,7 +99,6 @@ func update_visuals():
 	if not sprite_root: return
 	sprite_root.visible = true
 	
-	# STUMP
 	if is_stump:
 		sprite_root.play("big_cycle")
 		sprite_root.stop()
@@ -110,7 +106,6 @@ func update_visuals():
 		collision_layer = default_layer
 		return
 
-	# SEED (little_cycle)
 	if current_stage == GrowthStage.SEED:
 		sprite_root.play("little_cycle")
 		sprite_root.stop()
@@ -123,7 +118,6 @@ func update_visuals():
 		collision_layer = 0 
 		return
 
-	# SAPLING (little_cycle) / MATURE (big_cycle)
 	collision_layer = default_layer 
 	
 	var prefix = "big_"
@@ -194,6 +188,7 @@ func destroy_stump():
 	else: queue_free()
 
 func fall_tree():
+	if is_falling: return
 	is_falling = true
 	collision_layer = 0
 	play_sound(sfx_fall)
@@ -214,19 +209,19 @@ func fall_tree():
 		fall_visual.z_index = 100
 		get_tree().current_scene.add_child(fall_visual)
 		
-		is_stump = true
-		is_falling = false
-		health = 2
-		
 		sprite_root.play("big_cycle")
 		sprite_root.stop()
 		sprite_root.frame = stump_frame
-		collision_layer = default_layer 
 		
 		var t = create_tween()
 		t.tween_property(fall_visual, "modulate:a", 0.0, 3.0)
 		await t.finished
 		fall_visual.queue_free()
+		
+		is_stump = true
+		is_falling = false
+		health = 2
+		collision_layer = default_layer 
 
 func spawn_drops(item, count):
 	if not item or count <= 0: return

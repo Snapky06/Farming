@@ -315,7 +315,7 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		await sprite.animation_finished
 
 	sprite.flip_h = false
-	call_deferred("set", "is_movement_locked", false)
+	is_movement_locked = false
 	update_idle_animation(last_direction)
 
 func find_tree_script(node: Node):
@@ -329,31 +329,33 @@ func find_tree_script(node: Node):
 func spawn_tree(pos: Vector2):
 	if equipped_slot_index == -1 or not inventory_data: return
 
-	# 1. Get Snapped Position from Main
 	var snapped_pos = pos
 	if get_parent().has_method("get_tile_center_position"):
 		snapped_pos = get_parent().get_tile_center_position(pos)
 
-	# 2. Spawn
 	var tree = TREE_SCENE.instantiate()
 	get_parent().add_child(tree)
 	tree.global_position = snapped_pos
 	
-	# 3. Find Script and Setup
+	tree.modulate.a = 0.0
+	var t = get_tree().create_tween()
+	t.tween_property(tree, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
 	var script_node = find_tree_script(tree)
 	if script_node:
 		script_node.setup_as_seed()
 	else:
 		print("Error: No tree script found on spawned object")
 
-	# 4. Consume Item
 	var slot = inventory_data.slot_datas[equipped_slot_index]
 	if slot and slot.item_data == equipped_item:
 		slot.quantity -= 1
 		if slot.quantity <= 0:
 			inventory_data.slot_datas[equipped_slot_index] = null
-			equipped_item = null 
-			reset_states()
+			equipped_item = null
+			
+			if get_parent().has_method("refresh_tile_selector"):
+				get_parent().refresh_tile_selector()
 		
 		if inventory_data.has_signal("inventory_updated"):
 			inventory_data.inventory_updated.emit(inventory_data)
@@ -361,6 +363,8 @@ func spawn_tree(pos: Vector2):
 func update_equipped_item(index: int) -> void:
 	reset_states()
 	equipped_slot_index = index
+	
+	is_movement_locked = false
 	
 	if index == -1:
 		equipped_item = null
