@@ -32,9 +32,9 @@ region = Rect2(160, 98, 32, 49)
 atlas = ExtResource("1_8q8kk")
 region = Rect2(192, 98, 32, 49)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_oflpl"]
-atlas = ExtResource("2_dvori")
-region = Rect2(64, 0, 16, 16)
+[sub_resource type="AtlasTexture" id="AtlasTexture_8q8kk"]
+atlas = ExtResource("1_8q8kk")
+region = Rect2(224, 98, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6enpf"]
 atlas = ExtResource("1_8q8kk")
@@ -64,9 +64,9 @@ region = Rect2(416, 98, 32, 49)
 atlas = ExtResource("1_8q8kk")
 region = Rect2(448, 98, 32, 49)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_12vtf"]
-atlas = ExtResource("1_8q8kk")
-region = Rect2(480, 147, 32, 49)
+[sub_resource type="AtlasTexture" id="AtlasTexture_5je3e"]
+atlas = ExtResource("2_dvori")
+region = Rect2(64, 0, 16, 16)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_fun6p"]
 animations = [{
@@ -93,7 +93,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_pnwi5")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_oflpl")
+"texture": SubResource("AtlasTexture_8q8kk")
 }],
 "loop": true,
 "name": &"big_cycle",
@@ -122,7 +122,7 @@ animations = [{
 "texture": SubResource("AtlasTexture_1k4m4")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_12vtf")
+"texture": SubResource("AtlasTexture_5je3e")
 }],
 "loop": true,
 "name": &"little_cycle",

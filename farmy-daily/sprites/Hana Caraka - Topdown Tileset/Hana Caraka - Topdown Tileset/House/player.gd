@@ -43,6 +43,10 @@ var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE = 40.0 
 
 func _ready():
+	# Explicitly set Player Z-Index to 1.
+	# Trees are Z-Index 3 (or 0 for seeds). 3 > 1, so Trees cover Player.
+	z_index = 1
+	
 	agent.target_desired_distance = stop_distance
 	agent.path_desired_distance = 2.0
 	cam.enabled = true
@@ -350,19 +354,20 @@ func spawn_tree(pos: Vector2):
 
 	var random_tree_scene = TREE_SCENES.pick_random()
 	var tree = random_tree_scene.instantiate()
-	
-	get_parent().add_child(tree)
 	tree.global_position = snapped_pos
-	
-	tree.modulate.a = 0.0
-	var t = get_tree().create_tween()
-	t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	
+
+	# Setup as seed BEFORE adding to tree to ensure z-index and collision layers are correct
 	var script_node = find_tree_script(tree)
 	if script_node:
 		script_node.setup_as_seed()
 	else:
 		print("Error: No tree script found on spawned object")
+	
+	get_parent().add_child(tree)
+	
+	tree.modulate.a = 0.0
+	var t = get_tree().create_tween()
+	t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 	var slot = inventory_data.slot_datas[equipped_slot_index]
 	if slot and slot.item_data == equipped_item:

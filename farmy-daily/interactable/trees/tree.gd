@@ -38,7 +38,7 @@ var TREE_VARIANTS = [
 	{
 		"name": "Birch Tree",
 		"seed_frame": 7,
-		"stump_frame": 7,
+		"stump_frame": 20,
 		
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
 		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
@@ -93,6 +93,12 @@ var sfx_fall: AudioStream
 const PICK_UP_SCENE = preload("res://Item/pick_up/pick_up.tscn")
 
 func _ready():
+	# Crucial: Add to group so Main.gd can find us for distance checks
+	add_to_group("trees")
+	
+	# Force Z-Index to be absolute so it ignores parent ordering
+	z_as_relative = false
+	
 	default_layer = collision_layer 
 	visual_transition_window = randi_range(2, 4)
 	
@@ -105,7 +111,8 @@ func _ready():
 	if active_variant.is_empty():
 		active_variant = TREE_VARIANTS.pick_random()
 		randomize_stats()
-		
+	
+	# Update immediately to fix 1-frame glitches
 	update_visuals()
 
 func setup_as_seed():
@@ -153,7 +160,7 @@ func update_visuals():
 		sprite_root.stop()
 		sprite_root.frame = active_variant.get("stump_frame", 20)
 		collision_layer = default_layer
-		z_index = 3
+		z_index = 3 # Stumps obstruct player (layer 1)
 		return
 
 	if current_stage == GrowthStage.SEED:
@@ -165,12 +172,14 @@ func update_visuals():
 		else:
 			sprite_root.frame = 7
 		
+		# Seeds have no collision so you can walk over them
 		collision_layer = 0 
-		z_index = 0
+		z_index = 0 # Seeds are flat on ground (layer 0)
 		return
 
+	# Sapling and Mature
 	collision_layer = default_layer 
-	z_index = 3
+	z_index = 3 # Trees must cover player (layer 1)
 	
 	var prefix = "big_"
 	var anim_name = "big_cycle"
@@ -180,7 +189,8 @@ func update_visuals():
 		anim_name = "little_cycle"
 	
 	if sprite_root.sprite_frames.has_animation(anim_name):
-		sprite_root.play(anim_name)
+		if sprite_root.animation != anim_name:
+			sprite_root.play(anim_name)
 		sprite_root.stop() 
 	
 	var suffix = get_season_suffix()

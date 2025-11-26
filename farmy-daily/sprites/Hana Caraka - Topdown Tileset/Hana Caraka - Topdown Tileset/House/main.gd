@@ -115,20 +115,35 @@ func can_plant_seed(global_pos: Vector2) -> bool:
 	
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
+	var target_center = get_tile_center_position(global_pos)
 	
+	# 1. Check strictly for tree spacing using the Group system
+	# This works even if the tree/seed has no collision (Layer 0)
+	var all_trees = get_tree().get_nodes_in_group("trees")
+	for t in all_trees:
+		# 28.0 radius:
+		# Blocks: Same tile (dist 0), Adjacent (dist 16), Diagonal (dist 22.6)
+		# Allows: 1 tile gap (dist 32)
+		if t.global_position.distance_to(target_center) < 28.0:
+			return false
+	
+	# 2. Ensure we are planting on tilled soil
+	# We still need to check if the ground is valid
 	var space_state = get_world_2d().direct_space_state
-	
-	var query = PhysicsShapeQueryParameters2D.new()
-	var circle_shape = CircleShape2D.new()
-	circle_shape.radius = 18.0 
-	query.shape = circle_shape
-	query.transform = Transform2D(0, get_tile_center_position(global_pos))
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = target_center
 	query.collide_with_bodies = true
-	query.collide_with_areas = true
-	query.collision_mask = 4 
+	query.collision_mask = 4 # Check for obstacles other than trees (like chests/rocks)
 	
-	var results = space_state.intersect_shape(query)
-	if results.size() > 0:
+	var results = space_state.intersect_point(query)
+	for result in results:
+		var collider = result.collider
+		# Ignore the player when checking for "obstacles on the tile"
+		if collider == player or (player and player.is_ancestor_of(collider)):
+			continue
+		# If we hit something that is NOT a tree (since we checked trees above) and NOT player, block it.
+		# Note: Trees in the group "trees" might also be hit here if they have collision enabled.
+		# That's fine, it double confirms.
 		return false
 	
 	if ground_layer.get_cell_source_id(tile_pos) == -1:
@@ -162,7 +177,10 @@ func is_tile_farmable(global_pos: Vector2) -> bool:
 	query.collision_mask = 4 
 	
 	var results = space_state.intersect_point(query)
-	if results.size() > 0:
+	for result in results:
+		var collider = result.collider
+		if collider == player or (player and player.is_ancestor_of(collider)):
+			continue
 		return false
 
 	return true
