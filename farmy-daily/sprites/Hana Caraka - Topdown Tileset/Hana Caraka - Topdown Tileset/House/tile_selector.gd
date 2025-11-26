@@ -27,14 +27,21 @@ func _process(_delta):
 	var is_valid = false
 	if get_parent().has_method("is_tile_farmable") and player and player.equipped_item:
 		var n = player.equipped_item.name
+		
 		if n == "Hoe":
 			is_valid = get_parent().is_tile_farmable(target_global_pos)
+			
 		elif n == "Watering Can":
 			if get_parent().has_method("is_tile_waterable"):
 				is_valid = get_parent().is_tile_waterable(target_global_pos)
+				
 		elif n == "Tree Seed" or n == "Tree Seeds":
 			if get_parent().has_method("can_plant_seed"):
 				is_valid = get_parent().can_plant_seed(target_global_pos)
+				
+		elif "Seeds" in n:
+			if get_parent().has_method("can_plant_crop"):
+				is_valid = get_parent().can_plant_crop(target_global_pos)
 
 	if is_valid:
 		self.modulate = Color(0, 1, 0, 0.5)

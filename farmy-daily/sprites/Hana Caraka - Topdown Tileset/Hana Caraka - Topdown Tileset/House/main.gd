@@ -13,7 +13,6 @@ var hoe_cooldown: bool = false
 @export var HOED_SOURCE_ID: int = 1
 @export var HOED_ATLAS_COORDS: Vector2i = Vector2i(11, 0)
 
-# Watered tile configuration
 @export var WATERED_SOURCE_ID: int = 1
 @export var WATERED_ATLAS_COORDS: Vector2i = Vector2i(12, 0)
 
@@ -76,7 +75,7 @@ func _on_time_updated(_time_string: String):
 				
 			time_passed = (day_diff * 86400.0) + (current_time - w_time)
 		
-		if time_passed >= 43200.0: # 12 hours
+		if time_passed >= 43200.0: 
 			tiles_to_dry.append(tile_pos)
 			
 	for tile_pos in tiles_to_dry:
@@ -98,8 +97,12 @@ func refresh_tile_selector():
 
 	if player.equipped_item:
 		var n = player.equipped_item.name
-		if n == "Hoe" or n == "Tree Seed" or n == "Tree Seeds" or n == "Watering Can":
+		if n == "Hoe" or n == "Tree Seed" or n == "Tree Seeds" or n == "Watering Can" or "Seeds" in n:
 			tile_selector.visible = true
+			
+			var mouse_pos = get_global_mouse_position()
+			var center = get_tile_center_position(mouse_pos)
+			tile_selector.global_position = center
 			return
 
 	tile_selector.visible = false
@@ -155,14 +158,7 @@ func on_chest_closed():
 func get_tile_center_position(global_pos: Vector2) -> Vector2:
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
-	var center = ground_layer.map_to_local(tile_pos)
-	
-	# ALIGNMENT FIX: Add texture_origin offset from TileData
-	var data = ground_layer.get_cell_tile_data(tile_pos)
-	if data:
-		center += Vector2(data.texture_origin)
-		
-	return ground_layer.to_global(center)
+	return ground_layer.to_global(ground_layer.map_to_local(tile_pos))
 
 func can_plant_seed(global_pos: Vector2) -> bool:
 	if hoe_cooldown: return false
@@ -189,8 +185,33 @@ func can_plant_seed(global_pos: Vector2) -> bool:
 			continue
 		return false
 	
-	# FIXED: Removed strict check. Now allows planting on any valid tile.
 	if ground_layer.get_cell_source_id(tile_pos) == -1:
+		return false
+		
+	return true
+
+func can_plant_crop(global_pos: Vector2) -> bool:
+	if hoe_cooldown: return false
+	
+	var local_pos = ground_layer.to_local(global_pos)
+	var tile_pos = ground_layer.local_to_map(local_pos)
+	var atlas_coords = ground_layer.get_cell_atlas_coords(tile_pos)
+
+	if atlas_coords != HOED_ATLAS_COORDS and atlas_coords != WATERED_ATLAS_COORDS:
+		return false
+
+	var target_center = get_tile_center_position(global_pos)
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = target_center
+	query.collide_with_bodies = true
+	query.collision_mask = 4
+	
+	var results = space_state.intersect_point(query)
+	for result in results:
+		var collider = result.collider
+		if collider == player or (player and player.is_ancestor_of(collider)):
+			continue
 		return false
 		
 	return true
@@ -238,10 +259,10 @@ func use_water(global_pos: Vector2) -> void:
 	if is_tile_waterable(global_pos):
 		var local_pos = ground_layer.to_local(global_pos)
 		var tile_pos = ground_layer.local_to_map(local_pos)
+		var tile_center = ground_layer.to_global(ground_layer.map_to_local(tile_pos))
 		
+		# 1. UPDATE TILE VISUALS
 		var source = ground_layer.tile_set.get_source(WATERED_SOURCE_ID) as TileSetAtlasSource
-		
-		# ALIGNMENT FIX: Retrieve texture_origin from the TARGET tile data
 		var offset_vec = Vector2.ZERO
 		if source.has_tile(WATERED_ATLAS_COORDS):
 			var tile_data = source.get_tile_data(WATERED_ATLAS_COORDS, 0)
@@ -255,25 +276,18 @@ func use_water(global_pos: Vector2) -> void:
 			temp_sprite.region_rect = source.get_tile_texture_region(WATERED_ATLAS_COORDS)
 			
 			ground_layer.add_child(temp_sprite)
-			# Apply the calculated offset for perfect alignment
 			temp_sprite.position = ground_layer.map_to_local(tile_pos) + offset_vec
-			
-			# Ensure it renders above the dry tile
 			temp_sprite.z_index = 1 
-			
-			# Start small but visible
 			temp_sprite.scale = Vector2(0.2, 0.2) 
 			temp_sprite.modulate.a = 0.0
 			
 			var tween = create_tween()
-			# Use TRANS_CUBIC for a more "liquid" spread feel
 			tween.tween_property(temp_sprite, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 			tween.parallel().tween_property(temp_sprite, "modulate:a", 1.0, 0.2)
 			
 			tween.tween_callback(func():
 				ground_layer.set_cell(tile_pos, WATERED_SOURCE_ID, WATERED_ATLAS_COORDS)
 				temp_sprite.queue_free()
-				
 				watered_tiles[tile_pos] = {
 					"day": TimeManager.current_day,
 					"month": TimeManager.current_month,
@@ -287,6 +301,15 @@ func use_water(global_pos: Vector2) -> void:
 				"month": TimeManager.current_month,
 				"time": TimeManager.current_time_seconds
 			}
+
+		# 2. FIND AND WATER CROP (Fixed Range)
+		var crops = get_tree().get_nodes_in_group("crops")
+		for crop in crops:
+			# Increased range to 20.0 to ensure detection even if visually offset
+			if crop.global_position.distance_to(tile_center) < 20.0:
+				if crop.has_method("water"):
+					crop.water()
+					break
 
 func use_hoe(global_pos: Vector2) -> void:
 	if is_tile_farmable(global_pos):
@@ -310,7 +333,6 @@ func use_hoe(global_pos: Vector2) -> void:
 			temp_sprite.region_rect = source.get_tile_texture_region(HOED_ATLAS_COORDS)
 			
 			ground_layer.add_child(temp_sprite)
-			# Apply offset here too
 			temp_sprite.position = ground_layer.map_to_local(tile_pos) + offset_vec
 			temp_sprite.modulate.a = 0.0 
 			temp_sprite.z_index = 1

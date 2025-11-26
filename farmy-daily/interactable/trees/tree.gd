@@ -76,7 +76,7 @@ var health: int = 3
 var is_stump: bool = false
 var is_falling: bool = false 
 var default_layer: int = 1 
-var visual_transition_window: int = 2 
+var visual_transition_window: int = 3 
 
 var sfx_leaves: AudioStream
 var sfx_fall: AudioStream
@@ -88,7 +88,6 @@ func _ready():
 	add_to_group("trees")
 	z_as_relative = false
 	default_layer = collision_layer 
-	visual_transition_window = randi_range(2, 4)
 	
 	if TimeManager:
 		TimeManager.season_changed.connect(_on_update_visuals)

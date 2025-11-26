@@ -16,6 +16,8 @@ const TREE_SCENES = [
 	preload("res://interactable/trees/spruce_tree.tscn")
 ]
 
+const CROP_SCENE = preload("res://interactable/Crops/carrot.tscn")
+
 var audio_player: AudioStreamPlayer2D
 var impact_audio_player: AudioStreamPlayer2D 
 var sfx_hit_tree: AudioStream
@@ -223,7 +225,6 @@ func _on_PlayerHoldTimer_timeout():
 				return
 
 			elif equipped_item.name == "Tree Seed" or equipped_item.name == "Tree Seeds":
-				# Fix planting check
 				if get_parent().has_method("can_plant_seed"):
 					if not get_parent().can_plant_seed(mouse_pos):
 						return
@@ -232,6 +233,17 @@ func _on_PlayerHoldTimer_timeout():
 					perform_tool_action(mouse_pos, "planting")
 				else:
 					start_move_interact(mouse_pos, "planting")
+				return
+			
+			elif "Seeds" in equipped_item.name:
+				if get_parent().has_method("can_plant_crop"):
+					if not get_parent().can_plant_crop(mouse_pos):
+						return
+				
+				if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
+					perform_tool_action(mouse_pos, "planting_crop")
+				else:
+					start_move_interact(mouse_pos, "planting_crop")
 				return
 
 		interact()
@@ -301,11 +313,16 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		return
 
 	is_movement_locked = true
+	pending_tool_action_pos = target_pos 
 	velocity = Vector2.ZERO
 	last_direction = (target_pos - global_position).normalized()
 	sprite.flip_h = false
 	
-	var anim_name = tool_name + "_"
+	var anim_base = tool_name
+	if tool_name == "planting_crop":
+		anim_base = "planting"
+		
+	var anim_name = anim_base + "_"
 	if abs(last_direction.x) > abs(last_direction.y):
 		if last_direction.x > 0: anim_name += "right"
 		else:
@@ -314,26 +331,22 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	else:
 		anim_name += "down" if last_direction.y > 0 else "up"
 	
-	# START AUDIO
 	if tool_name == "watering":
 		if sfx_water and audio_player:
 			audio_player.stream = sfx_water
 			audio_player.play()
-	elif tool_name != "planting" and sfx_swing and audio_player:
+	elif tool_name != "planting" and tool_name != "planting_crop" and sfx_swing and audio_player:
 		audio_player.stream = sfx_swing
 		audio_player.play()
 	
 	var has_anim = sprite.sprite_frames.has_animation(anim_name)
 	if has_anim:
 		sprite.play(anim_name)
-		# Wait for 'hit' frame
 		while sprite.is_playing() and sprite.frame < 1:
 			await get_tree().process_frame
 	else:
-		# Fallback delay so audio plays
 		await get_tree().create_timer(0.3).timeout
 	
-	# DO ACTION
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
 		if sfx_hoe and impact_audio_player:
 			impact_audio_player.stream = sfx_hoe
@@ -346,24 +359,29 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		
 	elif tool_name == "planting":
 		spawn_tree(target_pos)
-		if sfx_seeds and audio_player:
-			audio_player.stream = sfx_seeds
-			audio_player.play()
-			get_tree().create_timer(0.5).timeout.connect(func(): if audio_player.stream == sfx_seeds: audio_player.stop())
+		play_seed_sound()
+		
+	elif tool_name == "planting_crop":
+		spawn_crop(target_pos)
+		play_seed_sound()
 	
 	if has_anim and sprite.is_playing():
 		await sprite.animation_finished
 	elif tool_name == "watering":
-		# Extra delay for watering sound if no animation
 		await get_tree().create_timer(0.5).timeout
 
-	# STOP WATER AUDIO
 	if tool_name == "watering" and audio_player:
 		audio_player.stop()
 
 	sprite.flip_h = false
 	is_movement_locked = false
 	update_idle_animation(last_direction)
+
+func play_seed_sound():
+	if sfx_seeds and audio_player:
+		audio_player.stream = sfx_seeds
+		audio_player.play()
+		get_tree().create_timer(0.5).timeout.connect(func(): if audio_player.stream == sfx_seeds: audio_player.stop())
 
 func find_tree_script(node: Node):
 	if node.has_method("setup_as_seed"):
@@ -376,27 +394,39 @@ func find_tree_script(node: Node):
 func spawn_tree(pos: Vector2):
 	if equipped_slot_index == -1 or not inventory_data: return
 
-	var snapped_pos = pos
 	if get_parent().has_method("get_tile_center_position"):
-		# This will now be perfectly aligned with the tile visual
-		snapped_pos = get_parent().get_tile_center_position(pos)
+		var snap_pos = get_parent().get_tile_center_position(pos)
+		var random_tree_scene = TREE_SCENES.pick_random()
+		var tree = random_tree_scene.instantiate()
+		tree.global_position = snap_pos
 
-	var random_tree_scene = TREE_SCENES.pick_random()
-	var tree = random_tree_scene.instantiate()
-	tree.global_position = snapped_pos
+		var script_node = find_tree_script(tree)
+		if script_node:
+			script_node.setup_as_seed()
+		
+		get_parent().add_child(tree)
+		
+		tree.modulate.a = 0.0
+		var t = get_tree().create_tween()
+		t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
-	var script_node = find_tree_script(tree)
-	if script_node:
-		script_node.setup_as_seed()
-	else:
-		print("Error: No tree script found on spawned object")
+		consume_equipped_item()
+
+func spawn_crop(pos: Vector2):
+	if equipped_slot_index == -1 or not inventory_data: return
 	
-	get_parent().add_child(tree)
-	
-	tree.modulate.a = 0.0
-	var t = get_tree().create_tween()
-	t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if get_parent().has_method("get_tile_center_position"):
+		var snap_pos = get_parent().get_tile_center_position(pos)
+		var crop = CROP_SCENE.instantiate()
+		crop.global_position = snap_pos
+		
+		if crop.has_method("setup"):
+			crop.setup(equipped_item)
+		
+		get_parent().add_child(crop)
+		consume_equipped_item()
 
+func consume_equipped_item():
 	var slot = inventory_data.slot_datas[equipped_slot_index]
 	if slot and slot.item_data == equipped_item:
 		slot.quantity -= 1

@@ -1,6 +1,5 @@
 extends StaticBody2D
 
-# --- Configuration ---
 @export_group("Crop Settings")
 @export var crop_name: String = "Generic Crop"
 @export var days_to_grow: int = 4 
@@ -19,6 +18,9 @@ const PICK_UP_SCENE = preload("res://Item/pick_up/pick_up.tscn")
 
 func _ready():
 	add_to_group("crops")
+	
+	global_position = global_position.snapped(Vector2(16, 16))
+	global_position += Vector2(8, 8)
 	
 	if TimeManager:
 		TimeManager.date_updated.connect(_on_day_passed)
@@ -58,17 +60,17 @@ func calculate_stage():
 		current_stage = GrowthStage.MEDIUM
 	else:
 		current_stage = GrowthStage.SPROUT
+	
+	update_visuals()
 
 func wither_crop():
 	if seed_item:
 		spawn_drop(seed_item, 1)
 	
-
 	var main_node = get_tree().current_scene
 	if main_node.has_method("revert_tile_to_dirt"):
 		main_node.revert_tile_to_dirt(global_position)
 	
-	# Destroy this crop object
 	queue_free()
 
 func update_visuals():
