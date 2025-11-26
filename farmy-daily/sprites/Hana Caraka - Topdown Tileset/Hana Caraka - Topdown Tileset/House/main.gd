@@ -117,13 +117,17 @@ func can_plant_seed(global_pos: Vector2) -> bool:
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	
 	var space_state = get_world_2d().direct_space_state
-	var query = PhysicsPointQueryParameters2D.new()
-	query.position = get_tile_center_position(global_pos)
+	
+	var query = PhysicsShapeQueryParameters2D.new()
+	var circle_shape = CircleShape2D.new()
+	circle_shape.radius = 18.0 
+	query.shape = circle_shape
+	query.transform = Transform2D(0, get_tile_center_position(global_pos))
 	query.collide_with_bodies = true
 	query.collide_with_areas = true
-	query.collision_mask = 4
+	query.collision_mask = 4 
 	
-	var results = space_state.intersect_point(query)
+	var results = space_state.intersect_shape(query)
 	if results.size() > 0:
 		return false
 	

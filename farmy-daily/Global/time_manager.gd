@@ -6,20 +6,17 @@ signal season_changed(season: Seasons)
 
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
-# Configuration
-const REAL_SECONDS_PER_GAME_DAY: float = 5.0 # 2 Hours
-const GAME_SECONDS_PER_DAY: float = 86400.0 # 24 Hours
+const REAL_SECONDS_PER_GAME_DAY: float = 5.0 
+const GAME_SECONDS_PER_DAY: float = 86400.0 
 
 const TIME_SCALE: float = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY 
 
-# Date Configuration (Starts April 20)
 var current_time_seconds: float = 0.0
 var current_day: int = 20
 var current_month: int = 4
 var current_year: int = 1
 var current_season: Seasons = Seasons.SPRING
 
-# Days in each month (Index 0 is empty placeholder)
 const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 const MONTH_NAMES = [
 	"", "January", "February", "March", "April", "May", "June",
@@ -27,10 +24,8 @@ const MONTH_NAMES = [
 ]
 
 func _ready() -> void:
-	# Start at 8:00 AM
 	current_time_seconds = 8 * 3600 
 	recalculate_season()
-	await get_tree().process_frame
 	emit_all_signals()
 
 func _process(delta: float) -> void:
@@ -59,11 +54,6 @@ func advance_date() -> void:
 func recalculate_season() -> void:
 	var prev_season = current_season
 	
-	# Spring: March 20 - June 20
-	# Summer: June 21 - Sept 21
-	# Autumn: Sept 22 - Dec 20
-	# Winter: Dec 21 - March 19
-	
 	if (current_month == 3 and current_day >= 20) or (current_month > 3 and current_month < 6) or (current_month == 6 and current_day <= 20):
 		current_season = Seasons.SPRING
 	elif (current_month == 6 and current_day >= 21) or (current_month > 6 and current_month < 9) or (current_month == 9 and current_day <= 21):
@@ -75,7 +65,6 @@ func recalculate_season() -> void:
 		
 	if current_season != prev_season:
 		season_changed.emit(current_season)
-		print("Season changed to: " + str(Seasons.keys()[current_season]))
 
 func emit_all_signals() -> void:
 	emit_time_signal()

@@ -38,7 +38,7 @@ var TREE_VARIANTS = [
 	{
 		"name": "Birch Tree",
 		"seed_frame": 7,
-		"stump_frame": 20,
+		"stump_frame": 7,
 		
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
 		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
@@ -197,8 +197,14 @@ func get_season_suffix() -> String:
 	var m = TimeManager.current_month
 	var d = TimeManager.current_day
 	
-	if m == 6 and abs(d - 20) <= visual_transition_window: return "spring_summer"
-	elif m == 9 and abs(d - 21) <= visual_transition_window: return "summer_autumn"
+	if m == 6 and abs(d - 20) <= visual_transition_window: 
+		return "spring_summer"
+	elif m == 9 and abs(d - 21) <= visual_transition_window: 
+		return "summer_autumn"
+	elif m == 12 and abs(d - 20) <= visual_transition_window:
+		return "autumn_winter"
+	elif m == 3 and abs(d - 20) <= visual_transition_window:
+		return "winter_spring"
 	
 	return get_fallback_suffix()
 

@@ -9,7 +9,12 @@ extends CharacterBody2D
 @onready var interaction_area: Area2D = $InteractionComponent
 @onready var hold_timer: Timer = $PlayerHoldTimer
 
-const TREE_SCENE = preload("res://interactable/trees/maple_tree.tscn")
+const TREE_SCENES = [
+	preload("res://interactable/trees/maple_tree.tscn"),
+	preload("res://interactable/trees/pine_tree.tscn"),
+	preload("res://interactable/trees/birch_tree.tscn"),
+	preload("res://interactable/trees/spruce_tree.tscn")
+]
 
 var audio_player: AudioStreamPlayer2D
 var impact_audio_player: AudioStreamPlayer2D 
@@ -295,7 +300,6 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	else:
 		anim_name += "down" if last_direction.y > 0 else "up"
 	
-	# Only play swing sound if NOT planting
 	if tool_name != "planting":
 		if sfx_swing and audio_player:
 			audio_player.stream = sfx_swing
@@ -303,7 +307,6 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	
 	sprite.play(anim_name)
 	
-	# Wait for impact frame (usually frame 1)
 	while sprite.is_playing() and sprite.frame < 1:
 		await get_tree().process_frame
 	
@@ -313,23 +316,18 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 			impact_audio_player.play()
 		get_parent().use_hoe(target_pos)
 		
-		# Wait for the audio to finish before finishing action
 		if impact_audio_player.playing:
 			await impact_audio_player.finished
 		
 	elif tool_name == "planting":
 		spawn_tree(target_pos)
-	
-	if sprite.is_playing():
-		await sprite.animation_finished
-
-	# Play seeds audio AFTER animation finishes for planting
-	if tool_name == "planting":
 		if sfx_seeds and audio_player:
 			audio_player.stream = sfx_seeds
 			audio_player.play()
-			# Stop the sound after 0.5s to cut the tail
 			get_tree().create_timer(0.5).timeout.connect(func(): if audio_player.stream == sfx_seeds: audio_player.stop())
+	
+	if sprite.is_playing():
+		await sprite.animation_finished
 
 	sprite.flip_h = false
 	is_movement_locked = false
@@ -350,13 +348,14 @@ func spawn_tree(pos: Vector2):
 	if get_parent().has_method("get_tile_center_position"):
 		snapped_pos = get_parent().get_tile_center_position(pos)
 
-	var tree = TREE_SCENE.instantiate()
+	var random_tree_scene = TREE_SCENES.pick_random()
+	var tree = random_tree_scene.instantiate()
+	
 	get_parent().add_child(tree)
 	tree.global_position = snapped_pos
 	
 	tree.modulate.a = 0.0
 	var t = get_tree().create_tween()
-	# Increased fade duration from 2.0 to 4.0
 	t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	var script_node = find_tree_script(tree)
