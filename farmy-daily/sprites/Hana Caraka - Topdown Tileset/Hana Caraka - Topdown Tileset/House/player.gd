@@ -16,6 +16,7 @@ var impact_audio_player: AudioStreamPlayer2D
 var sfx_hit_tree: AudioStream
 var sfx_hoe: AudioStream 
 var sfx_swing: AudioStream 
+var sfx_seeds: AudioStream 
 
 var last_direction := Vector2.DOWN
 signal toggle_inventory()
@@ -53,6 +54,7 @@ func load_sounds():
 	if FileAccess.file_exists("res://sounds/hit_tree.mp3"): sfx_hit_tree = load("res://sounds/hit_tree.mp3")
 	if FileAccess.file_exists("res://sounds/hoe.mp3"): sfx_hoe = load("res://sounds/hoe.mp3")
 	if FileAccess.file_exists("res://sounds/swing.mp3"): sfx_swing = load("res://sounds/swing.mp3")
+	if FileAccess.file_exists("res://sounds/seeds.mp3"): sfx_seeds = load("res://sounds/seeds.mp3")
 
 func reset_states():
 	is_moving_to_interact = false
@@ -293,12 +295,15 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	else:
 		anim_name += "down" if last_direction.y > 0 else "up"
 	
-	if sfx_swing and audio_player:
-		audio_player.stream = sfx_swing
-		audio_player.play()
+	# Only play swing sound if NOT planting
+	if tool_name != "planting":
+		if sfx_swing and audio_player:
+			audio_player.stream = sfx_swing
+			audio_player.play()
 	
 	sprite.play(anim_name)
 	
+	# Wait for impact frame (usually frame 1)
 	while sprite.is_playing() and sprite.frame < 1:
 		await get_tree().process_frame
 	
@@ -308,11 +313,23 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 			impact_audio_player.play()
 		get_parent().use_hoe(target_pos)
 		
+		# Wait for the audio to finish before finishing action
+		if impact_audio_player.playing:
+			await impact_audio_player.finished
+		
 	elif tool_name == "planting":
 		spawn_tree(target_pos)
 	
 	if sprite.is_playing():
 		await sprite.animation_finished
+
+	# Play seeds audio AFTER animation finishes for planting
+	if tool_name == "planting":
+		if sfx_seeds and audio_player:
+			audio_player.stream = sfx_seeds
+			audio_player.play()
+			# Stop the sound after 0.5s to cut the tail
+			get_tree().create_timer(0.5).timeout.connect(func(): if audio_player.stream == sfx_seeds: audio_player.stop())
 
 	sprite.flip_h = false
 	is_movement_locked = false
@@ -339,7 +356,8 @@ func spawn_tree(pos: Vector2):
 	
 	tree.modulate.a = 0.0
 	var t = get_tree().create_tween()
-	t.tween_property(tree, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Increased fade duration from 2.0 to 4.0
+	t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	var script_node = find_tree_script(tree)
 	if script_node:

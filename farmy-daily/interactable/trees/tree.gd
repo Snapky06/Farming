@@ -2,8 +2,9 @@ extends StaticBody2D
 
 var TREE_VARIANTS = [
 	{
-		"name": "Maple Tree",
-		"seed_frame": 7, 
+		"name": "Pine Tree",
+		"seed_frame": 7,
+		"stump_frame": 7,
 		
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
 		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
@@ -16,15 +17,63 @@ var TREE_VARIANTS = [
 		"seed_chance": 0.5,
 		"min_health": 3, "max_health": 6,
 		"min_wood": 2, "max_wood": 5
+	},
+	{
+		"name": "Maple Tree",
+		"seed_frame": 7,
+		"stump_frame": 7,
+		
+		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
+		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
+		"little_winter": 6, "little_winter_spring": 6,
+		
+		"big_spring": 0, "big_spring_summer": 1, "big_summer": 2,
+		"big_summer_autumn": 3, "big_autumn": 4, "big_autumn_winter": 5,
+		"big_winter": 6, "big_winter_spring": 6,
+		
+		"seed_chance": 0.5,
+		"min_health": 4, "max_health": 6,
+		"min_wood": 3, "max_wood": 6
+	},
+	{
+		"name": "Birch Tree",
+		"seed_frame": 7,
+		"stump_frame": 20,
+		
+		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
+		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
+		"little_winter": 6, "little_winter_spring": 6,
+		
+		"big_spring": 0, "big_spring_summer": 1, "big_summer": 2,
+		"big_summer_autumn": 3, "big_autumn": 4, "big_autumn_winter": 5,
+		"big_winter": 6, "big_winter_spring": 6,
+		
+		"seed_chance": 0.2,
+		"min_health": 1, "max_health": 3,
+		"min_wood": 1, "max_wood": 3
+	},
+	{
+		"name": "Spruce Tree",
+		"seed_frame": 3,
+		"stump_frame": 3,
+		
+		"little_spring": 0, "little_spring_summer": 1, "little_summer": 1,
+		"little_summer_autumn": 1, "little_autumn": 1, "little_autumn_winter": 1,
+		"little_winter": 2, "little_winter_spring": 2,
+		
+		"big_spring": 0, "big_spring_summer": 1, "big_summer": 1,
+		"big_summer_autumn": 1, "big_autumn": 1, "big_autumn_winter": 1,
+		"big_winter": 2, "big_winter_spring": 2,
+		
+		"seed_chance": 0.1,
+		"min_health": 1, "max_health": 2,
+		"min_wood": 1, "max_wood": 2
 	}
 ]
 
 @export_group("Items")
 @export var wood_item: ItemData 
 @export var seed_item: ItemData 
-
-@export_group("Settings")
-@export var stump_frame: int = 20 
 
 enum GrowthStage { SEED, SAPLING, MATURE }
 var current_stage: GrowthStage = GrowthStage.MATURE
@@ -102,8 +151,9 @@ func update_visuals():
 	if is_stump:
 		sprite_root.play("big_cycle")
 		sprite_root.stop()
-		sprite_root.frame = stump_frame
+		sprite_root.frame = active_variant.get("stump_frame", 20)
 		collision_layer = default_layer
+		z_index = 3
 		return
 
 	if current_stage == GrowthStage.SEED:
@@ -116,9 +166,11 @@ func update_visuals():
 			sprite_root.frame = 7
 		
 		collision_layer = 0 
+		z_index = 0
 		return
 
 	collision_layer = default_layer 
+	z_index = 3
 	
 	var prefix = "big_"
 	var anim_name = "big_cycle"
@@ -211,7 +263,7 @@ func fall_tree():
 		
 		sprite_root.play("big_cycle")
 		sprite_root.stop()
-		sprite_root.frame = stump_frame
+		sprite_root.frame = active_variant.get("stump_frame", 20)
 		
 		var t = create_tween()
 		t.tween_property(fall_visual, "modulate:a", 0.0, 3.0)
@@ -221,7 +273,8 @@ func fall_tree():
 		is_stump = true
 		is_falling = false
 		health = 2
-		collision_layer = default_layer 
+		collision_layer = default_layer
+		z_index = 3
 
 func spawn_drops(item, count):
 	if not item or count <= 0: return

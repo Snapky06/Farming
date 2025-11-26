@@ -1,73 +1,73 @@
-[gd_scene load_steps=24 format=3 uid="uid://dyxfruoatbu1o"]
+[gd_scene load_steps=24 format=3 uid="uid://c6l7cs6ihrf0r"]
 
 [ext_resource type="Texture2D" uid="uid://b0jqir27m4qnt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Tree.png" id="1_5fsp4"]
-[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_b5i4o"]
 [ext_resource type="Script" uid="uid://hmb2j5nps2wp" path="res://interactable/trees/tree.gd" id="2_bmxih"]
+[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_ugr8i"]
 [ext_resource type="Resource" uid="uid://dpx6tyqqyyoev" path="res://Item/items/wood.tres" id="4_b5i4o"]
 [ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/tree_seeds.tres" id="5_p2h2v"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bmxih"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(0, 147, 32, 49)
+region = Rect2(0, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_b5i4o"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(32, 147, 32, 49)
+region = Rect2(32, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_p2h2v"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(64, 147, 32, 49)
+region = Rect2(64, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_voemu"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(96, 147, 32, 49)
+region = Rect2(96, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_loi0y"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(128, 147, 32, 49)
+region = Rect2(128, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_8qy8l"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(160, 147, 32, 49)
+region = Rect2(160, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_6js24"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(192, 147, 32, 49)
+region = Rect2(192, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_57qu3"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(224, 147, 32, 49)
+region = Rect2(224, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_mp5a4"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(256, 147, 32, 49)
+region = Rect2(256, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lrr8b"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(288, 147, 32, 49)
+region = Rect2(288, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_lknf3"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(320, 147, 32, 49)
+region = Rect2(320, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_3vle2"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(352, 147, 32, 49)
+region = Rect2(352, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yug4c"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(384, 147, 32, 49)
+region = Rect2(384, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_f1hmu"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(416, 147, 32, 49)
+region = Rect2(416, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gl57t"]
 atlas = ExtResource("1_5fsp4")
-region = Rect2(448, 147, 32, 49)
+region = Rect2(448, 0, 32, 49)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_oflpl"]
-atlas = ExtResource("2_b5i4o")
+atlas = ExtResource("2_ugr8i")
 region = Rect2(64, 0, 16, 16)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_17sca"]
@@ -134,7 +134,7 @@ animations = [{
 [sub_resource type="CircleShape2D" id="CircleShape2D_upoyd"]
 radius = 6.0
 
-[node name="MapleTree" type="AnimatedSprite2D"]
+[node name="PineTree" type="AnimatedSprite2D"]
 sprite_frames = SubResource("SpriteFrames_17sca")
 animation = &"little_cycle"
 
