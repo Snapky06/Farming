@@ -1,173 +1,253 @@
 extends StaticBody2D
 
-# --- DYNAMIC EXPORTS ---
-@export var item_to_drop: ItemData 
-@export var quantity_to_drop: int = 3
-@export var health: int = 3
+# --- CONFIGURATION ---
+var TREE_VARIANTS = [
+	{
+		"name": "Maple Tree",
+		"seed_frame": 7, # Frame 7 of "little_cycle"
+		
+		# SAPLING FRAMES (little_cycle)
+		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
+		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
+		"little_winter": 6, "little_winter_spring": 6,
+		
+		# MATURE FRAMES (big_cycle)
+		"big_spring": 0, "big_spring_summer": 1, "big_summer": 2,
+		"big_summer_autumn": 3, "big_autumn": 4, "big_autumn_winter": 5,
+		"big_winter": 6, "big_winter_spring": 6,
+		
+		"seed_chance": 0.5,
+		"min_health": 3, "max_health": 6,
+		"min_wood": 2, "max_wood": 5
+	}
+]
 
-# --- ANIMATION FRAME SETTINGS ---
-@export var tree_frame: int = 0
-@export var stump_frame: int = 7
+@export_group("Items")
+@export var wood_item: ItemData 
+@export var seed_item: ItemData 
+
+@export_group("Settings")
+@export var stump_frame: int = 20 
+
+enum GrowthStage { SEED, SAPLING, MATURE }
+var current_stage: GrowthStage = GrowthStage.MATURE
+var active_variant: Dictionary = {} 
+var days_until_next_stage: int = 0
+var health: int = 3
 
 var is_stump: bool = false
-var is_falling: bool = false # This variable locks the tree interaction
+var is_falling: bool = false 
+var default_layer: int = 1 
+var visual_transition_window: int = 2 
 
-var sfx_falling_leaves: AudioStream
-var sfx_falling_tree: AudioStream
-var active_leaves_player: AudioStreamPlayer2D 
+var sfx_leaves: AudioStream
+var sfx_fall: AudioStream
 
 @onready var sprite_root: AnimatedSprite2D = get_parent()
-
 const PICK_UP_SCENE = preload("res://Item/pick_up/pick_up.tscn")
 
 func _ready():
-	# Load Audio
-	if FileAccess.file_exists("res://sounds/falling_leaves.wav"):
-		sfx_falling_leaves = load("res://sounds/falling_leaves.wav")
-	elif FileAccess.file_exists("res://sounds/falling_leaves.mp3"):
-		sfx_falling_leaves = load("res://sounds/falling_leaves.mp3")
+	default_layer = collision_layer 
+	visual_transition_window = randi_range(2, 4)
+	
+	if TimeManager:
+		TimeManager.season_changed.connect(_on_update_visuals)
+		TimeManager.date_updated.connect(_on_day_passed)
+	
+	load_audio()
+	
+	if active_variant.is_empty():
+		active_variant = TREE_VARIANTS.pick_random()
+		randomize_stats()
+		
+	update_visuals()
 
-	if FileAccess.file_exists("res://sounds/falling_tree.wav"):
-		sfx_falling_tree = load("res://sounds/falling_tree.wav")
-	elif FileAccess.file_exists("res://sounds/falling_tree.mp3"):
-		sfx_falling_tree = load("res://sounds/falling_tree.mp3")
+func setup_as_seed():
+	current_stage = GrowthStage.SEED
+	active_variant = TREE_VARIANTS.pick_random()
+	days_until_next_stage = randi_range(1, 3) # Wait 1-3 days to grow
+	randomize_stats()
+	update_visuals()
 
-	if sprite_root:
-		sprite_root.play("cycle")
-		sprite_root.frame = tree_frame
+func randomize_stats():
+	if active_variant.has("min_health"):
+		health = randi_range(active_variant["min_health"], active_variant["max_health"])
+	else:
+		health = 3
+
+func _on_day_passed(_date_string):
+	if is_falling: return
+	
+	update_visuals()
+	if current_stage == GrowthStage.MATURE or is_stump: return
+	
+	days_until_next_stage -= 1
+	if days_until_next_stage <= 0:
+		advance_growth()
+
+func advance_growth():
+	if current_stage == GrowthStage.SEED:
+		current_stage = GrowthStage.SAPLING
+		days_until_next_stage = randi_range(1, 3) # Wait another 1-3 days
+	elif current_stage == GrowthStage.SAPLING:
+		current_stage = GrowthStage.MATURE
+		randomize_stats()
+	
+	update_visuals()
+
+func _on_update_visuals(_arg=null):
+	update_visuals()
+
+func update_visuals():
+	if not sprite_root: return
+	sprite_root.visible = true
+	
+	# STUMP
+	if is_stump:
+		sprite_root.play("big_cycle")
 		sprite_root.stop()
-
-func hit(_attacker_pos: Vector2 = Vector2.ZERO):
-	# INTERACTION LOCK: 
-	# If the tree is currently falling, ignore ALL hits.
-	if is_falling:
+		sprite_root.frame = stump_frame
+		collision_layer = default_layer
 		return
 
-	play_falling_leaves_sound()
+	# SEED (little_cycle)
+	if current_stage == GrowthStage.SEED:
+		sprite_root.play("little_cycle")
+		sprite_root.stop()
+		
+		if active_variant.has("seed_frame"):
+			sprite_root.frame = active_variant["seed_frame"]
+		else:
+			sprite_root.frame = 7
+		
+		collision_layer = 0 
+		return
 
+	# SAPLING (little_cycle) / MATURE (big_cycle)
+	collision_layer = default_layer 
+	
+	var prefix = "big_"
+	var anim_name = "big_cycle"
+	
+	if current_stage == GrowthStage.SAPLING:
+		prefix = "little_"
+		anim_name = "little_cycle"
+	
+	if sprite_root.sprite_frames.has_animation(anim_name):
+		sprite_root.play(anim_name)
+		sprite_root.stop() 
+	
+	var suffix = get_season_suffix()
+	var frame_key = prefix + suffix
+	
+	if active_variant.has(frame_key):
+		sprite_root.frame = active_variant[frame_key]
+	else:
+		var fallback = prefix + get_fallback_suffix()
+		if active_variant.has(fallback):
+			sprite_root.frame = active_variant[fallback]
+
+func get_season_suffix() -> String:
+	var m = TimeManager.current_month
+	var d = TimeManager.current_day
+	
+	if m == 6 and abs(d - 20) <= visual_transition_window: return "spring_summer"
+	elif m == 9 and abs(d - 21) <= visual_transition_window: return "summer_autumn"
+	
+	return get_fallback_suffix()
+
+func get_fallback_suffix() -> String:
+	match TimeManager.current_season:
+		TimeManager.Seasons.SPRING: return "spring"
+		TimeManager.Seasons.SUMMER: return "summer"
+		TimeManager.Seasons.AUTUMN: return "autumn"
+		TimeManager.Seasons.WINTER: return "winter"
+	return "spring"
+
+func hit(_pos):
+	if is_falling or current_stage == GrowthStage.SEED: return
+	
+	play_sound(sfx_leaves)
 	health -= 1
 	
-	# Shake
-	if sprite_root:
-		var tween = create_tween()
-		var original_pos = sprite_root.position
-		tween.tween_property(sprite_root, "position", original_pos + Vector2(2, 0), 0.05)
-		tween.tween_property(sprite_root, "position", original_pos - Vector2(2, 0), 0.05)
-		tween.tween_property(sprite_root, "position", original_pos, 0.05)
+	var t = create_tween()
+	t.tween_property(sprite_root, "position", sprite_root.position + Vector2(2,0), 0.05)
+	t.tween_property(sprite_root, "position", sprite_root.position, 0.05)
 
 	if health <= 0:
-		if not is_stump:
-			start_falling_sequence()
+		if current_stage == GrowthStage.SAPLING:
+			destroy_sapling()
+		elif is_stump:
+			destroy_stump()
 		else:
-			remove_stump()
+			fall_tree()
 
-func start_falling_sequence():
-	is_falling = true # LOCK: Player cannot hit anymore
+func destroy_sapling():
+	spawn_drops(wood_item, 1)
+	if randf() < 0.3: spawn_drops(seed_item, 1)
+	queue_free()
+	if sprite_root: sprite_root.queue_free()
+
+func destroy_stump():
+	spawn_drops(wood_item, 1)
+	if sprite_root: sprite_root.queue_free()
+	else: queue_free()
+
+func fall_tree():
+	is_falling = true
+	collision_layer = 0
+	play_sound(sfx_fall)
 	
-	if active_leaves_player:
-		active_leaves_player.stop()
-		active_leaves_player.queue_free()
-		active_leaves_player = null
+	var wood_count = 3
+	if active_variant.has("min_wood"):
+		wood_count = randi_range(active_variant["min_wood"], active_variant["max_wood"])
+	spawn_drops(wood_item, wood_count)
 	
-	play_falling_tree_sound()
-	
-	# 1. Spawn items IMMEDIATELY (They hide under the falling tree sprite)
-	spawn_drops_scattered(quantity_to_drop)
-	
-	# Calculate duration
-	var fall_duration = 3.5
-	if sfx_falling_tree:
-		fall_duration = sfx_falling_tree.get_length()
-	
+	if randf() < active_variant.get("seed_chance", 0.5):
+		spawn_drops(seed_item, 1)
+
 	if sprite_root:
 		var fall_visual = Sprite2D.new()
-		var tex = sprite_root.sprite_frames.get_frame_texture(sprite_root.animation, sprite_root.frame)
-		fall_visual.texture = tex
-		
-		# Match properties
+		fall_visual.texture = sprite_root.sprite_frames.get_frame_texture(sprite_root.animation, sprite_root.frame)
 		fall_visual.global_position = sprite_root.global_position
 		fall_visual.offset = sprite_root.offset
-		fall_visual.scale = sprite_root.scale
-		fall_visual.flip_h = sprite_root.flip_h
-		
-		# Draw ON TOP of everything (Z=100 covers items and stump)
-		fall_visual.z_as_relative = false
 		fall_visual.z_index = 100
-		
 		get_tree().current_scene.add_child(fall_visual)
 		
-		# Transform real object to stump
+		is_stump = true
+		is_falling = false
+		health = 2
+		
+		sprite_root.play("big_cycle")
+		sprite_root.stop()
 		sprite_root.frame = stump_frame
+		collision_layer = default_layer 
 		
-		# Animate Fade
-		var tween = create_tween()
-		tween.tween_property(fall_visual, "modulate:a", 0.0, fall_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		
-		await tween.finished
-		
+		var t = create_tween()
+		t.tween_property(fall_visual, "modulate:a", 0.0, 3.0)
+		await t.finished
 		fall_visual.queue_free()
-		
-	# UNLOCK: Only allow hitting the stump AFTER animation is totally done
-	become_stump()
 
-func play_falling_leaves_sound():
-	if not sfx_falling_leaves or is_stump:
-		return
-		
-	var temp_player = AudioStreamPlayer2D.new()
-	get_tree().current_scene.add_child(temp_player)
-	temp_player.global_position = global_position
-	temp_player.stream = sfx_falling_leaves
-	temp_player.play()
-	temp_player.finished.connect(temp_player.queue_free)
-	
-	active_leaves_player = temp_player
-
-func play_falling_tree_sound():
-	if not sfx_falling_tree:
-		return
-	
-	var temp_player = AudioStreamPlayer2D.new()
-	get_tree().current_scene.add_child(temp_player)
-	temp_player.global_position = global_position
-	temp_player.stream = sfx_falling_tree
-	temp_player.play()
-	temp_player.finished.connect(temp_player.queue_free)
-
-func become_stump():
-	is_stump = true
-	is_falling = false # RELEASE LOCK: Now you can hit the stump
-	health = 2 
-	
-	if sprite_root:
-		sprite_root.stop() 
-		sprite_root.frame = stump_frame 
-
-func remove_stump():
-	spawn_drops_scattered(1)
-	
-	if sprite_root:
-		sprite_root.queue_free()
-	else:
-		queue_free()
-
-func spawn_drops_scattered(amount_to_spawn: int):
-	if not item_to_drop or not PICK_UP_SCENE:
-		return
-
-	for i in range(amount_to_spawn):
+func spawn_drops(item, count):
+	if not item or count <= 0: return
+	for i in range(count):
 		var drop = PICK_UP_SCENE.instantiate()
-		var slot_data = SlotData.new()
-		slot_data.item_data = item_to_drop
-		slot_data.quantity = 1 
-		drop.slot_data = slot_data
-		
-		# Circular scattering around the tree
-		var angle = (PI * 2.0 / amount_to_spawn) * i
-		angle += randf_range(-0.5, 0.5)
-		var distance = randf_range(10.0, 20.0)
-		var offset = Vector2(cos(angle), sin(angle)) * distance
-		
-		drop.global_position = global_position + offset
-		
+		var slot = SlotData.new()
+		slot.item_data = item
+		slot.quantity = 1
+		drop.slot_data = slot
+		drop.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
 		get_tree().current_scene.call_deferred("add_child", drop)
+
+func load_audio():
+	if FileAccess.file_exists("res://sounds/falling_leaves.mp3"): sfx_leaves = load("res://sounds/falling_leaves.mp3")
+	if FileAccess.file_exists("res://sounds/falling_tree.mp3"): sfx_fall = load("res://sounds/falling_tree.mp3")
+
+func play_sound(stream):
+	if stream:
+		var p = AudioStreamPlayer2D.new()
+		p.stream = stream
+		p.global_position = global_position
+		get_tree().current_scene.add_child(p)
+		p.play()
+		p.finished.connect(p.queue_free)

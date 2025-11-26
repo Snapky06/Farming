@@ -15,7 +15,7 @@ const TIME_SCALE: float = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY
 # Date Configuration (Starts April 20)
 var current_time_seconds: float = 0.0
 var current_day: int = 20
-var current_month: int = 4 
+var current_month: int = 4
 var current_year: int = 1
 var current_season: Seasons = Seasons.SPRING
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=115 format=3 uid="uid://buts4ehxirrur"]
+[gd_scene load_steps=128 format=3 uid="uid://buts4ehxirrur"]
 
 [ext_resource type="Script" uid="uid://b45dnx5l0a4v" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.gd" id="1_ktniu"]
 [ext_resource type="Resource" uid="uid://b5f5s6ce6wjb1" path="res://test_inv.tres" id="2_iwuv1"]
@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://f4v7ljcmf5sk" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Basic/idle.png" id="3_iwuv1"]
 [ext_resource type="Texture2D" uid="uid://bp7g37ockf8m" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Basic/walk.png" id="4_hnowp"]
 [ext_resource type="Texture2D" uid="uid://xaanm8qbvy0m" path="res://sprites/walk left.PNG" id="5_6ecp4"]
+[ext_resource type="Texture2D" uid="uid://vhomiehb3wcw" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Farming/planting.png" id="7_bykt8"]
 [ext_resource type="Texture2D" uid="uid://xilq6d4648e2" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Farming/watering.png" id="9_6ecp4"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yq0bf"]
@@ -217,6 +218,54 @@ region = Rect2(160, 160, 80, 80)
 [sub_resource type="AtlasTexture" id="AtlasTexture_rgosd"]
 atlas = ExtResource("3_iwuv1")
 region = Rect2(240, 160, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_paes3"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(0, 74, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_10ecs"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(80, 74, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q8im4"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(160, 74, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1pehq"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(240, 74, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tbbak"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(0, 0, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e8xph"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(80, 0, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ibo6m"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(160, 0, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_02ktl"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(240, 0, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tny0q"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(0, 148, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_uqqaw"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(80, 148, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0hoxx"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(160, 148, 80, 74)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ygbwj"]
+atlas = ExtResource("7_bykt8")
+region = Rect2(240, 148, 80, 74)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hj0o7"]
 atlas = ExtResource("4_hnowp")
@@ -628,6 +677,57 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_paes3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_10ecs")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q8im4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1pehq")
+}],
+"loop": false,
+"name": &"planting_down",
+"speed": 9.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tbbak")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e8xph")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ibo6m")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_02ktl")
+}],
+"loop": false,
+"name": &"planting_right",
+"speed": 9.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tny0q")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_uqqaw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0hoxx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ygbwj")
+}],
+"loop": false,
+"name": &"planting_up",
+"speed": 9.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_hj0o7")
 }, {
 "duration": 1.0,
@@ -830,7 +930,7 @@ inventory_data = ExtResource("2_iwuv1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"watering_down"
+animation = &"planting_down"
 autoplay = "idle_down"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

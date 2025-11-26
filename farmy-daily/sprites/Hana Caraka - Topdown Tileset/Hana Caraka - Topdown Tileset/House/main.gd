@@ -8,7 +8,7 @@ extends Node2D
 @onready var ground_layer: TileMapLayer = $Backgrounds/NavRegion/Ground
 
 var obstruction_layers: Array[TileMapLayer] = []
-var hoe_cooldown: bool = false # New variable to track cooldown
+var hoe_cooldown: bool = false 
 
 @export var HOED_SOURCE_ID: int = 1
 @export var HOED_ATLAS_COORDS: Vector2i = Vector2i(11, 0)
@@ -45,15 +45,17 @@ func _on_hotbar_slot_selected(_index: int):
 	refresh_tile_selector()
 
 func refresh_tile_selector():
-	# Hide selector if inventory is open OR hoe is on cooldown
 	if inventory_interface.visible or hoe_cooldown:
 		tile_selector.visible = false
 		return
 
-	if player.equipped_item and player.equipped_item.name == "Hoe":
-		tile_selector.visible = true
-	else:
-		tile_selector.visible = false
+	if player.equipped_item:
+		var n = player.equipped_item.name
+		if n == "Hoe" or n == "Tree Seed" or n == "Tree Seeds":
+			tile_selector.visible = true
+			return
+
+	tile_selector.visible = false
 
 func _unhandled_input(_event):
 	if Input.is_action_just_pressed("inventory"):
@@ -103,26 +105,65 @@ func on_chest_closed():
 	player.is_movement_locked = false
 	refresh_tile_selector()
 
+func get_tile_center_position(global_pos: Vector2) -> Vector2:
+	var local_pos = ground_layer.to_local(global_pos)
+	var tile_pos = ground_layer.local_to_map(local_pos)
+	return ground_layer.to_global(ground_layer.map_to_local(tile_pos))
+
+func can_plant_seed(global_pos: Vector2) -> bool:
+	if hoe_cooldown: return false
+	
+	var local_pos = ground_layer.to_local(global_pos)
+	var tile_pos = ground_layer.local_to_map(local_pos)
+	
+	for layer in obstruction_layers:
+		if layer.get_cell_source_id(tile_pos) != -1:
+			return false
+	
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = get_tile_center_position(global_pos)
+	query.collide_with_bodies = true
+	query.collide_with_areas = true
+	query.collision_mask = 4
+	
+	var results = space_state.intersect_point(query)
+	if results.size() > 0:
+		return false
+	
+	if ground_layer.get_cell_source_id(tile_pos) == -1:
+		return false
+		
+	return true
+
 func is_tile_farmable(global_pos: Vector2) -> bool:
-	# Prevent interaction if cooldown is active
 	if hoe_cooldown:
 		return false
 
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	
-	if ground_layer.get_cell_source_id(tile_pos) != HOED_SOURCE_ID:
+	if ground_layer.get_cell_source_id(tile_pos) == -1:
+		return false
+	
+	if ground_layer.get_cell_source_id(tile_pos) == HOED_SOURCE_ID:
 		return false
 
 	for layer in obstruction_layers:
 		if layer.get_cell_source_id(tile_pos) != -1:
 			return false
 	
-	var tile_data = ground_layer.get_cell_tile_data(tile_pos)
-	if not tile_data:
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = get_tile_center_position(global_pos)
+	query.collide_with_bodies = true
+	query.collision_mask = 4 
+	
+	var results = space_state.intersect_point(query)
+	if results.size() > 0:
 		return false
-		
-	return tile_data.get_custom_data("can_farm")
+
+	return true
 
 func use_hoe(global_pos: Vector2) -> void:
 	if is_tile_farmable(global_pos):

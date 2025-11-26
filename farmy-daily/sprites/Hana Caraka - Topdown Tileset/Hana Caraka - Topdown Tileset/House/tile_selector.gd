@@ -24,16 +24,20 @@ func _process(_delta):
 		self.modulate = Color(0, 1, 0, 0.5)
 		return
 
-	if get_parent().has_method("is_tile_farmable"):
-		if get_parent().is_tile_farmable(target_global_pos):
-			self.modulate = Color(0, 1, 0, 0.5)
-		else:
-			self.modulate = Color(1, 0, 0, 0.5)
-	else:
-		var source_id = ground_layer.get_cell_source_id(grid_pos)
-		var tile_data = ground_layer.get_cell_tile_data(grid_pos)
+	var is_valid = false
+	
+	if player and player.equipped_item:
+		var n = player.equipped_item.name
 		
-		if source_id == 1 and tile_data and tile_data.get_custom_data("can_farm"):
-			self.modulate = Color(0, 1, 0, 0.5)
-		else:
-			self.modulate = Color(1, 0, 0, 0.5)
+		if n == "Hoe":
+			if get_parent().has_method("is_tile_farmable"):
+				is_valid = get_parent().is_tile_farmable(target_global_pos)
+				
+		elif n == "Tree Seed" or n == "Tree Seeds":
+			if get_parent().has_method("can_plant_seed"):
+				is_valid = get_parent().can_plant_seed(target_global_pos)
+
+	if is_valid:
+		self.modulate = Color(0, 1, 0, 0.5) # Green
+	else:
+		self.modulate = Color(1, 0, 0, 0.5) # Red
