@@ -7,12 +7,10 @@ var TREE_VARIANTS = [
 		"stump_frame": 7,
 		
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
-		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
-		"little_winter": 6, "little_winter_spring": 6,
+		"little_summer_autumn": 3, "little_summer_autumn_2": 4, "little_autumn": 5, "little_winter": 6,
 		
 		"big_spring": 0, "big_spring_summer": 1, "big_summer": 2,
-		"big_summer_autumn": 3, "big_autumn": 4, "big_autumn_winter": 5,
-		"big_winter": 6, "big_winter_spring": 6,
+		"big_summer_autumn": 3, "big_summer_autumn_2": 4, "big_autumn": 5, "big_winter": 6,
 		
 		"seed_chance": 0.5,
 		"min_health": 3, "max_health": 6,
@@ -24,12 +22,10 @@ var TREE_VARIANTS = [
 		"stump_frame": 7,
 		
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
-		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
-		"little_winter": 6, "little_winter_spring": 6,
+		"little_summer_autumn": 3, "little_summer_autumn_2": 4, "little_autumn": 5, "little_winter": 6,
 		
 		"big_spring": 0, "big_spring_summer": 1, "big_summer": 2,
-		"big_summer_autumn": 3, "big_autumn": 4, "big_autumn_winter": 5,
-		"big_winter": 6, "big_winter_spring": 6,
+		"big_summer_autumn": 3, "big_summer_autumn_2": 4, "big_autumn": 5, "big_winter": 6,
 		
 		"seed_chance": 0.5,
 		"min_health": 4, "max_health": 6,
@@ -38,15 +34,13 @@ var TREE_VARIANTS = [
 	{
 		"name": "Birch Tree",
 		"seed_frame": 7,
-		"stump_frame": 20,
+		"stump_frame": 7,
 		
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 2,
-		"little_summer_autumn": 3, "little_autumn": 4, "little_autumn_winter": 5,
-		"little_winter": 6, "little_winter_spring": 6,
+		"little_summer_autumn": 3, "little_summer_autumn_2": 4, "little_autumn": 5, "little_winter": 6,
 		
 		"big_spring": 0, "big_spring_summer": 1, "big_summer": 2,
-		"big_summer_autumn": 3, "big_autumn": 4, "big_autumn_winter": 5,
-		"big_winter": 6, "big_winter_spring": 6,
+		"big_summer_autumn": 3, "big_summer_autumn_2": 4, "big_autumn": 5, "big_winter": 6,
 		
 		"seed_chance": 0.2,
 		"min_health": 1, "max_health": 3,
@@ -58,12 +52,10 @@ var TREE_VARIANTS = [
 		"stump_frame": 3,
 		
 		"little_spring": 0, "little_spring_summer": 1, "little_summer": 1,
-		"little_summer_autumn": 1, "little_autumn": 1, "little_autumn_winter": 1,
-		"little_winter": 2, "little_winter_spring": 2,
+		"little_summer_autumn": 1, "little_summer_autumn_2": 1, "little_autumn": 1, "little_winter": 2,
 		
 		"big_spring": 0, "big_spring_summer": 1, "big_summer": 1,
-		"big_summer_autumn": 1, "big_autumn": 1, "big_autumn_winter": 1,
-		"big_winter": 2, "big_winter_spring": 2,
+		"big_summer_autumn": 1, "big_summer_autumn_2": 1, "big_autumn": 1, "big_winter": 2,
 		
 		"seed_chance": 0.1,
 		"min_health": 1, "max_health": 2,
@@ -93,12 +85,8 @@ var sfx_fall: AudioStream
 const PICK_UP_SCENE = preload("res://Item/pick_up/pick_up.tscn")
 
 func _ready():
-	# Crucial: Add to group so Main.gd can find us for distance checks
 	add_to_group("trees")
-	
-	# Force Z-Index to be absolute so it ignores parent ordering
 	z_as_relative = false
-	
 	default_layer = collision_layer 
 	visual_transition_window = randi_range(2, 4)
 	
@@ -112,7 +100,7 @@ func _ready():
 		active_variant = TREE_VARIANTS.pick_random()
 		randomize_stats()
 	
-	# Update immediately to fix 1-frame glitches
+	await get_tree().process_frame
 	update_visuals()
 
 func setup_as_seed():
@@ -158,9 +146,9 @@ func update_visuals():
 	if is_stump:
 		sprite_root.play("big_cycle")
 		sprite_root.stop()
-		sprite_root.frame = active_variant.get("stump_frame", 20)
+		sprite_root.frame = active_variant.get("stump_frame", 9)
 		collision_layer = default_layer
-		z_index = 3 # Stumps obstruct player (layer 1)
+		z_index = 10 
 		return
 
 	if current_stage == GrowthStage.SEED:
@@ -172,14 +160,12 @@ func update_visuals():
 		else:
 			sprite_root.frame = 7
 		
-		# Seeds have no collision so you can walk over them
 		collision_layer = 0 
-		z_index = 0 # Seeds are flat on ground (layer 0)
+		z_index = 0 
 		return
 
-	# Sapling and Mature
 	collision_layer = default_layer 
-	z_index = 3 # Trees must cover player (layer 1)
+	z_index = 10 
 	
 	var prefix = "big_"
 	var anim_name = "big_cycle"
@@ -209,12 +195,11 @@ func get_season_suffix() -> String:
 	
 	if m == 6 and abs(d - 20) <= visual_transition_window: 
 		return "spring_summer"
-	elif m == 9 and abs(d - 21) <= visual_transition_window: 
-		return "summer_autumn"
-	elif m == 12 and abs(d - 20) <= visual_transition_window:
-		return "autumn_winter"
-	elif m == 3 and abs(d - 20) <= visual_transition_window:
-		return "winter_spring"
+	elif m == 9 and abs(d - 21) <= visual_transition_window:
+		if d < 21:
+			return "summer_autumn"
+		else:
+			return "summer_autumn_2"
 	
 	return get_fallback_suffix()
 
@@ -279,7 +264,7 @@ func fall_tree():
 		
 		sprite_root.play("big_cycle")
 		sprite_root.stop()
-		sprite_root.frame = active_variant.get("stump_frame", 20)
+		sprite_root.frame = active_variant.get("stump_frame", 9)
 		
 		var t = create_tween()
 		t.tween_property(fall_visual, "modulate:a", 0.0, 3.0)
@@ -290,7 +275,7 @@ func fall_tree():
 		is_falling = false
 		health = 2
 		collision_layer = default_layer
-		z_index = 3
+		z_index = 10 
 
 func spawn_drops(item, count):
 	if not item or count <= 0: return

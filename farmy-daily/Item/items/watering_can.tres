@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://btj6s70bg5d4x"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_s6qjo"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_s6qjo"]
+load_path = "res://.godot/imported/misc.png-352de9170a47a6dfa6d631341b2d38da.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3cq2o"]
+atlas = SubResource("CompressedTexture2D_s6qjo")
+region = Rect2(96, 16, 16, 16)
+
+[resource]
+script = ExtResource("1_s6qjo")
+name = "Watering Can"
+description = "WOOOOSHH"
+texture = SubResource("AtlasTexture_3cq2o")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

@@ -1,7 +1,7 @@
 [gd_scene load_steps=147 format=3 uid="uid://buts4ehxirrur"]
 
 [ext_resource type="Script" uid="uid://b45dnx5l0a4v" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.gd" id="1_ktniu"]
-[ext_resource type="Resource" uid="uid://b5f5s6ce6wjb1" path="res://test_inv.tres" id="2_iwuv1"]
+[ext_resource type="Resource" uid="uid://b5f5s6ce6wjb1" path="res://player_inv.tres" id="2_iwuv1"]
 [ext_resource type="Texture2D" uid="uid://ctwb7q8hv4qvq" path="res://sprites/idle.png" id="2_pbnk1"]
 [ext_resource type="Texture2D" uid="uid://p6tsa81ckci1" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Farming/axe.png" id="3_6ecp4"]
 [ext_resource type="Texture2D" uid="uid://c7anbudvl0alj" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Farming/hoe.png" id="3_hnowp"]
@@ -1003,9 +1003,9 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_svj5y")
 }],
-"loop": true,
+"loop": false,
 "name": &"watering_down",
-"speed": 9.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1026,9 +1026,9 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_pdko7")
 }],
-"loop": true,
+"loop": false,
 "name": &"watering_right",
-"speed": 9.0
+"speed": 7.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1049,9 +1049,9 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_tlwc5")
 }],
-"loop": true,
+"loop": false,
 "name": &"watering_up",
-"speed": 9.0
+"speed": 7.0
 }]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_im8y0"]
@@ -1062,7 +1062,7 @@ height = 14.0
 radius = 15.0
 
 [node name="Player" type="CharacterBody2D"]
-z_index = 1
+z_index = 2
 collision_layer = 2
 collision_mask = 5
 script = ExtResource("1_ktniu")
@@ -1072,7 +1072,7 @@ inventory_data = ExtResource("2_iwuv1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"pickaxe_up"
+animation = &"watering_up"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 0)

@@ -6,14 +6,14 @@ signal season_changed(season: Seasons)
 
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
-const REAL_SECONDS_PER_GAME_DAY: float = 5.0 
+const REAL_SECONDS_PER_GAME_DAY: float = 1200.0
 const GAME_SECONDS_PER_DAY: float = 86400.0 
 
 const TIME_SCALE: float = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY 
 
 var current_time_seconds: float = 0.0
-var current_day: int = 20
-var current_month: int = 4
+var current_day: int = 25
+var current_month: int = 12
 var current_year: int = 1
 var current_season: Seasons = Seasons.SPRING
 

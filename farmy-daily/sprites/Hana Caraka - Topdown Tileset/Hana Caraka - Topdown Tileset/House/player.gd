@@ -22,6 +22,7 @@ var sfx_hit_tree: AudioStream
 var sfx_hoe: AudioStream 
 var sfx_swing: AudioStream 
 var sfx_seeds: AudioStream 
+var sfx_water: AudioStream 
 
 var last_direction := Vector2.DOWN
 signal toggle_inventory()
@@ -43,10 +44,7 @@ var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE = 40.0 
 
 func _ready():
-	# Explicitly set Player Z-Index to 1.
-	# Trees are Z-Index 3 (or 0 for seeds). 3 > 1, so Trees cover Player.
 	z_index = 1
-	
 	agent.target_desired_distance = stop_distance
 	agent.path_desired_distance = 2.0
 	cam.enabled = true
@@ -64,6 +62,7 @@ func load_sounds():
 	if FileAccess.file_exists("res://sounds/hoe.mp3"): sfx_hoe = load("res://sounds/hoe.mp3")
 	if FileAccess.file_exists("res://sounds/swing.mp3"): sfx_swing = load("res://sounds/swing.mp3")
 	if FileAccess.file_exists("res://sounds/seeds.mp3"): sfx_seeds = load("res://sounds/seeds.mp3")
+	if FileAccess.file_exists("res://sounds/water.mp3"): sfx_water = load("res://sounds/water.mp3")
 
 func reset_states():
 	is_moving_to_interact = false
@@ -105,7 +104,7 @@ func _unhandled_input(event):
 
 func _physics_process(_delta):
 	if is_movement_locked and not sprite.is_playing():
-		is_movement_locked = false
+		pass 
 		
 	if double_tap_timer > 0.0:
 		double_tap_timer -= _delta
@@ -195,6 +194,16 @@ func _on_PlayerHoldTimer_timeout():
 					start_move_interact(mouse_pos, "hoe")
 				return
 			
+			elif equipped_item.name == "Watering Can":
+				if get_parent().has_method("is_tile_waterable"):
+					if not get_parent().is_tile_waterable(mouse_pos): return
+				
+				if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
+					perform_tool_action(mouse_pos, "watering")
+				else:
+					start_move_interact(mouse_pos, "watering")
+				return
+			
 			elif equipped_item.name == "Axe":
 				var space_state = get_world_2d().direct_space_state
 				var query = PhysicsPointQueryParameters2D.new()
@@ -214,6 +223,7 @@ func _on_PlayerHoldTimer_timeout():
 				return
 
 			elif equipped_item.name == "Tree Seed" or equipped_item.name == "Tree Seeds":
+				# Fix planting check
 				if get_parent().has_method("can_plant_seed"):
 					if not get_parent().can_plant_seed(mouse_pos):
 						return
@@ -304,24 +314,35 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	else:
 		anim_name += "down" if last_direction.y > 0 else "up"
 	
-	if tool_name != "planting":
-		if sfx_swing and audio_player:
-			audio_player.stream = sfx_swing
+	# START AUDIO
+	if tool_name == "watering":
+		if sfx_water and audio_player:
+			audio_player.stream = sfx_water
 			audio_player.play()
+	elif tool_name != "planting" and sfx_swing and audio_player:
+		audio_player.stream = sfx_swing
+		audio_player.play()
 	
-	sprite.play(anim_name)
+	var has_anim = sprite.sprite_frames.has_animation(anim_name)
+	if has_anim:
+		sprite.play(anim_name)
+		# Wait for 'hit' frame
+		while sprite.is_playing() and sprite.frame < 1:
+			await get_tree().process_frame
+	else:
+		# Fallback delay so audio plays
+		await get_tree().create_timer(0.3).timeout
 	
-	while sprite.is_playing() and sprite.frame < 1:
-		await get_tree().process_frame
-	
+	# DO ACTION
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
 		if sfx_hoe and impact_audio_player:
 			impact_audio_player.stream = sfx_hoe
 			impact_audio_player.play()
 		get_parent().use_hoe(target_pos)
+		if impact_audio_player.playing: await impact_audio_player.finished
 		
-		if impact_audio_player.playing:
-			await impact_audio_player.finished
+	elif tool_name == "watering" and get_parent().has_method("use_water"):
+		get_parent().use_water(target_pos)
 		
 	elif tool_name == "planting":
 		spawn_tree(target_pos)
@@ -330,8 +351,15 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 			audio_player.play()
 			get_tree().create_timer(0.5).timeout.connect(func(): if audio_player.stream == sfx_seeds: audio_player.stop())
 	
-	if sprite.is_playing():
+	if has_anim and sprite.is_playing():
 		await sprite.animation_finished
+	elif tool_name == "watering":
+		# Extra delay for watering sound if no animation
+		await get_tree().create_timer(0.5).timeout
+
+	# STOP WATER AUDIO
+	if tool_name == "watering" and audio_player:
+		audio_player.stop()
 
 	sprite.flip_h = false
 	is_movement_locked = false
@@ -350,13 +378,13 @@ func spawn_tree(pos: Vector2):
 
 	var snapped_pos = pos
 	if get_parent().has_method("get_tile_center_position"):
+		# This will now be perfectly aligned with the tile visual
 		snapped_pos = get_parent().get_tile_center_position(pos)
 
 	var random_tree_scene = TREE_SCENES.pick_random()
 	var tree = random_tree_scene.instantiate()
 	tree.global_position = snapped_pos
 
-	# Setup as seed BEFORE adding to tree to ensure z-index and collision layers are correct
 	var script_node = find_tree_script(tree)
 	if script_node:
 		script_node.setup_as_seed()
