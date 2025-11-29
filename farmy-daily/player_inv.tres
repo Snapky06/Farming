@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="InventoryData" load_steps=14 format=3 uid="uid://b5f5s6ce6wjb1"]
+[gd_resource type="Resource" script_class="InventoryData" load_steps=16 format=3 uid="uid://b5f5s6ce6wjb1"]
 
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="1_rrnhb"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="2_3c1vy"]
 [ext_resource type="Resource" uid="uid://bsk7du6nma7c" path="res://Item/items/hoe.tres" id="3_2vbhl"]
 [ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/tree_seeds.tres" id="4_1vso5"]
 [ext_resource type="Resource" uid="uid://btj6s70bg5d4x" path="res://Item/items/watering_can.tres" id="5_8wx64"]
-[ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/carrot_seeds.tres" id="6_3c1vy"]
+[ext_resource type="Resource" uid="uid://cf8km4rbggga7" path="res://Item/items/scythe.tres" id="6_3c1vy"]
 [ext_resource type="Resource" uid="uid://bbxj2ccnl0gen" path="res://Item/items/axe.tres" id="6_dpcxh"]
+[ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/carrot_seeds.tres" id="8_2vbhl"]
 
 [sub_resource type="Resource" id="Resource_g5g3k"]
 script = ExtResource("2_3c1vy")
@@ -30,7 +31,7 @@ item_data = ExtResource("4_1vso5")
 quantity = 5
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
-[sub_resource type="Resource" id="Resource_2vbhl"]
+[sub_resource type="Resource" id="Resource_1vso5"]
 script = ExtResource("2_3c1vy")
 item_data = ExtResource("6_3c1vy")
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
@@ -40,7 +41,12 @@ script = ExtResource("2_3c1vy")
 item_data = ExtResource("6_dpcxh")
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
+[sub_resource type="Resource" id="Resource_8wx64"]
+script = ExtResource("2_3c1vy")
+item_data = ExtResource("8_2vbhl")
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
 [resource]
 script = ExtResource("1_rrnhb")
-slot_datas = Array[ExtResource("2_3c1vy")]([SubResource("Resource_g5g3k"), SubResource("Resource_nb6ky"), SubResource("Resource_rnj07"), SubResource("Resource_eyyk3"), SubResource("Resource_2vbhl"), null, SubResource("Resource_ghyoh"), null, null, null, null, null, null, null, null, null, null, null])
+slot_datas = Array[ExtResource("2_3c1vy")]([SubResource("Resource_g5g3k"), SubResource("Resource_nb6ky"), SubResource("Resource_rnj07"), SubResource("Resource_eyyk3"), SubResource("Resource_1vso5"), SubResource("Resource_ghyoh"), SubResource("Resource_8wx64"), null, null, null, null, null, null, null, null, null, null, null])
 metadata/_custom_type_script = "uid://b3nysasbdcim0"

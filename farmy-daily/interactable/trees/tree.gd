@@ -76,6 +76,7 @@ var health: int = 3
 var is_stump: bool = false
 var is_falling: bool = false 
 var default_layer: int = 1 
+
 var visual_transition_window: int = 3 
 
 var sfx_leaves: AudioStream
@@ -192,6 +193,7 @@ func get_season_suffix() -> String:
 	var m = TimeManager.current_month
 	var d = TimeManager.current_day
 	
+	# Explicit date checks for synchronization
 	if m == 6 and abs(d - 20) <= visual_transition_window: 
 		return "spring_summer"
 	elif m == 9 and abs(d - 21) <= visual_transition_window:

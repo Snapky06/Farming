@@ -1214,7 +1214,7 @@ inventory_data = ExtResource("2_iwuv1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"scythe_down"
+animation = &"scythe_up"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 0)
@@ -1229,6 +1229,7 @@ collision_mask = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="InteractionComponent"]
 shape = SubResource("CapsuleShape2D_pbnk1")
+debug_color = Color(0.78130084, 0.39370543, 0.5057586, 0.41960785)
 
 [node name="PlayerHoldTimer" type="Timer" parent="."]
 wait_time = 0.8

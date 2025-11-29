@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://cf8km4rbggga7"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_awj1s"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_awj1s"]
+load_path = "res://.godot/imported/misc.png-352de9170a47a6dfa6d631341b2d38da.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3s3x7"]
+atlas = SubResource("CompressedTexture2D_awj1s")
+region = Rect2(112, 16, 16, 16)
+
+[resource]
+script = ExtResource("1_awj1s")
+name = "Scythe"
+description = "Used To Farm Crops"
+texture = SubResource("AtlasTexture_3s3x7")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

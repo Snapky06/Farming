@@ -41,6 +41,7 @@ var is_movement_locked: bool = false
 
 var pending_tool_action_pos: Vector2 = Vector2.ZERO
 var pending_tool_name: String = "" 
+
 var pending_target_body: Node2D = null
 var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE = 40.0 
@@ -205,6 +206,26 @@ func _on_PlayerHoldTimer_timeout():
 				else:
 					start_move_interact(mouse_pos, "watering")
 				return
+
+			elif equipped_item.name == "Sickle" or equipped_item.name == "Scythe":
+				var space_state = get_world_2d().direct_space_state
+				var query = PhysicsPointQueryParameters2D.new()
+				query.position = mouse_pos
+				query.collide_with_bodies = true
+				query.collide_with_areas = true
+				var results = space_state.intersect_point(query)
+				
+				for result in results:
+					var collider = result.collider
+					if collider.has_method("harvest"):
+						# Only harvest if fully grown
+						if "current_stage" in collider and "max_stage" in collider:
+							if collider.current_stage >= collider.max_stage:
+								if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
+									perform_tool_action(mouse_pos, "sickle")
+								else:
+									start_move_interact(mouse_pos, "sickle")
+								return
 			
 			elif equipped_item.name == "Axe":
 				var space_state = get_world_2d().direct_space_state
@@ -354,8 +375,33 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		get_parent().use_hoe(target_pos)
 		if impact_audio_player.playing: await impact_audio_player.finished
 		
-	elif tool_name == "watering" and get_parent().has_method("use_water"):
-		get_parent().use_water(target_pos)
+	elif tool_name == "watering":
+		var space_state = get_world_2d().direct_space_state
+		var query = PhysicsPointQueryParameters2D.new()
+		query.position = target_pos
+		query.collide_with_bodies = true
+		query.collide_with_areas = true
+		var results = space_state.intersect_point(query)
+		for result in results:
+			if result.collider.has_method("water"):
+				result.collider.water()
+
+		if get_parent().has_method("use_water"):
+			get_parent().use_water(target_pos)
+	
+	elif tool_name == "sickle":
+		var space_state = get_world_2d().direct_space_state
+		var query = PhysicsPointQueryParameters2D.new()
+		query.position = target_pos
+		query.collide_with_bodies = true
+		query.collide_with_areas = true
+		var results = space_state.intersect_point(query)
+		for result in results:
+			if result.collider.has_method("harvest"):
+				# Double check it is ready to harvest
+				if "current_stage" in result.collider and "max_stage" in result.collider:
+					if result.collider.current_stage >= result.collider.max_stage:
+						result.collider.harvest()
 		
 	elif tool_name == "planting":
 		spawn_tree(target_pos)
@@ -419,9 +465,6 @@ func spawn_crop(pos: Vector2):
 		var snap_pos = get_parent().get_tile_center_position(pos)
 		var crop = CROP_SCENE.instantiate()
 		crop.global_position = snap_pos
-		
-		if crop.has_method("setup"):
-			crop.setup(equipped_item)
 		
 		get_parent().add_child(crop)
 		consume_equipped_item()
