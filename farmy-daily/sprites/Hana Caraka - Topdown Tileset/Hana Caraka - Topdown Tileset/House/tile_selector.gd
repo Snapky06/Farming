@@ -34,6 +34,20 @@ func _process(_delta):
 		elif n == "Watering Can":
 			if get_parent().has_method("is_tile_waterable"):
 				is_valid = get_parent().is_tile_waterable(target_global_pos)
+		
+		elif n == "Scythe":
+			var space_state = ground_layer.get_world_2d().direct_space_state
+			var query = PhysicsPointQueryParameters2D.new()
+			query.position = target_global_pos
+			query.collide_with_bodies = true
+			query.collide_with_areas = true
+			var results = space_state.intersect_point(query)
+			for result in results:
+				var c = result.collider
+				if c.has_method("harvest") and "current_stage" in c and "max_stage" in c:
+					if c.current_stage >= c.max_stage:
+						is_valid = true
+						break
 				
 		elif n == "Tree Seed" or n == "Tree Seeds":
 			if get_parent().has_method("can_plant_seed"):

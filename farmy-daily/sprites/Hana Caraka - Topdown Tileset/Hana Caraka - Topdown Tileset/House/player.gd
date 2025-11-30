@@ -207,7 +207,7 @@ func _on_PlayerHoldTimer_timeout():
 					start_move_interact(mouse_pos, "watering")
 				return
 
-			elif equipped_item.name == "Sickle" or equipped_item.name == "Scythe":
+			elif equipped_item.name == "Scythe":
 				var space_state = get_world_2d().direct_space_state
 				var query = PhysicsPointQueryParameters2D.new()
 				query.position = mouse_pos
@@ -218,13 +218,12 @@ func _on_PlayerHoldTimer_timeout():
 				for result in results:
 					var collider = result.collider
 					if collider.has_method("harvest"):
-						# Only harvest if fully grown
 						if "current_stage" in collider and "max_stage" in collider:
 							if collider.current_stage >= collider.max_stage:
 								if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
-									perform_tool_action(mouse_pos, "sickle")
+									perform_tool_action(mouse_pos, "scythe")
 								else:
-									start_move_interact(mouse_pos, "sickle")
+									start_move_interact(mouse_pos, "scythe")
 								return
 			
 			elif equipped_item.name == "Axe":
@@ -356,6 +355,10 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		if sfx_water and audio_player:
 			audio_player.stream = sfx_water
 			audio_player.play()
+	elif tool_name == "scythe":
+		if sfx_swing and audio_player:
+			audio_player.stream = sfx_swing
+			audio_player.play()
 	elif tool_name != "planting" and tool_name != "planting_crop" and sfx_swing and audio_player:
 		audio_player.stream = sfx_swing
 		audio_player.play()
@@ -389,7 +392,7 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		if get_parent().has_method("use_water"):
 			get_parent().use_water(target_pos)
 	
-	elif tool_name == "sickle":
+	elif tool_name == "scythe":
 		var space_state = get_world_2d().direct_space_state
 		var query = PhysicsPointQueryParameters2D.new()
 		query.position = target_pos
@@ -398,7 +401,6 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		var results = space_state.intersect_point(query)
 		for result in results:
 			if result.collider.has_method("harvest"):
-				# Double check it is ready to harvest
 				if "current_stage" in result.collider and "max_stage" in result.collider:
 					if result.collider.current_stage >= result.collider.max_stage:
 						result.collider.harvest()

@@ -57,6 +57,7 @@ hours_to_grow_per_stage = 1
 seed_data = ExtResource("3_xo7t0")
 harvest_data = ExtResource("4_7ob6o")
 wither_days_limit = 3
+max_drop_quantity = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(0, 4)

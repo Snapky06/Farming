@@ -5,6 +5,8 @@ extends StaticBody2D
 @export var seed_data: Resource
 @export var harvest_data: Resource
 @export var wither_days_limit: int = 2
+@export var min_drop_quantity: int = 1
+@export var max_drop_quantity: int = 3
 
 @onready var animated_sprite = get_parent()
 @onready var time_manager = get_node("/root/TimeManager")
@@ -95,13 +97,25 @@ func spawn_harvest_pickup():
 		var slot_script = load("res://Inventory/slot_data.gd")
 		var new_slot_data = slot_script.new()
 		new_slot_data.item_data = harvest_data
-		new_slot_data.quantity = 1
+		
+		var range_size = max_drop_quantity - min_drop_quantity + 1
+		var extra = floor(abs(randf() - randf()) * range_size)
+		new_slot_data.quantity = min_drop_quantity + extra
 		
 		pickup_instance.slot_data = new_slot_data
-		pickup_instance.global_position = global_position + Vector2(0, -10)
+		var random_offset = Vector2(randf_range(-20, 20), randf_range(-20, 20))
+		pickup_instance.global_position = global_position + Vector2(0, -10) + random_offset
 		
 		get_tree().current_scene.add_child(pickup_instance)
 
 func update_sprite_frame():
 	if animated_sprite and "frame" in animated_sprite:
 		animated_sprite.frame = current_stage
+	
+	# Allow walking over crops unless they are fully grown
+	# Layer 1 = World/Blocking (Player collides)
+	# Layer 2 = Interaction (Player walks through, Tools detect)
+	if current_stage >= max_stage:
+		collision_layer = 1 
+	else:
+		collision_layer = 2

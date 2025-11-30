@@ -88,7 +88,12 @@ const PICK_UP_SCENE = preload("res://Item/pick_up/pick_up.tscn")
 func _ready():
 	add_to_group("trees")
 	z_as_relative = false
-	default_layer = collision_layer 
+	
+	# Only capture collision layer if it's not 0 (which happens if setup_as_seed ran first)
+	if collision_layer > 0:
+		default_layer = collision_layer 
+	else:
+		default_layer = 1
 	
 	if TimeManager:
 		TimeManager.season_changed.connect(_on_update_visuals)
@@ -164,6 +169,7 @@ func update_visuals():
 		z_index = 0 
 		return
 
+	# Sapling and Mature should block player
 	collision_layer = default_layer 
 	z_index = 10 
 	
