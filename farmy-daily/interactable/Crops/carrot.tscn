@@ -1,14 +1,9 @@
-[gd_scene load_steps=12 format=3 uid="uid://cdpchj1nyma6"]
+[gd_scene load_steps=10 format=3 uid="uid://cdpchj1nyma6"]
 
 [ext_resource type="Texture2D" uid="uid://4jw33mgtlhvl" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/carrot.png" id="1_00hq4"]
-[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="1_ol8u0"]
 [ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_00hq4"]
 [ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/carrot_seeds.tres" id="3_xo7t0"]
 [ext_resource type="Resource" uid="uid://dm1kh7ew5qpfv" path="res://Item/items/grows/carrot.tres" id="4_7ob6o"]
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_p2cs1"]
-atlas = ExtResource("1_ol8u0")
-region = Rect2(80, 0, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bb4cb"]
 atlas = ExtResource("1_00hq4")
@@ -25,9 +20,6 @@ region = Rect2(64, 0, 16, 32)
 [sub_resource type="SpriteFrames" id="SpriteFrames_ee66p"]
 animations = [{
 "frames": [{
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_p2cs1")
-}, {
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_bb4cb")
 }, {

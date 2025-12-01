@@ -41,12 +41,13 @@ script = ExtResource("2_3c1vy")
 item_data = ExtResource("6_dpcxh")
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
-[sub_resource type="Resource" id="Resource_8wx64"]
+[sub_resource type="Resource" id="Resource_2vbhl"]
 script = ExtResource("2_3c1vy")
 item_data = ExtResource("8_2vbhl")
+quantity = 5
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
 [resource]
 script = ExtResource("1_rrnhb")
-slot_datas = Array[ExtResource("2_3c1vy")]([SubResource("Resource_g5g3k"), SubResource("Resource_nb6ky"), SubResource("Resource_rnj07"), SubResource("Resource_eyyk3"), SubResource("Resource_1vso5"), SubResource("Resource_ghyoh"), SubResource("Resource_8wx64"), null, null, null, null, null, null, null, null, null, null, null])
+slot_datas = Array[ExtResource("2_3c1vy")]([SubResource("Resource_g5g3k"), SubResource("Resource_nb6ky"), SubResource("Resource_rnj07"), SubResource("Resource_eyyk3"), SubResource("Resource_1vso5"), SubResource("Resource_ghyoh"), SubResource("Resource_2vbhl"), null, null, null, null, null, null, null, null, null, null, null])
 metadata/_custom_type_script = "uid://b3nysasbdcim0"
