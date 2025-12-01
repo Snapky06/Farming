@@ -2,8 +2,8 @@
 
 [ext_resource type="Texture2D" uid="uid://4jw33mgtlhvl" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/carrot.png" id="1_00hq4"]
 [ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_00hq4"]
-[ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/carrot_seeds.tres" id="3_xo7t0"]
-[ext_resource type="Resource" uid="uid://dm1kh7ew5qpfv" path="res://Item/items/grows/carrot.tres" id="4_7ob6o"]
+[ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/seeds/carrot_seeds.tres" id="3_xo7t0"]
+[ext_resource type="Resource" uid="uid://dm1kh7ew5qpfv" path="res://Item/items/grows/drops/carrot.tres" id="4_7ob6o"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bb4cb"]
 atlas = ExtResource("1_00hq4")
@@ -50,7 +50,6 @@ hours_to_grow_per_stage = 1
 seed_data = ExtResource("3_xo7t0")
 harvest_data = ExtResource("4_7ob6o")
 wither_days_limit = 3
-max_drop_quantity = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 shape = SubResource("CircleShape2D_syrmn")

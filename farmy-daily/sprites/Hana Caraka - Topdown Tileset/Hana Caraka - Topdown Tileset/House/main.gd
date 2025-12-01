@@ -97,7 +97,8 @@ func refresh_tile_selector():
 
 	if player.equipped_item:
 		var n = player.equipped_item.name
-		if n == "Hoe" or n == "Tree Seed" or n == "Tree Seeds" or n == "Watering Can" or "Seeds" in n:
+		# Added "Scythe" here so the selector stays active
+		if n == "Hoe" or n == "Scythe" or n == "Tree Seed" or n == "Tree Seeds" or n == "Watering Can" or "Seeds" in n:
 			tile_selector.visible = true
 			
 			var mouse_pos = get_global_mouse_position()
@@ -305,7 +306,6 @@ func use_water(global_pos: Vector2) -> void:
 		# 2. FIND AND WATER CROP (Fixed Range)
 		var crops = get_tree().get_nodes_in_group("crops")
 		for crop in crops:
-			# Increased range to 20.0 to ensure detection even if visually offset
 			if crop.global_position.distance_to(tile_center) < 20.0:
 				if crop.has_method("water"):
 					crop.water()

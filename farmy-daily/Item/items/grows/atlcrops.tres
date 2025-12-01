@@ -1,0 +1,8 @@
+[gd_resource type="AtlasTexture" load_steps=2 format=3 uid="uid://bwnuhkb66dput"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvcjf"]
+load_path = "res://.godot/imported/crops - all.png-352219a4ec2d14673a32676f4b661a36.ctex"
+
+[resource]
+atlas = SubResource("CompressedTexture2D_yvcjf")
+region = Rect2(304, 256, 0, 0)

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://0c5e3n8j031k"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_vrgn1"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvcjf"]
+load_path = "res://.godot/imported/crops - all.png-352219a4ec2d14673a32676f4b661a36.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vrgn1"]
+atlas = SubResource("CompressedTexture2D_yvcjf")
+region = Rect2(144, 176, 16, 16)
+
+[resource]
+script = ExtResource("1_vrgn1")
+name = "Watermelon Seeds"
+description = "Be Careful Of Where You Grow This"
+stackable = true
+texture = SubResource("AtlasTexture_vrgn1")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

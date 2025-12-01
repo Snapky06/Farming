@@ -41,7 +41,6 @@ var is_movement_locked: bool = false
 
 var pending_tool_action_pos: Vector2 = Vector2.ZERO
 var pending_tool_name: String = "" 
-
 var pending_target_body: Node2D = null
 var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE = 40.0 
@@ -351,34 +350,29 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	else:
 		anim_name += "down" if last_direction.y > 0 else "up"
 	
-	if tool_name == "watering":
-		if sfx_water and audio_player:
-			audio_player.stream = sfx_water
-			audio_player.play()
-	elif tool_name == "scythe":
-		if sfx_swing and audio_player:
-			audio_player.stream = sfx_swing
-			audio_player.play()
-	elif tool_name != "planting" and tool_name != "planting_crop" and sfx_swing and audio_player:
-		audio_player.stream = sfx_swing
-		audio_player.play()
-	
+	# 1. Start Animation
 	var has_anim = sprite.sprite_frames.has_animation(anim_name)
 	if has_anim:
 		sprite.play(anim_name)
+		# Wait for the windup (e.g. frame 0) before "hitting"
 		while sprite.is_playing() and sprite.frame < 1:
 			await get_tree().process_frame
 	else:
-		await get_tree().create_timer(0.3).timeout
+		# Tiny fallback delay if no animation exists
+		await get_tree().create_timer(0.15).timeout
 	
+	# 2. Play Sync Sound & Execute Logic (At the point of "Hit")
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
 		if sfx_hoe and impact_audio_player:
 			impact_audio_player.stream = sfx_hoe
 			impact_audio_player.play()
 		get_parent().use_hoe(target_pos)
-		if impact_audio_player.playing: await impact_audio_player.finished
 		
 	elif tool_name == "watering":
+		if sfx_water and audio_player:
+			audio_player.stream = sfx_water
+			audio_player.play()
+			
 		var space_state = get_world_2d().direct_space_state
 		var query = PhysicsPointQueryParameters2D.new()
 		query.position = target_pos
@@ -393,6 +387,10 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 			get_parent().use_water(target_pos)
 	
 	elif tool_name == "scythe":
+		if sfx_swing and audio_player:
+			audio_player.stream = sfx_swing
+			audio_player.play()
+			
 		var space_state = get_world_2d().direct_space_state
 		var query = PhysicsPointQueryParameters2D.new()
 		query.position = target_pos
@@ -413,11 +411,10 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		spawn_crop(target_pos)
 		play_seed_sound()
 	
+	# 3. Finish Animation (No extra waits)
 	if has_anim and sprite.is_playing():
 		await sprite.animation_finished
-	elif tool_name == "watering":
-		await get_tree().create_timer(0.5).timeout
-
+	
 	if tool_name == "watering" and audio_player:
 		audio_player.stop()
 

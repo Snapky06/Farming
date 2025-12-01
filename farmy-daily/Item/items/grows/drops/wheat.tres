@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://d2lhu4rbr1til"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_bb7l7"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvcjf"]
+load_path = "res://.godot/imported/crops - all.png-352219a4ec2d14673a32676f4b661a36.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4x7cj"]
+atlas = SubResource("CompressedTexture2D_yvcjf")
+region = Rect2(32, 240, 16, 16)
+
+[resource]
+script = ExtResource("1_bb7l7")
+name = "Wheat"
+description = "You Could Make Bread Out Of This"
+stackable = true
+texture = SubResource("AtlasTexture_4x7cj")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

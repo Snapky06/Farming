@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://bpmwh0wt7y5vd"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_x86nl"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvcjf"]
+load_path = "res://.godot/imported/crops - all.png-352219a4ec2d14673a32676f4b661a36.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x86nl"]
+atlas = SubResource("CompressedTexture2D_yvcjf")
+region = Rect2(144, 80, 16, 16)
+
+[resource]
+script = ExtResource("1_x86nl")
+name = "Brown Onion Seeds"
+description = "This Grow Really Easily (That's Why They're So Disgusting)"
+stackable = true
+texture = SubResource("AtlasTexture_x86nl")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

@@ -2,12 +2,12 @@
 
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="1_rrnhb"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="2_3c1vy"]
-[ext_resource type="Resource" uid="uid://bsk7du6nma7c" path="res://Item/items/hoe.tres" id="3_2vbhl"]
+[ext_resource type="Resource" uid="uid://bsk7du6nma7c" path="res://Item/items/tools/hoe.tres" id="3_2vbhl"]
 [ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/tree_seeds.tres" id="4_1vso5"]
-[ext_resource type="Resource" uid="uid://btj6s70bg5d4x" path="res://Item/items/watering_can.tres" id="5_8wx64"]
-[ext_resource type="Resource" uid="uid://cf8km4rbggga7" path="res://Item/items/scythe.tres" id="6_3c1vy"]
-[ext_resource type="Resource" uid="uid://bbxj2ccnl0gen" path="res://Item/items/axe.tres" id="6_dpcxh"]
-[ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/carrot_seeds.tres" id="8_2vbhl"]
+[ext_resource type="Resource" uid="uid://btj6s70bg5d4x" path="res://Item/items/tools/watering_can.tres" id="5_8wx64"]
+[ext_resource type="Resource" uid="uid://cf8km4rbggga7" path="res://Item/items/tools/scythe.tres" id="6_3c1vy"]
+[ext_resource type="Resource" uid="uid://bbxj2ccnl0gen" path="res://Item/items/tools/axe.tres" id="6_dpcxh"]
+[ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/seeds/carrot_seeds.tres" id="8_2vbhl"]
 
 [sub_resource type="Resource" id="Resource_g5g3k"]
 script = ExtResource("2_3c1vy")

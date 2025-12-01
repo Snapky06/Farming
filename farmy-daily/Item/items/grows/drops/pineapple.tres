@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://cpmxhhrnvc53g"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_3eg5h"]
+[ext_resource type="Texture2D" uid="uid://dr87q5e3iqsr0" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/crops - all.png" id="2_rh1op"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_14upo"]
+atlas = ExtResource("2_rh1op")
+region = Rect2(160, 272, 16, 16)
+
+[resource]
+script = ExtResource("1_3eg5h")
+name = "Pineapple"
+description = "Very Tasty"
+stackable = true
+texture = SubResource("AtlasTexture_14upo")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=19 format=3 uid="uid://c07e6ix4x5gmy"]
+[gd_scene load_steps=21 format=3 uid="uid://c07e6ix4x5gmy"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_cu0x5"]
 [ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_4qu0l"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://bpfmoo7pgcvyl" path="res://Inventory/slot.tscn" id="6_imf8r"]
 [ext_resource type="PackedScene" uid="uid://cy1g05gn51fat" path="res://Inventory/hot_bar_inventory.tscn" id="7_8jbr7"]
 [ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="7_tuhlx"]
+[ext_resource type="Resource" uid="uid://big83umh4oiyk" path="res://Item/items/grows/seeds/potato_seeds.tres" id="8_nab82"]
 [ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="8_u04yj"]
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="9_b3dld"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="10_hr4ad"]
@@ -16,9 +17,15 @@
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="13_eimbc"]
 [ext_resource type="Script" uid="uid://bv42jjmia8tkp" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/tile_selector.gd" id="14_4qu0l"]
 
+[sub_resource type="Resource" id="Resource_imf8r"]
+script = ExtResource("10_hr4ad")
+item_data = ExtResource("8_nab82")
+quantity = 3
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
 [sub_resource type="Resource" id="Resource_cu0x5"]
 script = ExtResource("9_b3dld")
-slot_datas = Array[ExtResource("10_hr4ad")]([null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+slot_datas = Array[ExtResource("10_hr4ad")]([SubResource("Resource_imf8r"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
 metadata/_custom_type_script = "uid://b3nysasbdcim0"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tuhlx"]

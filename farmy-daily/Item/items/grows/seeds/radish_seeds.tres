@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://d0xjhmgc016n0"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_rqjfa"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvcjf"]
+load_path = "res://.godot/imported/crops - all.png-352219a4ec2d14673a32676f4b661a36.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rqjfa"]
+atlas = SubResource("CompressedTexture2D_yvcjf")
+region = Rect2(144, 16, 16, 16)
+
+[resource]
+script = ExtResource("1_rqjfa")
+name = "Radish Seeds"
+description = "Grown To Be Really Strong"
+stackable = true
+texture = SubResource("AtlasTexture_rqjfa")
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

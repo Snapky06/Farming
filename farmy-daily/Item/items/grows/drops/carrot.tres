@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://dm1kh7ew5qpfv"]
 
-[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_5001v"]
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_utd25"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_of16i"]
 load_path = "res://.godot/imported/carrot.png-82c143c42ae63f987d7acb6cbeef6515.ctex"
@@ -10,7 +10,7 @@ atlas = SubResource("CompressedTexture2D_of16i")
 region = Rect2(16, 16, 16, 16)
 
 [resource]
-script = ExtResource("1_5001v")
+script = ExtResource("1_utd25")
 name = "Carrot"
 description = "It Can Attract Bunnies And Give Good Sight"
 stackable = true
