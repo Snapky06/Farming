@@ -40,6 +40,7 @@ radius = 6.0
 [node name="Carrot" type="AnimatedSprite2D"]
 sprite_frames = SubResource("SpriteFrames_ee66p")
 animation = &"cycle"
+offset = Vector2(0, -7)
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 collision_layer = 4
@@ -52,5 +53,4 @@ wither_days_limit = 3
 max_drop_quantity = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
-position = Vector2(0, 4)
 shape = SubResource("CircleShape2D_syrmn")
