@@ -1,0 +1,30 @@
+[gd_scene load_steps=7 format=3 uid="uid://3ynhvm56eklt"]
+
+[ext_resource type="Script" uid="uid://d3ptdhk7gmqx4" path="res://interactable/pickables/pickable_item.gd" id="1_txewl"]
+[ext_resource type="Resource" uid="uid://clronqqu1fqig" path="res://Item/items/stones.tres" id="2_4ceow"]
+[ext_resource type="AudioStream" uid="uid://cqj3jpenpsr27" path="res://sounds/grab_stone.mp3" id="3_f27ht"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_u2u4o"]
+load_path = "res://.godot/imported/stone.png-7e9a81244f8efc0245e1ac0b38053fd0.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_opalk"]
+atlas = SubResource("CompressedTexture2D_u2u4o")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ket6q"]
+radius = 6.0
+
+[node name="leftlittlestone" type="Sprite2D"]
+scale = Vector2(0.7, 0.7)
+texture = SubResource("AtlasTexture_opalk")
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("1_txewl")
+item_to_pick_up = ExtResource("2_4ceow")
+pickup_sound = ExtResource("3_f27ht")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+visible = false
+shape = SubResource("CircleShape2D_ket6q")

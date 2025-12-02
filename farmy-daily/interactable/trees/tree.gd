@@ -277,7 +277,7 @@ func destroy_stump():
 func fall_tree():
 	if is_falling: return
 	is_falling = true
-	collision_layer = 0
+	# Removed collision disable here so stump stays solid
 	play_sound(sfx_fall)
 	
 	var wood_count = 3
@@ -290,7 +290,8 @@ func fall_tree():
 
 	if sprite_root:
 		var fall_visual = Sprite2D.new()
-		fall_visual.texture = sprite_root.sprite_frames.get_frame_texture(sprite_root.animation, sprite_root.frame)
+		if sprite_root.sprite_frames.has_animation(sprite_root.animation):
+			fall_visual.texture = sprite_root.sprite_frames.get_frame_texture(sprite_root.animation, sprite_root.frame)
 		fall_visual.global_position = sprite_root.global_position
 		fall_visual.offset = sprite_root.offset
 		fall_visual.z_index = 100
