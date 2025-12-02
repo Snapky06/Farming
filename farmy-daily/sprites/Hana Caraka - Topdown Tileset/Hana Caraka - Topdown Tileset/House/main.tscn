@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_qa1xu"]
 [ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="3_xyg4i"]
 [ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="4_2n1sq"]
-[ext_resource type="PackedScene" uid="uid://cawg1tq3uaqq7" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/backgrounds.tscn" id="4_qa1xu"]
+[ext_resource type="PackedScene" uid="uid://cawg1tq3uaqq7" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/first.tscn" id="4_qa1xu"]
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="5_3co0w"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="6_2gork"]
 [ext_resource type="Resource" uid="uid://big83umh4oiyk" path="res://Item/items/grows/seeds/potato_seeds.tres" id="7_uukw5"]

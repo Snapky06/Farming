@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://c07e6ix4x5gmy"]
-
-[ext_resource type="PackedScene" uid="uid://bt6yu66rx5g0l" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/start.tscn" id="1_istvf"]
-
-[node name="Game" instance=ExtResource("1_istvf")]
-
-[node name="TileSelector" parent="." index="7"]
-z_index = 1
