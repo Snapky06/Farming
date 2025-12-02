@@ -1,0 +1,70 @@
+[gd_scene load_steps=12 format=3 uid="uid://des4qtxi0hwf1"]
+
+[ext_resource type="Texture2D" uid="uid://dre7qy4gbsli4" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/pineapple.png" id="1_yt2ue"]
+[ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_dve0u"]
+[ext_resource type="Resource" uid="uid://cak4bbtrxhs3" path="res://Item/items/grows/seeds/pineapple_seeds.tres" id="3_dve0u"]
+[ext_resource type="Resource" uid="uid://cpmxhhrnvc53g" path="res://Item/items/grows/drops/pineapple.tres" id="4_m43gr"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k0og0"]
+atlas = ExtResource("1_yt2ue")
+region = Rect2(32, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_33mkc"]
+atlas = ExtResource("1_yt2ue")
+region = Rect2(48, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3tbgm"]
+atlas = ExtResource("1_yt2ue")
+region = Rect2(64, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_py5sm"]
+atlas = ExtResource("1_yt2ue")
+region = Rect2(80, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rbpnr"]
+atlas = ExtResource("1_yt2ue")
+region = Rect2(96, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ee66p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k0og0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_33mkc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3tbgm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_py5sm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rbpnr")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_syrmn"]
+radius = 6.0
+
+[node name="Pineapple" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_ee66p")
+animation = &"cycle"
+offset = Vector2(0, -7)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_dve0u")
+hours_to_grow_per_stage = 12
+seed_data = ExtResource("3_dve0u")
+harvest_data = ExtResource("4_m43gr")
+wither_days_limit = 5
+max_drop_quantity = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("CircleShape2D_syrmn")

@@ -15,4 +15,5 @@ name = "Cabbage Seeds"
 description = "Fast Growing And Strong Drops"
 stackable = true
 texture = SubResource("AtlasTexture_gxv1n")
+crop_scene_path = "uid://5qg2ay7v4d14"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

@@ -3,8 +3,7 @@ class_name ItemData
 
 @export var name: String = ""
 @export_multiline var description: String = ""
-@export var  stackable: bool = false
+@export var stackable: bool = false
 @export var texture: Texture
 
-func use(_target) -> void:
-	pass
+@export_file("*.tscn") var crop_scene_path: String

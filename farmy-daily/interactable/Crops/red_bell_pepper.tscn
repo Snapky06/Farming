@@ -1,0 +1,70 @@
+[gd_scene load_steps=12 format=3 uid="uid://c222jvsts3lr5"]
+
+[ext_resource type="Texture2D" uid="uid://dsgx5aqrlhgeb" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/bell pepper - red.png" id="1_8p8dq"]
+[ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_t6veh"]
+[ext_resource type="Resource" uid="uid://cn1lcltkfbeub" path="res://Item/items/grows/seeds/red_bell_pepper_seeds.tres" id="3_t6veh"]
+[ext_resource type="Resource" uid="uid://ce4ks5f30rk46" path="res://Item/items/grows/drops/red_bell_pepper.tres" id="4_8uxle"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3lgwx"]
+atlas = ExtResource("1_8p8dq")
+region = Rect2(32, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_apu3p"]
+atlas = ExtResource("1_8p8dq")
+region = Rect2(48, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_awamp"]
+atlas = ExtResource("1_8p8dq")
+region = Rect2(64, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h3os4"]
+atlas = ExtResource("1_8p8dq")
+region = Rect2(80, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4o7mv"]
+atlas = ExtResource("1_8p8dq")
+region = Rect2(96, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ee66p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3lgwx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_apu3p")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_awamp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h3os4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4o7mv")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_syrmn"]
+radius = 6.0
+
+[node name="Red Bellpepper" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_ee66p")
+animation = &"cycle"
+offset = Vector2(0, -7)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_t6veh")
+hours_to_grow_per_stage = 12
+seed_data = ExtResource("3_t6veh")
+harvest_data = ExtResource("4_8uxle")
+wither_days_limit = 3
+max_drop_quantity = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("CircleShape2D_syrmn")

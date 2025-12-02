@@ -46,10 +46,10 @@ offset = Vector2(0, -7)
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("2_nwb4j")
-hours_to_grow_per_stage = 2
+hours_to_grow_per_stage = 6
 seed_data = ExtResource("3_nwb4j")
 harvest_data = ExtResource("4_l16sy")
-wither_days_limit = 3
+wither_days_limit = 4
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 shape = SubResource("CircleShape2D_syrmn")

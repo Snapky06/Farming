@@ -1,0 +1,55 @@
+[gd_scene load_steps=10 format=3 uid="uid://n5m2ncng2wtq"]
+
+[ext_resource type="Texture2D" uid="uid://j31xvhbryk6w" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/onion.png" id="1_ec58d"]
+[ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_763tm"]
+[ext_resource type="Resource" uid="uid://bpmwh0wt7y5vd" path="res://Item/items/grows/seeds/brown_onion_seeds.tres" id="3_763tm"]
+[ext_resource type="Resource" uid="uid://cuan0kfrj8yuv" path="res://Item/items/grows/drops/brown_onion.tres" id="4_rm1ed"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j4qhl"]
+atlas = ExtResource("1_ec58d")
+region = Rect2(32, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_quqkq"]
+atlas = ExtResource("1_ec58d")
+region = Rect2(48, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h4gag"]
+atlas = ExtResource("1_ec58d")
+region = Rect2(64, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ee66p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j4qhl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_quqkq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h4gag")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_syrmn"]
+radius = 6.0
+
+[node name="Brown Onion" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_ee66p")
+animation = &"cycle"
+offset = Vector2(0, -7)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_763tm")
+hours_to_grow_per_stage = 6
+seed_data = ExtResource("3_763tm")
+harvest_data = ExtResource("4_rm1ed")
+wither_days_limit = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("CircleShape2D_syrmn")

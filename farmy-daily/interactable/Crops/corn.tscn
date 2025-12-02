@@ -1,0 +1,70 @@
+[gd_scene load_steps=12 format=3 uid="uid://djeffliy3phb"]
+
+[ext_resource type="Texture2D" uid="uid://cc6o8ylepyx16" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/corn.png" id="1_pkxqm"]
+[ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_yhn8l"]
+[ext_resource type="Resource" uid="uid://du6n0xx8qne15" path="res://Item/items/grows/seeds/corn_seeds.tres" id="3_yhn8l"]
+[ext_resource type="Resource" uid="uid://dgo4nykydsd04" path="res://Item/items/grows/drops/corn.tres" id="4_5bdow"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jelrn"]
+atlas = ExtResource("1_pkxqm")
+region = Rect2(32, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6cf7o"]
+atlas = ExtResource("1_pkxqm")
+region = Rect2(48, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pai70"]
+atlas = ExtResource("1_pkxqm")
+region = Rect2(64, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_na6xu"]
+atlas = ExtResource("1_pkxqm")
+region = Rect2(80, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p8usy"]
+atlas = ExtResource("1_pkxqm")
+region = Rect2(96, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ee66p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jelrn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6cf7o")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pai70")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_na6xu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p8usy")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_syrmn"]
+radius = 6.0
+
+[node name="Corn" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_ee66p")
+animation = &"cycle"
+offset = Vector2(0, -7)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_yhn8l")
+hours_to_grow_per_stage = 6
+seed_data = ExtResource("3_yhn8l")
+harvest_data = ExtResource("4_5bdow")
+wither_days_limit = 4
+max_drop_quantity = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("CircleShape2D_syrmn")

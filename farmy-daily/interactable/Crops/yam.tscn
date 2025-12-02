@@ -1,0 +1,56 @@
+[gd_scene load_steps=10 format=3 uid="uid://bxyesulbvsd5x"]
+
+[ext_resource type="Texture2D" uid="uid://b3pcvxxu40bav" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/yam.png" id="1_fmct2"]
+[ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_invyc"]
+[ext_resource type="Resource" uid="uid://bsbu1lnpssdma" path="res://Item/items/grows/seeds/yam_seeds.tres" id="3_invyc"]
+[ext_resource type="Resource" uid="uid://cq3canmdy3202" path="res://Item/items/grows/drops/yam.tres" id="4_lq4vp"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c43pc"]
+atlas = ExtResource("1_fmct2")
+region = Rect2(32, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4phhm"]
+atlas = ExtResource("1_fmct2")
+region = Rect2(48, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mbj61"]
+atlas = ExtResource("1_fmct2")
+region = Rect2(64, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ee66p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c43pc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4phhm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mbj61")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_syrmn"]
+radius = 6.0
+
+[node name="Yam" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_ee66p")
+animation = &"cycle"
+offset = Vector2(0, -7)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_invyc")
+hours_to_grow_per_stage = 9
+seed_data = ExtResource("3_invyc")
+harvest_data = ExtResource("4_lq4vp")
+wither_days_limit = 4
+max_drop_quantity = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("CircleShape2D_syrmn")

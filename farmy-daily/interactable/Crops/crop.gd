@@ -22,19 +22,21 @@ var is_watered_today = false
 var seed_positions: Array[Vector2] = []
 
 func _ready():
-	# 1. COLLISION SETUP:
-	# Layer 3 (Value 4) is for Tools. We ENABLE this so tools hit the crop.
-	# We DISABLE Layer 1 so it's not a generic wall.
 	collision_layer = 4 
 	collision_mask = 0
 	
-	# 2. PLAYER WALK-THROUGH FIX:
-	# Even with layers set, the player might still collide if their mask is wide.
-	# We explicitly tell the player to ignore this specific crop object.
 	_make_player_ignore_me()
 	
-	# 3. VISUALS:
-	# Relative Z-Index allows correct Y-sorting (walking behind/in-front of crop)
+	if animated_sprite and animated_sprite.sprite_frames:
+		var current_anim = animated_sprite.animation
+		if current_anim == &"":
+			current_anim = &"default"
+			if not animated_sprite.sprite_frames.has_animation(current_anim) and animated_sprite.sprite_frames.get_animation_names().size() > 0:
+				current_anim = animated_sprite.sprite_frames.get_animation_names()[0]
+		
+		if animated_sprite.sprite_frames.has_animation(current_anim):
+			max_stage = animated_sprite.sprite_frames.get_frame_count(current_anim)
+	
 	z_index = 0
 	z_as_relative = true
 	
@@ -52,7 +54,6 @@ func _ready():
 	check_ground_water_state()
 
 func _make_player_ignore_me():
-	# Attempt to find the player node in the scene tree
 	var player = get_tree().current_scene.find_child("Player", true, false)
 	if player and player is CharacterBody2D:
 		player.add_collision_exception_with(self)
@@ -60,7 +61,6 @@ func _make_player_ignore_me():
 func _generate_seed_positions():
 	seed_positions.clear()
 	
-	# Tightly centered offsets to ensure seeds look neat inside the tile
 	var base_offsets = [
 		Vector2(0, 0),
 		Vector2(-2.5, -2.5),
@@ -70,13 +70,15 @@ func _generate_seed_positions():
 	]
 	
 	for base in base_offsets:
-		# Small random jitter for variety
 		var jitter_x = randf_range(-0.5, 0.5)
 		var jitter_y = randf_range(-0.5, 0.5)
 		seed_positions.append(base + Vector2(jitter_x, jitter_y))
 
 func check_ground_water_state():
 	await get_tree().process_frame
+	_sync_soil_state()
+
+func _sync_soil_state():
 	var parent_node = get_parent()
 	if not parent_node: return
 	
@@ -88,23 +90,23 @@ func check_ground_water_state():
 			var cell_pos = ground.local_to_map(local_pos)
 			var atlas_coords = ground.get_cell_atlas_coords(cell_pos)
 			if atlas_coords == Vector2i(12, 0):
-				water()
+				if not is_watered_today:
+					water()
 
 func water():
 	is_watered_today = true
 	days_unwatered = 0
-	
-	# Visual update only. Growth happens over time in _on_hour_passed.
 	update_visuals()
 
 func _on_hour_passed():
+	_sync_soil_state()
+
 	if current_stage >= max_stage:
 		return
 
 	if is_watered_today:
 		total_hours_watered += 1
 		
-		# If we have enough water hours, proceed to next stage
 		if total_hours_watered >= hours_for_next_stage:
 			grow_next_stage()
 
@@ -133,32 +135,31 @@ func update_visuals():
 	if animated_sprite:
 		animated_sprite.modulate = color_mod
 		
-		# Stage 0: Show drawn seeds, hide plant sprite
 		if current_stage == 0:
 			animated_sprite.self_modulate.a = 0.0 
 		else:
-			# Stage 1+: Show plant sprite, seeds stop drawing
 			animated_sprite.self_modulate.a = 1.0
 			if "frame" in animated_sprite:
-				animated_sprite.frame = current_stage - 1
+				var frame_idx = current_stage - 1
+				if frame_idx >= max_stage:
+					frame_idx = max_stage - 1
+				animated_sprite.frame = frame_idx
 	
 	queue_redraw()
 
 func _draw():
-	# Only draw seeds in Stage 0
 	if current_stage == 0:
-		var base_color = Color(0.15, 0.1, 0.08) # Dark Brown
-		var highlight_color = Color(0.5, 0.4, 0.3) # Light Brown
+		var base_color = Color(0.15, 0.1, 0.08)
+		var highlight_color = Color(0.5, 0.4, 0.3)
 		
 		if is_watered_today:
-			base_color = Color(0.08, 0.05, 0.04) # Wet Dark
-			highlight_color = Color(0.3, 0.25, 0.2) # Wet Light
+			base_color = Color(0.08, 0.05, 0.04)
+			highlight_color = Color(0.3, 0.25, 0.2)
 
 		var seed_base_size = Vector2(2, 2)
 		var pixel_size = Vector2(1, 1)
 
 		for pos in seed_positions:
-			# Draw centered pixels
 			var draw_pos = pos - (seed_base_size / 2.0)
 			draw_rect(Rect2(draw_pos, seed_base_size), base_color)
 			draw_rect(Rect2(draw_pos, pixel_size), highlight_color)

@@ -16,8 +16,6 @@ const TREE_SCENES = [
 	preload("res://interactable/trees/spruce_tree.tscn")
 ]
 
-const CROP_SCENE = preload("res://interactable/Crops/carrot.tscn")
-
 var audio_player: AudioStreamPlayer2D
 var impact_audio_player: AudioStreamPlayer2D 
 var sfx_hit_tree: AudioStream
@@ -460,13 +458,19 @@ func spawn_tree(pos: Vector2):
 func spawn_crop(pos: Vector2):
 	if equipped_slot_index == -1 or not inventory_data: return
 	
+	if equipped_item.crop_scene_path == "":
+		print("No crop scene path assigned to this item!")
+		return
+	
 	if get_parent().has_method("get_tile_center_position"):
 		var snap_pos = get_parent().get_tile_center_position(pos)
-		var crop = CROP_SCENE.instantiate()
-		crop.global_position = snap_pos
 		
-		get_parent().add_child(crop)
-		consume_equipped_item()
+		var crop_scene = load(equipped_item.crop_scene_path)
+		if crop_scene:
+			var crop = crop_scene.instantiate()
+			crop.global_position = snap_pos
+			get_parent().add_child(crop)
+			consume_equipped_item()
 
 func consume_equipped_item():
 	var slot = inventory_data.slot_datas[equipped_slot_index]

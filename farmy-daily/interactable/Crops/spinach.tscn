@@ -1,0 +1,54 @@
+[gd_scene load_steps=10 format=3 uid="uid://drajntg6tujl7"]
+
+[ext_resource type="Texture2D" uid="uid://duytehl4nnhvr" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/crops/spinach.png" id="1_8prxv"]
+[ext_resource type="Script" uid="uid://dob2t73jdqest" path="res://interactable/Crops/crop.gd" id="2_ahfqn"]
+[ext_resource type="Resource" uid="uid://l2bmulcmsset" path="res://Item/items/grows/seeds/spinach_seeds.tres" id="3_ahfqn"]
+[ext_resource type="Resource" uid="uid://b0rqsukwlgbkq" path="res://Item/items/grows/drops/spinach.tres" id="4_kiohc"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t1dp1"]
+atlas = ExtResource("1_8prxv")
+region = Rect2(32, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hfedr"]
+atlas = ExtResource("1_8prxv")
+region = Rect2(48, 0, 16, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8xkke"]
+atlas = ExtResource("1_8prxv")
+region = Rect2(64, 0, 16, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ee66p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t1dp1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hfedr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8xkke")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_syrmn"]
+radius = 6.0
+
+[node name="Spinach" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_ee66p")
+animation = &"cycle"
+offset = Vector2(0, -7)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_ahfqn")
+hours_to_grow_per_stage = 6
+seed_data = ExtResource("3_ahfqn")
+harvest_data = ExtResource("4_kiohc")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+shape = SubResource("CircleShape2D_syrmn")
