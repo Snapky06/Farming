@@ -1221,7 +1221,7 @@ position = Vector2(-1, 0)
 shape = SubResource("CapsuleShape2D_im8y0")
 
 [node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(6, 6)
+zoom = Vector2(8, 8)
 
 [node name="InteractionComponent" type="Area2D" parent="."]
 collision_layer = 4

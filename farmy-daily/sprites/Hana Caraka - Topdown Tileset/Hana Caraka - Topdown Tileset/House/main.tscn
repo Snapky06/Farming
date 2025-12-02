@@ -1,15 +1,9 @@
-[gd_scene load_steps=25 format=3 uid="uid://bt6yu66rx5g0l"]
+[gd_scene load_steps=15 format=3 uid="uid://bt6yu66rx5g0l"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_0ppkx"]
 [ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_hy8hq"]
 [ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="3_c3bvi"]
 [ext_resource type="PackedScene" uid="uid://cawg1tq3uaqq7" path="res://levels/first.tscn" id="4_2j7hh"]
-[ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="5_hgcsu"]
-[ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="6_n1u4q"]
-[ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="7_7bvna"]
-[ext_resource type="Resource" uid="uid://big83umh4oiyk" path="res://Item/items/grows/seeds/potato_seeds.tres" id="8_m3gmj"]
-[ext_resource type="Resource" uid="uid://y2x1vxicxm5n" path="res://Item/items/grows/seeds/wheat_seeds.tres" id="9_wap0k"]
-[ext_resource type="Resource" uid="uid://dcnq7d6kwbl4" path="res://Item/items/grows/seeds/pumpkin_seeds.tres" id="10_xdk1y"]
 [ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="11_6x66l"]
 [ext_resource type="Script" uid="uid://c1uydoq5x125w" path="res://Inventory/inventory_interface.gd" id="12_8fpue"]
 [ext_resource type="PackedScene" uid="uid://chqgfuqs3wn4q" path="res://Inventory/inventory.tscn" id="13_ykfl3"]
@@ -18,29 +12,6 @@
 [ext_resource type="FontFile" uid="uid://bvn3wtsegknv" path="res://fonts/MineMouseRegular-BL3DB.ttf" id="16_j4iur"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="17_ecdym"]
 [ext_resource type="Script" uid="uid://bv42jjmia8tkp" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/tile_selector.gd" id="18_6sf3a"]
-
-[sub_resource type="Resource" id="Resource_imf8r"]
-script = ExtResource("7_7bvna")
-item_data = ExtResource("8_m3gmj")
-quantity = 3
-metadata/_custom_type_script = "uid://cn3th1d7ure5w"
-
-[sub_resource type="Resource" id="Resource_8jbr7"]
-script = ExtResource("7_7bvna")
-item_data = ExtResource("9_wap0k")
-quantity = 3
-metadata/_custom_type_script = "uid://cn3th1d7ure5w"
-
-[sub_resource type="Resource" id="Resource_u04yj"]
-script = ExtResource("7_7bvna")
-item_data = ExtResource("10_xdk1y")
-quantity = 3
-metadata/_custom_type_script = "uid://cn3th1d7ure5w"
-
-[sub_resource type="Resource" id="Resource_cu0x5"]
-script = ExtResource("6_n1u4q")
-slot_datas = Array[ExtResource("7_7bvna")]([SubResource("Resource_imf8r"), SubResource("Resource_8jbr7"), SubResource("Resource_u04yj"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
-metadata/_custom_type_script = "uid://b3nysasbdcim0"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tuhlx"]
 bg_color = Color(0.4379362, 0.68035144, 0.21081644, 0.16862746)
@@ -60,10 +31,6 @@ script = ExtResource("2_hy8hq")
 position = Vector2(175, 143)
 
 [node name="Start" parent="." instance=ExtResource("4_2j7hh")]
-
-[node name="Chest" parent="." instance=ExtResource("5_hgcsu")]
-position = Vector2(175, 112)
-chest_inventory = SubResource("Resource_cu0x5")
 
 [node name="UI" type="CanvasLayer" parent="."]
 script = ExtResource("11_6x66l")
