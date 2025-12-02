@@ -162,19 +162,24 @@ func update_idle_animation(direction: Vector2):
 func interact() -> void:
 	tap_count = 0
 	double_tap_timer = 0.0
-	var bodies = interaction_area.get_overlapping_bodies()
-	if bodies.is_empty(): return
+	
+	var candidates = []
+	candidates.append_array(interaction_area.get_overlapping_bodies())
+	candidates.append_array(interaction_area.get_overlapping_areas())
+	
+	if candidates.is_empty(): return
 
-	var closest_body = null
+	var closest_node = null
 	var min_dist = INF
-	for body in bodies:
-		if body.has_method("interact") and body != self:
-			var dist = global_position.distance_squared_to(body.global_position)
+	for node in candidates:
+		if node.has_method("interact") and node != self:
+			var dist = global_position.distance_squared_to(node.global_position)
 			if dist < min_dist:
 				min_dist = dist
-				closest_body = body
-	if closest_body:
-		closest_body.interact(self)
+				closest_node = node
+				
+	if closest_node:
+		closest_node.interact(self)
 
 func _on_PlayerHoldTimer_timeout():
 	if is_moving_to_interact: return
@@ -348,18 +353,14 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	else:
 		anim_name += "down" if last_direction.y > 0 else "up"
 	
-	# 1. Start Animation
 	var has_anim = sprite.sprite_frames.has_animation(anim_name)
 	if has_anim:
 		sprite.play(anim_name)
-		# Wait for the windup (e.g. frame 0) before "hitting"
 		while sprite.is_playing() and sprite.frame < 1:
 			await get_tree().process_frame
 	else:
-		# Tiny fallback delay if no animation exists
 		await get_tree().create_timer(0.15).timeout
 	
-	# 2. Play Sync Sound & Execute Logic (At the point of "Hit")
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
 		if sfx_hoe and impact_audio_player:
 			impact_audio_player.stream = sfx_hoe
@@ -409,7 +410,6 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		spawn_crop(target_pos)
 		play_seed_sound()
 	
-	# 3. Finish Animation (No extra waits)
 	if has_anim and sprite.is_playing():
 		await sprite.animation_finished
 	

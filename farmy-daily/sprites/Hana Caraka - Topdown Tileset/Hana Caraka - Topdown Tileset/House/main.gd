@@ -24,6 +24,31 @@ func _ready() -> void:
 		if child is TileMapLayer and child != ground_layer:
 			obstruction_layers.append(child)
 
+	# --- SPAWN LOGIC START ---
+	var spawn_node = null
+	
+	# 1. Try to find the specific tag requested by the previous door
+	if TimeManager.player_spawn_tag != "":
+		spawn_node = find_child(TimeManager.player_spawn_tag, true, false)
+	
+	# 2. If no tag (or tag not found), look for a default marker named "SpawnPoint"
+	if spawn_node == null:
+		spawn_node = find_child("SpawnPoint", true, false)
+	
+	# 3. If still nothing, just grab the first Marker2D we can find in the scene
+	if spawn_node == null:
+		var all_markers = find_children("*", "Marker2D", true, false)
+		if all_markers.size() > 0:
+			spawn_node = all_markers[0]
+			
+	# 4. Teleport the player AND reset their navigation so they don't walk away
+	if spawn_node:
+		player.global_position = spawn_node.global_position
+		player.agent.target_position = spawn_node.global_position
+	
+	TimeManager.player_spawn_tag = ""
+	# --- SPAWN LOGIC END ---
+
 	player.toggle_inventory.connect(toggle_inventory_interface)
 	inventory_interface.hide_inventory.connect(toggle_inventory_interface)
 	
@@ -31,8 +56,9 @@ func _ready() -> void:
 	inventory_interface.set_player_inventory_data(player.inventory_data)
 	inventory_interface.player = player
 	
-	chest.chest_opened.connect(on_chest_opened)
-	chest.chest_closed.connect(on_chest_closed)
+	if chest:
+		chest.chest_opened.connect(on_chest_opened)
+		chest.chest_closed.connect(on_chest_closed)
 	
 	inventory_interface.visible = false
 	hot_bar_inventory.show()
@@ -64,10 +90,8 @@ func set_camera_limits() -> void:
 	player.cam.limit_right = int(pos.x + map_rect.end.x * tile_size.x * render_scale.x)
 	player.cam.limit_bottom = int(pos.y + map_rect.end.y * tile_size.y * render_scale.y)
 
-	# --- SMOOTHING FIXES ---
 	player.cam.position_smoothing_enabled = true
 	player.cam.position_smoothing_speed = 8.0
-	# This syncs the camera update with the physics engine (fixes the jitter):
 	player.cam.process_callback = Camera2D.CAMERA2D_PROCESS_PHYSICS
 
 func _on_time_updated(_time_string: String):

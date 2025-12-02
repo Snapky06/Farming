@@ -56,11 +56,10 @@ metadata/_edit_horizontal_guides_ = [-66.0]
 [node name="DayNightCycle" type="CanvasModulate" parent="."]
 script = ExtResource("2_hy8hq")
 
-[node name="Start" parent="." instance=ExtResource("4_2j7hh")]
-position = Vector2(175, 147)
-
 [node name="Player" parent="." instance=ExtResource("3_c3bvi")]
-position = Vector2(241, 144)
+position = Vector2(175, 143)
+
+[node name="Start" parent="." instance=ExtResource("4_2j7hh")]
 
 [node name="Chest" parent="." instance=ExtResource("5_hgcsu")]
 position = Vector2(175, 112)
