@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://hmb2j5nps2wp" path="res://interactable/trees/tree.gd" id="2_bmxih"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_ugr8i"]
 [ext_resource type="Resource" uid="uid://dpx6tyqqyyoev" path="res://Item/items/wood.tres" id="4_b5i4o"]
-[ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/tree_seeds.tres" id="5_p2h2v"]
+[ext_resource type="Resource" uid="uid://kb3br4wcixfv" path="res://Item/items/pine_tree_seeds.tres" id="5_ugr8i"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_bmxih"]
 atlas = ExtResource("1_5fsp4")
@@ -144,7 +144,7 @@ collision_layer = 4
 collision_mask = 4
 script = ExtResource("2_bmxih")
 wood_item = ExtResource("4_b5i4o")
-seed_item = ExtResource("5_p2h2v")
+seed_item = ExtResource("5_ugr8i")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(0, 15)

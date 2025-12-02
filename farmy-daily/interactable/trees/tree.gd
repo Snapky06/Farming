@@ -63,9 +63,12 @@ var TREE_VARIANTS = [
 	}
 ]
 
+@export_group("Settings")
+@export_enum("Pine Tree", "Maple Tree", "Birch Tree", "Spruce Tree") var tree_type: String = "Pine Tree"
+
 @export_group("Items")
-@export var wood_item: ItemData 
-@export var seed_item: ItemData 
+@export var wood_item: Resource
+@export var seed_item: Resource
 
 enum GrowthStage { SEED, SAPLING, MATURE }
 var current_stage: GrowthStage = GrowthStage.MATURE
@@ -77,7 +80,7 @@ var is_stump: bool = false
 var is_falling: bool = false 
 var default_layer: int = 1 
 
-var visual_transition_window: int = 3 
+const VISUAL_TRANSITION_WINDOW: int = 3 
 
 var sfx_leaves: AudioStream
 var sfx_fall: AudioStream
@@ -89,47 +92,51 @@ func _ready():
 	add_to_group("trees")
 	z_as_relative = false
 	
-	# Only capture collision layer if it's not 0 (which happens if setup_as_seed ran first)
 	if collision_layer > 0:
 		default_layer = collision_layer 
 	else:
 		default_layer = 1
 	
-	if TimeManager:
-		TimeManager.season_changed.connect(_on_update_visuals)
-		TimeManager.date_updated.connect(_on_day_passed)
+	var time_manager = get_node_or_null("/root/TimeManager")
+	if time_manager:
+		if not time_manager.season_changed.is_connected(_on_update_visuals):
+			time_manager.season_changed.connect(_on_update_visuals)
+		if not time_manager.date_updated.is_connected(_on_day_passed):
+			time_manager.date_updated.connect(_on_day_passed)
 	
 	load_audio()
+	_apply_tree_type()
+	_refresh_visuals_immediate()
+
+func _apply_tree_type():
+	for variant in TREE_VARIANTS:
+		if variant["name"] == tree_type:
+			active_variant = variant
+			if active_variant.has("min_health"):
+				health = randi_range(active_variant["min_health"], active_variant["max_health"])
+			else:
+				health = 3
+			return
 	
-	if active_variant.is_empty():
-		active_variant = TREE_VARIANTS.pick_random()
-		randomize_stats()
-	
-	await get_tree().process_frame
-	update_visuals()
+	active_variant = TREE_VARIANTS[0]
+	health = 3
 
 func setup_as_seed():
 	current_stage = GrowthStage.SEED
-	active_variant = TREE_VARIANTS.pick_random()
+	if active_variant.is_empty():
+		_apply_tree_type()
 	days_until_next_stage = randi_range(1, 3) 
-	randomize_stats()
-	update_visuals()
-
-func randomize_stats():
-	if active_variant.has("min_health"):
-		health = randi_range(active_variant["min_health"], active_variant["max_health"])
-	else:
-		health = 3
+	_refresh_visuals_immediate()
 
 func _on_day_passed(_date_string):
 	if is_falling: return
 	
-	update_visuals()
-	if current_stage == GrowthStage.MATURE or is_stump: return
+	if current_stage != GrowthStage.MATURE and not is_stump:
+		days_until_next_stage -= 1
+		if days_until_next_stage <= 0:
+			advance_growth()
 	
-	days_until_next_stage -= 1
-	if days_until_next_stage <= 0:
-		advance_growth()
+	update_visuals()
 
 func advance_growth():
 	if current_stage == GrowthStage.SEED:
@@ -137,11 +144,13 @@ func advance_growth():
 		days_until_next_stage = randi_range(1, 3)
 	elif current_stage == GrowthStage.SAPLING:
 		current_stage = GrowthStage.MATURE
-		randomize_stats()
-	
-	update_visuals()
+		if active_variant.has("min_health"):
+			health = randi_range(active_variant["min_health"], active_variant["max_health"])
 
 func _on_update_visuals(_arg=null):
+	update_visuals()
+
+func _refresh_visuals_immediate():
 	update_visuals()
 
 func update_visuals():
@@ -159,17 +168,11 @@ func update_visuals():
 	if current_stage == GrowthStage.SEED:
 		sprite_root.play("little_cycle")
 		sprite_root.stop()
-		
-		if active_variant.has("seed_frame"):
-			sprite_root.frame = active_variant["seed_frame"]
-		else:
-			sprite_root.frame = 7
-		
+		sprite_root.frame = active_variant.get("seed_frame", 7)
 		collision_layer = 0 
 		z_index = 0 
 		return
 
-	# Sapling and Mature should block player
 	collision_layer = default_layer 
 	z_index = 10 
 	
@@ -184,38 +187,62 @@ func update_visuals():
 		if sprite_root.animation != anim_name:
 			sprite_root.play(anim_name)
 		sprite_root.stop() 
-	
-	var suffix = get_season_suffix()
-	var frame_key = prefix + suffix
-	
-	if active_variant.has(frame_key):
-		sprite_root.frame = active_variant[frame_key]
-	else:
-		var fallback = prefix + get_fallback_suffix()
-		if active_variant.has(fallback):
-			sprite_root.frame = active_variant[fallback]
 
-func get_season_suffix() -> String:
-	var m = TimeManager.current_month
-	var d = TimeManager.current_day
+	var target_suffix = get_target_season_suffix()
+	var final_key = prefix + target_suffix
 	
-	# Explicit date checks for synchronization
-	if m == 6 and abs(d - 20) <= visual_transition_window: 
+	if active_variant.has(final_key):
+		sprite_root.frame = active_variant[final_key]
+	else:
+		var conservative_fallback = get_conservative_fallback_suffix()
+		var fallback_key = prefix + conservative_fallback
+		
+		if active_variant.has(fallback_key):
+			sprite_root.frame = active_variant[fallback_key]
+		else:
+			sprite_root.frame = 0
+
+func get_target_season_suffix() -> String:
+	var time_manager = get_node_or_null("/root/TimeManager")
+	if not time_manager: return "spring"
+
+	var m = time_manager.current_month
+	var d = time_manager.current_day
+	
+	if m == 6 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW:
 		return "spring_summer"
-	elif m == 9 and abs(d - 21) <= visual_transition_window:
-		if d < 21:
+	elif m == 9 and abs(d - 22) <= VISUAL_TRANSITION_WINDOW:
+		if d < 22:
 			return "summer_autumn"
 		else:
 			return "summer_autumn_2"
-	
-	return get_fallback_suffix()
 
-func get_fallback_suffix() -> String:
-	match TimeManager.current_season:
-		TimeManager.Seasons.SPRING: return "spring"
-		TimeManager.Seasons.SUMMER: return "summer"
-		TimeManager.Seasons.AUTUMN: return "autumn"
-		TimeManager.Seasons.WINTER: return "winter"
+	match time_manager.current_season:
+		0: return "spring"
+		1: return "summer"
+		2: return "autumn"
+		3: return "winter"
+	
+	return "spring"
+
+func get_conservative_fallback_suffix() -> String:
+	var time_manager = get_node_or_null("/root/TimeManager")
+	if not time_manager: return "spring"
+
+	var m = time_manager.current_month
+	var d = time_manager.current_day
+	
+	if m == 6 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW: return "spring"
+	if m == 9 and abs(d - 22) <= VISUAL_TRANSITION_WINDOW: return "summer"
+	if m == 12 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW: return "autumn"
+	if m == 3 and abs(d - 20) <= VISUAL_TRANSITION_WINDOW: return "winter"
+
+	match time_manager.current_season:
+		0: return "spring"
+		1: return "summer"
+		2: return "autumn"
+		3: return "winter"
+	
 	return "spring"
 
 func hit(_pos):
@@ -288,12 +315,13 @@ func spawn_drops(item, count):
 	if not item or count <= 0: return
 	for i in range(count):
 		var drop = PICK_UP_SCENE.instantiate()
-		var slot = SlotData.new()
-		slot.item_data = item
-		slot.quantity = 1
-		drop.slot_data = slot
-		drop.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
-		get_tree().current_scene.call_deferred("add_child", drop)
+		if drop:
+			var slot = load("res://Inventory/slot_data.gd").new()
+			slot.item_data = item
+			slot.quantity = 1
+			drop.slot_data = slot
+			drop.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
+			get_tree().current_scene.call_deferred("add_child", drop)
 
 func load_audio():
 	if FileAccess.file_exists("res://sounds/falling_leaves.mp3"): sfx_leaves = load("res://sounds/falling_leaves.mp3")

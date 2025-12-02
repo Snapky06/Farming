@@ -1,8 +1,10 @@
-[gd_scene load_steps=22 format=3 uid="uid://cif5p5pl4hrmw"]
+[gd_scene load_steps=24 format=3 uid="uid://cif5p5pl4hrmw"]
 
 [ext_resource type="Texture2D" uid="uid://b0jqir27m4qnt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Tree.png" id="1_8q8kk"]
 [ext_resource type="Script" uid="uid://hmb2j5nps2wp" path="res://interactable/trees/tree.gd" id="2_5je3e"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_dvori"]
+[ext_resource type="Resource" uid="uid://dpx6tyqqyyoev" path="res://Item/items/wood.tres" id="4_dvori"]
+[ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/birch_tree_seeds.tres" id="5_wmgpl"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wmgpl"]
 atlas = ExtResource("1_8q8kk")
@@ -141,6 +143,9 @@ z_index = 3
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("2_5je3e")
+tree_type = "Birch Tree"
+wood_item = ExtResource("4_dvori")
+seed_item = ExtResource("5_wmgpl")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(0, 15)

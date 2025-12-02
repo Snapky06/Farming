@@ -10,7 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://cy1g05gn51fat" path="res://Inventory/hot_bar_inventory.tscn" id="7_m1s1m"]
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="8_is2om"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="9_80jm0"]
-[ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/tree_seeds.tres" id="10_80jm0"]
+[ext_resource type="Resource" uid="uid://cfc1qluqw46nv" path="res://Item/items/birch_tree_seeds.tres" id="10_80jm0"]
 [ext_resource type="PackedScene" uid="uid://cdi6471witlxy" path="res://Item/pick_up/pick_up.tscn" id="11_a6xtv"]
 
 [sub_resource type="Resource" id="Resource_m1s1m"]

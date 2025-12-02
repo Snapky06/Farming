@@ -1,6 +1,6 @@
 extends Sprite2D
 
-@onready var ground_layer: TileMapLayer = $"../Backgrounds/NavRegion/Ground"
+@onready var ground_layer: TileMapLayer = $"../Start/NavRegion/Ground"
 
 func _process(_delta):
 	if not visible:

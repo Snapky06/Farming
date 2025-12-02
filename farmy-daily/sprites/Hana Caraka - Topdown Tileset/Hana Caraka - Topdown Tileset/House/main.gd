@@ -5,7 +5,7 @@ extends Node2D
 @onready var chest: StaticBody2D = $Chest
 @onready var hot_bar_inventory: PanelContainer = $UI/HotBarInventory
 @onready var tile_selector: Sprite2D = $TileSelector
-@onready var ground_layer: TileMapLayer = $Backgrounds/NavRegion/Ground
+@onready var ground_layer: TileMapLayer = $Start/NavRegion/Ground
 
 var obstruction_layers: Array[TileMapLayer] = []
 var hoe_cooldown: bool = false 
