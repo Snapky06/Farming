@@ -1,73 +1,73 @@
 [gd_scene load_steps=25 format=3 uid="uid://bt6yu66rx5g0l"]
 
-[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="1_awirb"]
-[ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_ueyjv"]
-[ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_qa1xu"]
-[ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="3_xyg4i"]
-[ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="4_2n1sq"]
-[ext_resource type="PackedScene" uid="uid://cawg1tq3uaqq7" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/first.tscn" id="4_qa1xu"]
-[ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="5_3co0w"]
-[ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="6_2gork"]
-[ext_resource type="Resource" uid="uid://big83umh4oiyk" path="res://Item/items/grows/seeds/potato_seeds.tres" id="7_uukw5"]
-[ext_resource type="Resource" uid="uid://y2x1vxicxm5n" path="res://Item/items/grows/seeds/wheat_seeds.tres" id="8_o62kc"]
-[ext_resource type="Resource" uid="uid://dcnq7d6kwbl4" path="res://Item/items/grows/seeds/pumpkin_seeds.tres" id="9_l3sui"]
-[ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="10_apql8"]
-[ext_resource type="Script" uid="uid://c1uydoq5x125w" path="res://Inventory/inventory_interface.gd" id="11_tig7u"]
-[ext_resource type="PackedScene" uid="uid://chqgfuqs3wn4q" path="res://Inventory/inventory.tscn" id="12_opkxd"]
-[ext_resource type="PackedScene" uid="uid://bpfmoo7pgcvyl" path="res://Inventory/slot.tscn" id="13_8g7h4"]
-[ext_resource type="PackedScene" uid="uid://cy1g05gn51fat" path="res://Inventory/hot_bar_inventory.tscn" id="14_5ew11"]
-[ext_resource type="FontFile" uid="uid://bvn3wtsegknv" path="res://fonts/MineMouseRegular-BL3DB.ttf" id="15_ac2cp"]
-[ext_resource type="Script" uid="uid://bv42jjmia8tkp" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/tile_selector.gd" id="17_pcr3o"]
+[ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_0ppkx"]
+[ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_hy8hq"]
+[ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="3_c3bvi"]
+[ext_resource type="PackedScene" uid="uid://cawg1tq3uaqq7" path="res://levels/first.tscn" id="4_2j7hh"]
+[ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="5_hgcsu"]
+[ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="6_n1u4q"]
+[ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="7_7bvna"]
+[ext_resource type="Resource" uid="uid://big83umh4oiyk" path="res://Item/items/grows/seeds/potato_seeds.tres" id="8_m3gmj"]
+[ext_resource type="Resource" uid="uid://y2x1vxicxm5n" path="res://Item/items/grows/seeds/wheat_seeds.tres" id="9_wap0k"]
+[ext_resource type="Resource" uid="uid://dcnq7d6kwbl4" path="res://Item/items/grows/seeds/pumpkin_seeds.tres" id="10_xdk1y"]
+[ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="11_6x66l"]
+[ext_resource type="Script" uid="uid://c1uydoq5x125w" path="res://Inventory/inventory_interface.gd" id="12_8fpue"]
+[ext_resource type="PackedScene" uid="uid://chqgfuqs3wn4q" path="res://Inventory/inventory.tscn" id="13_ykfl3"]
+[ext_resource type="PackedScene" uid="uid://bpfmoo7pgcvyl" path="res://Inventory/slot.tscn" id="14_nnk2e"]
+[ext_resource type="PackedScene" uid="uid://cy1g05gn51fat" path="res://Inventory/hot_bar_inventory.tscn" id="15_iurc1"]
+[ext_resource type="FontFile" uid="uid://bvn3wtsegknv" path="res://fonts/MineMouseRegular-BL3DB.ttf" id="16_j4iur"]
+[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="17_ecdym"]
+[ext_resource type="Script" uid="uid://bv42jjmia8tkp" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/tile_selector.gd" id="18_6sf3a"]
 
 [sub_resource type="Resource" id="Resource_imf8r"]
-script = ExtResource("6_2gork")
-item_data = ExtResource("7_uukw5")
+script = ExtResource("7_7bvna")
+item_data = ExtResource("8_m3gmj")
 quantity = 3
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
 [sub_resource type="Resource" id="Resource_8jbr7"]
-script = ExtResource("6_2gork")
-item_data = ExtResource("8_o62kc")
+script = ExtResource("7_7bvna")
+item_data = ExtResource("9_wap0k")
 quantity = 3
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
 [sub_resource type="Resource" id="Resource_u04yj"]
-script = ExtResource("6_2gork")
-item_data = ExtResource("9_l3sui")
+script = ExtResource("7_7bvna")
+item_data = ExtResource("10_xdk1y")
 quantity = 3
 metadata/_custom_type_script = "uid://cn3th1d7ure5w"
 
 [sub_resource type="Resource" id="Resource_cu0x5"]
-script = ExtResource("5_3co0w")
-slot_datas = Array[ExtResource("6_2gork")]([SubResource("Resource_imf8r"), SubResource("Resource_8jbr7"), SubResource("Resource_u04yj"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+script = ExtResource("6_n1u4q")
+slot_datas = Array[ExtResource("7_7bvna")]([SubResource("Resource_imf8r"), SubResource("Resource_8jbr7"), SubResource("Resource_u04yj"), null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
 metadata/_custom_type_script = "uid://b3nysasbdcim0"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tuhlx"]
 bg_color = Color(0.4379362, 0.68035144, 0.21081644, 0.16862746)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nab82"]
-atlas = ExtResource("1_awirb")
+atlas = ExtResource("17_ecdym")
 region = Rect2(208, 0, 16, 16)
 
 [node name="Game" type="Node2D"]
-script = ExtResource("1_ueyjv")
+script = ExtResource("1_0ppkx")
 metadata/_edit_horizontal_guides_ = [-66.0]
 
 [node name="DayNightCycle" type="CanvasModulate" parent="."]
-script = ExtResource("2_qa1xu")
+script = ExtResource("2_hy8hq")
 
-[node name="Player" parent="." instance=ExtResource("3_xyg4i")]
-position = Vector2(241, 144)
-
-[node name="Start" parent="." instance=ExtResource("4_qa1xu")]
+[node name="Start" parent="." instance=ExtResource("4_2j7hh")]
 position = Vector2(175, 147)
 
-[node name="Chest" parent="." instance=ExtResource("4_2n1sq")]
+[node name="Player" parent="." instance=ExtResource("3_c3bvi")]
+position = Vector2(241, 144)
+
+[node name="Chest" parent="." instance=ExtResource("5_hgcsu")]
 position = Vector2(175, 112)
 chest_inventory = SubResource("Resource_cu0x5")
 
 [node name="UI" type="CanvasLayer" parent="."]
-script = ExtResource("10_apql8")
+script = ExtResource("11_6x66l")
 
 [node name="InventoryInterface" type="Control" parent="UI"]
 visible = false
@@ -78,9 +78,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-script = ExtResource("11_tig7u")
+script = ExtResource("12_8fpue")
 
-[node name="PlayerInventory" parent="UI/InventoryInterface" instance=ExtResource("12_opkxd")]
+[node name="PlayerInventory" parent="UI/InventoryInterface" instance=ExtResource("13_ykfl3")]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -95,7 +95,7 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 
-[node name="ExternalInventory" parent="UI/InventoryInterface" instance=ExtResource("12_opkxd")]
+[node name="ExternalInventory" parent="UI/InventoryInterface" instance=ExtResource("13_ykfl3")]
 visible = false
 layout_mode = 1
 anchors_preset = 5
@@ -106,14 +106,14 @@ offset_right = 40.0
 grow_horizontal = 2
 mouse_filter = 2
 
-[node name="GrabbedSlot" parent="UI/InventoryInterface" instance=ExtResource("13_8g7h4")]
+[node name="GrabbedSlot" parent="UI/InventoryInterface" instance=ExtResource("14_nnk2e")]
 modulate = Color(1, 1, 1, 0.49019608)
 self_modulate = Color(1, 1, 1, 0)
 top_level = true
 layout_mode = 0
 mouse_filter = 2
 
-[node name="HotBarInventory" parent="UI" instance=ExtResource("14_5ew11")]
+[node name="HotBarInventory" parent="UI" instance=ExtResource("15_iurc1")]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -127,7 +127,7 @@ grow_horizontal = 2
 grow_vertical = 0
 
 [node name="Time" type="CanvasLayer" parent="."]
-script = ExtResource("10_apql8")
+script = ExtResource("11_6x66l")
 
 [node name="TimeAndMonth" type="Panel" parent="Time"]
 anchors_preset = -1
@@ -155,7 +155,7 @@ offset_bottom = 36.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
-theme_override_fonts/font = ExtResource("15_ac2cp")
+theme_override_fonts/font = ExtResource("16_j4iur")
 theme_override_font_sizes/font_size = 20
 text = "T"
 horizontal_alignment = 1
@@ -175,7 +175,7 @@ offset_bottom = -45.5
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
-theme_override_fonts/font = ExtResource("15_ac2cp")
+theme_override_fonts/font = ExtResource("16_j4iur")
 theme_override_font_sizes/font_size = 20
 text = "M"
 horizontal_alignment = 1
@@ -208,4 +208,4 @@ text = "Options"
 [node name="TileSelector" type="Sprite2D" parent="."]
 visible = false
 texture = SubResource("AtlasTexture_nab82")
-script = ExtResource("17_pcr3o")
+script = ExtResource("18_6sf3a")

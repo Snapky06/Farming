@@ -8,15 +8,14 @@ extends Node2D
 @onready var ground_layer: TileMapLayer = $Start/NavRegion/Ground
 
 var obstruction_layers: Array[TileMapLayer] = []
-var hoe_cooldown: bool = false 
+var hoe_cooldown: bool = false
 
-@export var HOED_SOURCE_ID: int = 1
-@export var HOED_ATLAS_COORDS: Vector2i = Vector2i(11, 0)
+const HOED_SOURCE_ID: int = 1
+const HOED_ATLAS_COORDS: Vector2i = Vector2i(11, 0)
+const WATERED_SOURCE_ID: int = 1
+const WATERED_ATLAS_COORDS: Vector2i = Vector2i(12, 0)
 
-@export var WATERED_SOURCE_ID: int = 1
-@export var WATERED_ATLAS_COORDS: Vector2i = Vector2i(12, 0)
-
-var watered_tiles: Dictionary = {} 
+var watered_tiles: Dictionary = {}
 var current_open_chest: StaticBody2D = null
 
 func _ready() -> void:
@@ -46,6 +45,30 @@ func _ready() -> void:
 	
 	if TimeManager.has_signal("time_updated"):
 		TimeManager.time_updated.connect(_on_time_updated)
+	
+	await get_tree().process_frame
+	set_camera_limits()
+
+func set_camera_limits() -> void:
+	var map_rect = ground_layer.get_used_rect()
+	
+	if map_rect.size == Vector2i.ZERO:
+		return
+		
+	var tile_size = ground_layer.tile_set.tile_size
+	var render_scale = ground_layer.global_scale
+	var pos = ground_layer.global_position
+	
+	player.cam.limit_left = int(pos.x + map_rect.position.x * tile_size.x * render_scale.x)
+	player.cam.limit_top = int(pos.y + map_rect.position.y * tile_size.y * render_scale.y)
+	player.cam.limit_right = int(pos.x + map_rect.end.x * tile_size.x * render_scale.x)
+	player.cam.limit_bottom = int(pos.y + map_rect.end.y * tile_size.y * render_scale.y)
+
+	# --- SMOOTHING FIXES ---
+	player.cam.position_smoothing_enabled = true
+	player.cam.position_smoothing_speed = 8.0
+	# This syncs the camera update with the physics engine (fixes the jitter):
+	player.cam.process_callback = Camera2D.CAMERA2D_PROCESS_PHYSICS
 
 func _on_time_updated(_time_string: String):
 	var tiles_to_dry = []
@@ -97,7 +120,6 @@ func refresh_tile_selector():
 
 	if player.equipped_item:
 		var n = player.equipped_item.name
-		# Added "Scythe" here so the selector stays active
 		if n == "Hoe" or n == "Scythe" or n == "Tree Seed" or n == "Tree Seeds" or n == "Watering Can" or "Seeds" in n:
 			tile_selector.visible = true
 			
@@ -262,7 +284,6 @@ func use_water(global_pos: Vector2) -> void:
 		var tile_pos = ground_layer.local_to_map(local_pos)
 		var tile_center = ground_layer.to_global(ground_layer.map_to_local(tile_pos))
 		
-		# 1. UPDATE TILE VISUALS
 		var source = ground_layer.tile_set.get_source(WATERED_SOURCE_ID) as TileSetAtlasSource
 		var offset_vec = Vector2.ZERO
 		if source.has_tile(WATERED_ATLAS_COORDS):
@@ -303,7 +324,6 @@ func use_water(global_pos: Vector2) -> void:
 				"time": TimeManager.current_time_seconds
 			}
 
-		# 2. FIND AND WATER CROP (Fixed Range)
 		var crops = get_tree().get_nodes_in_group("crops")
 		for crop in crops:
 			if crop.global_position.distance_to(tile_center) < 20.0:

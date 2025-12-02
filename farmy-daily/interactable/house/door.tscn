@@ -1,0 +1,47 @@
+[gd_scene load_steps=9 format=3 uid="uid://c280okytokmf3"]
+
+[ext_resource type="Texture2D" uid="uid://cqmo0v2k2l640" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/House.png" id="1_0qv84"]
+[ext_resource type="Script" uid="uid://d3ptdhk7gmqx4" path="res://interactable/pickables/pickable_item.gd" id="2_m1dch"]
+[ext_resource type="Resource" uid="uid://clronqqu1fqig" path="res://Item/items/stones.tres" id="3_p3jji"]
+[ext_resource type="AudioStream" uid="uid://cqj3jpenpsr27" path="res://sounds/grab_stone.mp3" id="4_0wcga"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ja7y8"]
+atlas = ExtResource("1_0qv84")
+region = Rect2(0, 160, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_orqbb"]
+atlas = ExtResource("1_0qv84")
+region = Rect2(32, 160, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_87ud1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ja7y8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_orqbb")
+}],
+"loop": true,
+"name": &"door",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6cvnx"]
+size = Vector2(20, 17)
+
+[node name="Door" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_87ud1")
+animation = &"door"
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_m1dch")
+item_to_pick_up = ExtResource("3_p3jji")
+pickup_sound = ExtResource("4_0wcga")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(0, 3.5)
+shape = SubResource("RectangleShape2D_6cvnx")
+debug_color = Color(0.84759897, 0.27190012, 0.6590121, 0.41960785)
