@@ -15,4 +15,5 @@ name = "Yellow Bellpepper Seeds"
 description = "This Are Yellow"
 stackable = true
 texture = SubResource("AtlasTexture_705r1")
+crop_scene_path = "uid://kwr50iol5qi2"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

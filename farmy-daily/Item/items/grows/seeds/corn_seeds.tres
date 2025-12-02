@@ -15,4 +15,5 @@ name = "Corn Seeds"
 description = "This Could Be Used For Popcorn"
 stackable = true
 texture = SubResource("AtlasTexture_e4rjt")
+crop_scene_path = "uid://djeffliy3phb"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

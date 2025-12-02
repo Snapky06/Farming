@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://cak4bbtrxhs3"]
 
-[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_17uwx"]
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_rrnip"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvcjf"]
 load_path = "res://.godot/imported/crops - all.png-352219a4ec2d14673a32676f4b661a36.ctex"
@@ -10,9 +10,10 @@ atlas = SubResource("CompressedTexture2D_yvcjf")
 region = Rect2(144, 272, 16, 16)
 
 [resource]
-script = ExtResource("1_17uwx")
+script = ExtResource("1_rrnip")
 name = "Pineapple Seeds"
 description = "Used To Grow Pointy Fruits"
 stackable = true
 texture = SubResource("AtlasTexture_17uwx")
+crop_scene_path = "uid://des4qtxi0hwf1"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

@@ -15,4 +15,5 @@ name = "Shallot Seeds"
 description = "Grown For Chefs (Like Us)"
 stackable = true
 texture = SubResource("AtlasTexture_d62mk")
+crop_scene_path = "uid://c0x3sytsvsqkv"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

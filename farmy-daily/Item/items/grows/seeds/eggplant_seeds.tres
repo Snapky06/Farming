@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://fgw8hxdkja2n"]
 
-[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_t07b7"]
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_k2yv6"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_yvcjf"]
 load_path = "res://.godot/imported/crops - all.png-352219a4ec2d14673a32676f4b661a36.ctex"
@@ -10,9 +10,10 @@ atlas = SubResource("CompressedTexture2D_yvcjf")
 region = Rect2(272, 48, 16, 16)
 
 [resource]
-script = ExtResource("1_t07b7")
+script = ExtResource("1_k2yv6")
 name = "Eggplant Seeds"
 description = "Grows To Something Beautiful"
 stackable = true
 texture = SubResource("AtlasTexture_t07b7")
+crop_scene_path = "uid://eo3t2mhgiwu4"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

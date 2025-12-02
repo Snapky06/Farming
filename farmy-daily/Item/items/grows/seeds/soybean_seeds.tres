@@ -15,4 +15,5 @@ name = "Soybean Seeds"
 description = "Great For Diets"
 stackable = true
 texture = SubResource("AtlasTexture_aqurv")
+crop_scene_path = "uid://d27j8tph7qxpq"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

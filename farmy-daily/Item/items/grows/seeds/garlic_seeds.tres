@@ -15,4 +15,5 @@ name = "Garlic Seeds"
 description = "This Are Important To Keep Vampires Off Your Body"
 stackable = true
 texture = SubResource("AtlasTexture_q0edm")
+crop_scene_path = "uid://dgsht0l5kq3ei"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

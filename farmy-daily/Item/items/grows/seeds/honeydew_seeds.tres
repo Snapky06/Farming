@@ -15,4 +15,5 @@ name = "Honeydew Seeds"
 description = "Grown For Bears"
 stackable = true
 texture = SubResource("AtlasTexture_qnj7e")
+crop_scene_path = "uid://40vdhhxa3xfw"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

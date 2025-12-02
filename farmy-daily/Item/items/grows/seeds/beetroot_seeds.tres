@@ -15,4 +15,5 @@ name = "Beetroot Seeds"
 description = "Kind Of Important For Recipes (Not Really)"
 stackable = true
 texture = SubResource("AtlasTexture_4t4wa")
+crop_scene_path = "uid://dg30eghrfcf2n"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

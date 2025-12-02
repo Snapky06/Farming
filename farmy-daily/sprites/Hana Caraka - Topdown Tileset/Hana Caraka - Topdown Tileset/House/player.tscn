@@ -1037,7 +1037,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk_down",
-"speed": 7.0
+"speed": 11.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1066,7 +1066,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk_left",
-"speed": 7.0
+"speed": 11.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1095,7 +1095,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk_right",
-"speed": 7.0
+"speed": 11.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1124,7 +1124,7 @@ animations = [{
 }],
 "loop": true,
 "name": &"walk_up",
-"speed": 7.0
+"speed": 11.0
 }, {
 "frames": [{
 "duration": 1.0,
@@ -1214,7 +1214,7 @@ inventory_data = ExtResource("2_iwuv1")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"scythe_up"
+animation = &"walk_down"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 0)

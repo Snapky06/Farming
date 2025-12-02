@@ -15,4 +15,5 @@ name = "Asparragus Seeds"
 description = "Will Look Like Branches, But Pretty"
 stackable = true
 texture = SubResource("AtlasTexture_l2ir2")
+crop_scene_path = "uid://coogekeuxcfen"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

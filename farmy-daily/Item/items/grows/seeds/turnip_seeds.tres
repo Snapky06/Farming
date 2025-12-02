@@ -15,4 +15,5 @@ name = "Turnip Seeds"
 description = "Some More Tubers"
 stackable = true
 texture = SubResource("AtlasTexture_ilg23")
+crop_scene_path = "uid://c2gyp74de1enw"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

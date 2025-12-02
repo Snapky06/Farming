@@ -15,4 +15,5 @@ name = "Leek Seeds"
 description = "Grow Them To Get Pet Birds"
 stackable = true
 texture = SubResource("AtlasTexture_e8ukk")
+crop_scene_path = "uid://03ac3jwhhaiw"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

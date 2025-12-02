@@ -15,4 +15,5 @@ name = "Cucumber Seeds"
 description = "Some People Are Fond Of Them"
 stackable = true
 texture = SubResource("AtlasTexture_p5qx6")
+crop_scene_path = "uid://b8nj2jhklv8b1"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

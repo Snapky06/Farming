@@ -26,4 +26,5 @@ item_to_pick_up = ExtResource("2_x82d3")
 pickup_sound = ExtResource("3_vhvoo")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+visible = false
 shape = SubResource("CircleShape2D_ket6q")

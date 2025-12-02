@@ -15,4 +15,5 @@ name = "Yam Seeds"
 description = "Another Tuber"
 stackable = true
 texture = SubResource("AtlasTexture_f4eix")
+crop_scene_path = "uid://bxyesulbvsd5x"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

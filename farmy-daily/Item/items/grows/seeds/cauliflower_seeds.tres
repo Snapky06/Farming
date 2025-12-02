@@ -15,4 +15,5 @@ name = "Cauliflower Seeds"
 description = "Great For Diets"
 stackable = true
 texture = SubResource("AtlasTexture_01gij")
+crop_scene_path = "uid://dyr154mttfqaj"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"
