@@ -13,4 +13,5 @@ name = "Pine Tree Seeds"
 description = "Used To Grow Pine Trees"
 stackable = true
 texture = SubResource("AtlasTexture_qfwug")
+crop_scene_path = "uid://c6l7cs6ihrf0r"
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

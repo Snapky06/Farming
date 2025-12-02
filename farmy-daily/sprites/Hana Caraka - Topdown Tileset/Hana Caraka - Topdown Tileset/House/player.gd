@@ -246,7 +246,7 @@ func _on_PlayerHoldTimer_timeout():
 							start_move_interact(collider.global_position, "axe", collider)
 				return
 
-			elif equipped_item.name == "Tree Seed" or equipped_item.name == "Tree Seeds":
+			elif "Tree Seed" in equipped_item.name:
 				if get_parent().has_method("can_plant_seed"):
 					if not get_parent().can_plant_seed(mouse_pos):
 						return
@@ -258,8 +258,9 @@ func _on_PlayerHoldTimer_timeout():
 				return
 			
 			elif "Seeds" in equipped_item.name:
-				if get_parent().has_method("can_plant_crop"):
-					if not get_parent().can_plant_crop(mouse_pos):
+				# FIX: Changed 'can_plant_crop' to 'can_plant_seed'
+				if get_parent().has_method("can_plant_seed"):
+					if not get_parent().can_plant_seed(mouse_pos):
 						return
 				
 				if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
@@ -430,8 +431,8 @@ func find_tree_script(node: Node):
 	if node.has_method("setup_as_seed"):
 		return node
 	for child in node.get_children():
-		if child.has_method("setup_as_seed"):
-			return child
+		var found = find_tree_script(child)
+		if found: return found
 	return null
 
 func spawn_tree(pos: Vector2):
@@ -439,21 +440,35 @@ func spawn_tree(pos: Vector2):
 
 	if get_parent().has_method("get_tile_center_position"):
 		var snap_pos = get_parent().get_tile_center_position(pos)
-		var random_tree_scene = TREE_SCENES.pick_random()
-		var tree = random_tree_scene.instantiate()
-		tree.global_position = snap_pos
-
-		var script_node = find_tree_script(tree)
-		if script_node:
-			script_node.setup_as_seed()
 		
-		get_parent().add_child(tree)
+		var tree_scene = null
+		if equipped_item.crop_scene_path != "":
+			tree_scene = load(equipped_item.crop_scene_path)
 		
-		tree.modulate.a = 0.0
-		var t = get_tree().create_tween()
-		t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		if not tree_scene:
+			tree_scene = TREE_SCENES.pick_random()
+			
+		if tree_scene:
+			var tree = tree_scene.instantiate()
+			tree.global_position = snap_pos
+			
+			if "tree_sort_index" in get_parent():
+				tree.z_index = get_parent().tree_sort_index
+				get_parent().tree_sort_index += 1
+			else:
+				tree.z_index = 10
 
-		consume_equipped_item()
+			var script_node = find_tree_script(tree)
+			if script_node:
+				script_node.setup_as_seed()
+			
+			get_parent().add_child(tree)
+			
+			tree.modulate.a = 0.0
+			var t = get_tree().create_tween()
+			t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+			consume_equipped_item()
 
 func spawn_crop(pos: Vector2):
 	if equipped_slot_index == -1 or not inventory_data: return

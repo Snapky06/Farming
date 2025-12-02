@@ -70,7 +70,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_oflpl")
 }],
-"loop": true,
+"loop": false,
 "name": &"little_cycle",
 "speed": 5.0
 }]

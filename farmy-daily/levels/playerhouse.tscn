@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=4 uid="uid://4dp808w623li"]
+[gd_scene load_steps=29 format=4 uid="uid://4dp808w623li"]
 
 [ext_resource type="Texture2D" uid="uid://tbil2uhcba15" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Floor/Floor - all.png" id="1_w4fnf"]
 [ext_resource type="Texture2D" uid="uid://d36kgewqg6ucf" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/door.png" id="2_yxpej"]
@@ -6,10 +6,14 @@
 [ext_resource type="Texture2D" uid="uid://cwc37ps5arc11" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Wall/Wall - all.png" id="4_dpkkc"]
 [ext_resource type="Texture2D" uid="uid://c7d6vbituuuw8" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/props - all.png" id="5_4ihfr"]
 [ext_resource type="Texture2D" uid="uid://yitdcxnypbxp" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/cabinet.png" id="5_w7x7n"]
+[ext_resource type="Texture2D" uid="uid://e8o8m5i5k4e8" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/window.png" id="6_xvksy"]
+[ext_resource type="Texture2D" uid="uid://bpsd7ym5ayely" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/plants.png" id="7_xf0dq"]
+[ext_resource type="Texture2D" uid="uid://c8xna76hgk7kd" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/shelf.png" id="8_u8ey1"]
+[ext_resource type="Texture2D" uid="uid://de6bausyobfbj" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/sofa.png" id="9_xf0dq"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_b0sm6"]
-vertices = PackedVector2Array(86, -58, -38, -58, -38, -70, 74, -70, 86, -118, 74, -106, -150, -118, -74, -106, -150, 38, -74, 38)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 0, 3, 5), PackedInt32Array(6, 4, 5, 7), PackedInt32Array(8, 6, 7, 9)])
+vertices = PackedVector2Array(86, -58, 42, -58, 42, -70, 74, -70, 86, -118, 74, -106, -150, -118, -10, -106, -10, -70, 6, -70, 6, -58, -38, -58, -38, -70, -22, -70, -22, -106, -74, -106, -150, 38, -74, 38)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 0, 3, 5), PackedInt32Array(6, 4, 5, 7), PackedInt32Array(8, 9, 10, 11), PackedInt32Array(11, 12, 13), PackedInt32Array(8, 11, 13), PackedInt32Array(7, 8, 13, 14), PackedInt32Array(6, 7, 14), PackedInt32Array(6, 14, 15), PackedInt32Array(16, 6, 15, 17)])
 cell_size = 4.0
 border_size = 4.0
 
@@ -67,17 +71,17 @@ sources/1 = SubResource("TileSetAtlasSource_yxpej")
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4ihfr"]
 texture = ExtResource("2_yxpej")
 0:0/0 = 0
-0:0/0/texture_origin = Vector2i(0, 10)
+0:0/0/texture_origin = Vector2i(0, 16)
 1:0/0 = 0
-1:0/0/texture_origin = Vector2i(0, 10)
+1:0/0/texture_origin = Vector2i(0, 16)
 0:1/0 = 0
-0:1/0/texture_origin = Vector2i(0, 10)
+0:1/0/texture_origin = Vector2i(0, 16)
 1:1/0 = 0
-1:1/0/texture_origin = Vector2i(0, 10)
+1:1/0/texture_origin = Vector2i(0, 16)
 0:2/0 = 0
-0:2/0/texture_origin = Vector2i(0, 10)
+0:2/0/texture_origin = Vector2i(0, 16)
 1:2/0 = 0
-1:2/0/texture_origin = Vector2i(0, 10)
+1:2/0/texture_origin = Vector2i(0, 16)
 
 [sub_resource type="TileSet" id="TileSet_w7x7n"]
 sources/0 = SubResource("TileSetAtlasSource_4ihfr")
@@ -135,8 +139,74 @@ texture = ExtResource("5_w7x7n")
 1:0/0 = 0
 1:1/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_c3bqx"]
+texture = ExtResource("6_xvksy")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+2:0/0/texture_origin = Vector2i(0, 7)
+3:0/0 = 0
+3:0/0/texture_origin = Vector2i(0, 7)
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+2:1/0/texture_origin = Vector2i(0, 7)
+3:1/0 = 0
+3:1/0/texture_origin = Vector2i(0, 7)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_27qvp"]
+texture = ExtResource("7_xf0dq")
+0:0/0 = 0
+1:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aclbo"]
+texture = ExtResource("8_u8ey1")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+0:4/0 = 0
+1:4/0 = 0
+2:4/0 = 0
+3:4/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+2:5/0 = 0
+3:5/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_u8ey1"]
+texture = ExtResource("9_xf0dq")
+0:0/0 = 0
+1:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_xvksy"]
 sources/0 = SubResource("TileSetAtlasSource_isily")
+sources/2 = SubResource("TileSetAtlasSource_c3bqx")
+sources/3 = SubResource("TileSetAtlasSource_27qvp")
+sources/4 = SubResource("TileSetAtlasSource_aclbo")
+sources/5 = SubResource("TileSetAtlasSource_u8ey1")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xvksy"]
 texture = ExtResource("5_4ihfr")
@@ -246,6 +316,7 @@ texture = ExtResource("5_4ihfr")
 3:9/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_xf0dq"]
+physics_layer_0/collision_layer = 1
 sources/1 = SubResource("TileSetAtlasSource_xvksy")
 
 [node name="Start" type="Node2D"]
@@ -281,12 +352,12 @@ tile_set = SubResource("TileSet_isily")
 
 [node name="more decor" type="TileMapLayer" parent="NavRegion"]
 z_index = 1
-tile_map_data = PackedByteArray("AAACAPv/AAAAAAAAAAA=")
+tile_map_data = PackedByteArray("AAACAPv/AAAAAAAAAAD+//7/AgACAAEAAAD///7/AgADAAEAAAD+//3/AgACAAAAAAD///3/AgADAAAAAAACAP3/AgACAAAAAAACAP7/AgACAAEAAAADAP3/AgADAAAAAAADAP7/AgADAAEAAAD9//r/AwAAAAIAAAD9//v/AwAAAAMAAAD2//b/BAACAAMAAAD2//f/BAACAAQAAAD2//j/BAACAAUAAAD3//b/BAADAAMAAAD3//f/BAADAAQAAAD3//j/BAADAAUAAAD4//b/BAACAAMAAAD4//f/BAACAAQAAAD4//j/BAACAAUAAAD5//b/BAADAAMAAAD5//f/BAADAAQAAAD5//j/BAADAAUAAAD6//b/BAAAAAAAAAD6//f/BAAAAAEAAAD6//j/BAAAAAIAAAD7//b/BAABAAAAAAD7//f/BAABAAEAAAD7//j/BAABAAIAAAD3//n/BQAAAAAAAAD3//r/BQAAAAEAAAD3//v/BQAAAAIAAAD5//n/BQAAAAAAABD5//r/BQAAAAEAABD5//v/BQAAAAIAABAFAPj/AAABAAAAAAD9//z/AAABAAEAAAAAAPz/AwABAAIAAAA=")
 tile_set = SubResource("TileSet_xvksy")
 
 [node name="Decor" type="TileMapLayer" parent="NavRegion"]
 z_index = 1
-tile_map_data = PackedByteArray("AAACAPv/AQAAAAAAAAACAPz/AQAAAAEAAAADAPv/AQABAAAAAAADAPz/AQABAAEAAAAEAPv/AQACAAAAAAAEAPz/AQACAAEAAAA=")
+tile_map_data = PackedByteArray("AAACAPv/AQAAAAAAAAACAPz/AQAAAAEAAAADAPv/AQABAAAAAAADAPz/AQABAAEAAAAEAPv/AQACAAAAAAAEAPz/AQACAAEAAAD3//b/AQAHAAMAAAD3//f/AQAHAAQAAAD3//j/AQAHAAUAAAD4//b/AQAIAAMAAAD4//f/AQAIAAQAAAD4//j/AQAIAAUAAAD5//b/AQAJAAAAAAD5//f/AQAJAAEAAAD5//j/AQAJAAIAAAD6//b/AQAKAAAAAAD6//f/AQAKAAEAAAD6//j/AQAKAAIAAAD3//r/AQABAAkAAFD5//r/AQABAAkAAGD4//r/AQABAAgAAGD+//z/AQACAAYAAAD///z/AQADAAYAAAA=")
 tile_set = SubResource("TileSet_xf0dq")
 
 [node name="spawn_from_outside" type="Marker2D" parent="."]

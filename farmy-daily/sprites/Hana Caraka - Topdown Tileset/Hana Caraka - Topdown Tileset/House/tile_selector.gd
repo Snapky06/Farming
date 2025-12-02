@@ -10,7 +10,7 @@ func _process(_delta):
 	var is_locked_on_action = false
 	
 	var player = get_parent().player
-	if player:
+	if is_instance_valid(player):
 		if player.is_moving_to_interact or player.is_movement_locked:
 			target_global_pos = player.pending_tool_action_pos
 			is_locked_on_action = true
@@ -25,7 +25,7 @@ func _process(_delta):
 		return
 
 	var is_valid = false
-	if get_parent().has_method("is_tile_farmable") and player and player.equipped_item:
+	if get_parent().has_method("is_tile_farmable") and is_instance_valid(player) and player.equipped_item:
 		var n = player.equipped_item.name
 		
 		if n == "Hoe":
@@ -48,14 +48,14 @@ func _process(_delta):
 					if c.current_stage >= c.max_stage:
 						is_valid = true
 						break
-				
-		elif n == "Tree Seed" or n == "Tree Seeds":
+		
+		elif "Tree Seed" in n or "Tree Seeds" in n:
 			if get_parent().has_method("can_plant_seed"):
 				is_valid = get_parent().can_plant_seed(target_global_pos)
 				
 		elif "Seeds" in n:
-			if get_parent().has_method("can_plant_crop"):
-				is_valid = get_parent().can_plant_crop(target_global_pos)
+			if get_parent().has_method("can_plant_seed"):
+				is_valid = get_parent().can_plant_seed(target_global_pos)
 
 	if is_valid:
 		self.modulate = Color(0, 1, 0, 0.5)
