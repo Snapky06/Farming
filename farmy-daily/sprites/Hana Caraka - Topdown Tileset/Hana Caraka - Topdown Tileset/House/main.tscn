@@ -36,7 +36,6 @@ position = Vector2(175, 143)
 script = ExtResource("11_6x66l")
 
 [node name="InventoryInterface" type="Control" parent="UI"]
-visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -48,27 +47,28 @@ script = ExtResource("12_8fpue")
 
 [node name="PlayerInventory" parent="UI/InventoryInterface" instance=ExtResource("13_ykfl3")]
 layout_mode = 1
-anchors_preset = 7
+anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 1.0
+anchor_top = 0.5
 anchor_right = 0.5
-anchor_bottom = 1.0
+anchor_bottom = 0.5
 offset_left = -40.0
-offset_top = -80.0
+offset_top = 76.0
 offset_right = 40.0
-offset_bottom = 0.0
+offset_bottom = 156.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="ExternalInventory" parent="UI/InventoryInterface" instance=ExtResource("13_ykfl3")]
-visible = false
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
 offset_left = -40.0
+offset_top = 200.0
 offset_right = 40.0
+offset_bottom = 280.0
 grow_horizontal = 2
 mouse_filter = 2
 
@@ -80,16 +80,13 @@ layout_mode = 0
 mouse_filter = 2
 
 [node name="HotBarInventory" parent="UI" instance=ExtResource("15_iurc1")]
-anchors_preset = 7
-anchor_left = 0.5
+anchors_preset = 2
 anchor_top = 1.0
-anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -32.0
-offset_top = -64.0
-offset_right = 32.0
-offset_bottom = 0.0
-grow_horizontal = 2
+offset_left = 20.0
+offset_top = -84.0
+offset_right = 84.0
+offset_bottom = -20.0
 grow_vertical = 0
 
 [node name="Time" type="CanvasLayer" parent="."]

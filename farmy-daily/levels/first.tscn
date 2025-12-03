@@ -374,6 +374,8 @@ physics_layer_0/collision_layer = 1
 sources/0 = SubResource("TileSetAtlasSource_xpcyy")
 sources/1 = SubResource("TileSetAtlasSource_4ste1")
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_tc8jh"]
+
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_tab5i"]
 scenes/1/scene = ExtResource("8_218dk")
 scenes/2/scene = ExtResource("9_tc8jh")
@@ -807,8 +809,6 @@ scenes/7/scene = ExtResource("12_u4jaw")
 [sub_resource type="TileSet" id="TileSet_b0sm6"]
 sources/0 = SubResource("TileSetScenesCollectionSource_lhv7a")
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_tc8jh"]
-
 [node name="Start" type="Node2D"]
 position = Vector2(176, 144)
 
@@ -838,6 +838,49 @@ winter_texture = ExtResource("2_ipxjn")
 [node name="Path" type="TileMapLayer" parent="NavRegion"]
 tile_map_data = PackedByteArray("AAAAAP//AAABAAMAAAD/////AAABAAMAAAD8/wAAAAADAAEAAAD8////AAAIAAAAAAD9////AAABAAMAAAD+////AAABAAMAAAABAP//AAAHAAAAAAABAAAAAAAEAAMAAAACAAAAAAABAAMAAAADAAAAAAAGAAMAAAAEAAAAAAAFAAMAAAAEAP//AAACAAAAAAADAP//AAAAAAAAAAD8/wEAAAADAAEAAAD8/wIAAAADAAEAAAD8/wMAAAADAAEAAAD8/wQAAAADAAEAAAD7////AAABAAMAAAD6////AAABAAMAAAD5////AAABAAMAAAD4////AAABAAMAAAD3////AAABAAMAAAD2////AAABAAMAAAD1////AAABAAMAAAAFAAAAAAABAAMAAAAGAAAAAAABAAMAAAAHAAAAAAAHAAMAAAAHAP//AAAEAAAAAAAIAP//AAAHAAMAAAAIAP7/AAADAAEAAAAIAP3/AAAEAAAAAAAJAP3/AAABAAMAAAAKAP3/AAABAAMAAAALAP3/AAABAAMAAAAMAP3/AAABAAMAAAANAP3/AAABAAMAAAAOAP3/AAABAAMAAAAPAP3/AAABAAMAAAAQAP3/AAABAAMAAAD8/wUAAAADAAEAAAD8/wYAAAADAAEAAAD8/wcAAAADAAEAAAD8/wgAAAADAAEAAAD8/wkAAAADAAEAAAD8/woAAAAEAAQAAAD8/wsAAAADAAEAAAD8/wwAAAADAAEAAAD8/w0AAAADAAEAAAD8/w4AAAAEAAMAAAD9/w4AAAABAAMAAAD+/w4AAAABAAMAAAD//w4AAAABAAMAAAAAAA4AAAABAAMAAAABAA4AAAABAAMAAAACAA4AAAABAAMAAAADAA4AAAABAAMAAAAEAA4AAAABAAMAAAAFAA4AAAABAAMAAAAGAA4AAAAHAAAAAAAGAA8AAAADAAEAAAAGABAAAAADAAEAAAAGABEAAAADAAEAAAD9/woAAAABAAMAAAD+/woAAAABAAMAAAD//woAAAABAAMAAAAAAAoAAAABAAMAAAABAAoAAAABAAMAAAACAAoAAAABAAMAAAADAAoAAAABAAMAAAAEAAoAAAABAAMAAAAFAAoAAAABAAMAAAAGAAoAAAABAAMAAAAHAAoAAAABAAMAAAAIAAoAAAABAAMAAAAJAAoAAAABAAMAAAAKAAoAAAABAAMAAAALAAoAAAABAAMAAAAMAAoAAAABAAMAAAANAAoAAAABAAMAAAAOAAoAAAABAAMAAAAPAAoAAAABAAMAAAAQAAoAAAAHAAAAAAAQAAsAAAADAAEAAAAQAAwAAAADAAEAAAAQAA0AAAAEAAMAAAASAA0AAAABAAMAAAARAA0AAAABAAMAAAATAA0AAAABAAMAAAAUAA0AAAABAAMAAAAVAA0AAAABAAMAAAAWAA0AAAABAAMAAAAXAA0AAAABAAMAAAAYAA0AAAABAAMAAAAZAA0AAAABAAMAAAAaAA0AAAABAAMAAAAbAA0AAAABAAMAAAAcAA0AAAABAAMAAAAdAA0AAAABAAMAAAAeAA0AAAABAAMAAAAfAA0AAAABAAMAAAAgAA0AAAABAAMAAAAhAA0AAAABAAMAAAARAP3/AAABAAMAAAASAP3/AAABAAMAAAATAP3/AAABAAMAAAAUAP3/AAABAAMAAAAVAP3/AAAHAAAAAAAVAP7/AAADAAEAAAAVAP//AAADAAEAAAAVAAAAAAADAAEAAAAVAAEAAAAEAAMAAAAWAAEAAAABAAMAAAAXAAEAAAABAAMAAAAYAAEAAAABAAMAAAAZAAEAAAABAAMAAAAaAAEAAAABAAMAAAAbAAEAAAAHAAMAAAAbAAAAAAADAAEAAAAbAP//AAADAAEAAAAbAP7/AAADAAEAAAAbAP3/AAADAAEAAAAbAPz/AAADAAEAAAAbAPv/AAADAAEAAAAbAPr/AAADAAEAAAAbAPn/AAADAAEAAAAbAPj/AAADAAEAAAAbAPf/AAADAAEAAAAeAA4AAQABAAIAAAAFAA8AAQACAAIAAAD5/wAAAQABAAMAAAAZAPr/AQABAAIAAAA=")
 tile_set = SubResource("TileSet_orxg8")
+
+[node name="Town Sign" type="Area2D" parent="NavRegion/Path"]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("19_218dk")
+sign_text = "This Paths Follows To The Town"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign"]
+position = Vector2(-104, 9)
+shape = SubResource("CircleShape2D_tc8jh")
+
+[node name="Town Sign2" type="Area2D" parent="NavRegion/Path"]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("19_218dk")
+sign_text = "This Paths Follows To Big Adventure"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign2"]
+visible = false
+position = Vector2(88, 248)
+shape = SubResource("CircleShape2D_tc8jh")
+
+[node name="Town Sign3" type="Area2D" parent="NavRegion/Path"]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("19_218dk")
+sign_text = "This Paths Follows To The GreenHouse"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign3"]
+visible = false
+position = Vector2(489, 232)
+shape = SubResource("CircleShape2D_tc8jh")
+
+[node name="Town Sign4" type="Area2D" parent="NavRegion/Path"]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("19_218dk")
+sign_text = "This Paths Follows To The Beach	"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign4"]
+visible = false
+position = Vector2(408, -87)
+shape = SubResource("CircleShape2D_tc8jh")
 
 [node name="Interactables" type="TileMapLayer" parent="NavRegion"]
 z_index = 3
@@ -869,48 +912,6 @@ tile_set = SubResource("TileSet_rgosd")
 z_index = 3
 tile_map_data = PackedByteArray("AAAOAP7/AAAAAAAABwAAAAIAAAAAAAAABwD2/wIAAAAAAAAABwD3/wAAAAAAAAAABwD6/wIAAAAAAAAABwD4/wQAAAAAAAAABwD+/wQAAAAAAAAABwAIAAIAAAAAAAAABwAEAAEAAAAAAAAABwAEAAQAAAAAAAAABwAQAAEAAAAAAAAABwAMAAAAAAAAAAAABwAOAAMAAAAAAAAABwALAAQAAAAAAAAABwAKAPj/AAAAAAAABwANAPr/AAAAAAAABwAPAPf/AAAAAAAABwAHAPf/AAAAAAAABwAAAPj/AAAAAAAABwD6//v/AAAAAAAABwD3//j/AAAAAAAABwD3//v/AAAAAAAABwD5//n/AAAAAAAABwD8//j/AAAAAAAABwD2/wcAAAAAAAAABwD5/wsAAAAAAAAABwD6/wgAAAAAAAAABwD2/wsAAAAAAAAABwD4/w8AAAAAAAAABwD5/w0AAAAAAAAABwD2/w4AAAAAAAAABwD7/xAAAAAAAAAABwABAA8AAAAAAAAABwD9/w8AAAAAAAAABwADABEAAAAAAAAABwD+/wsAAAAAAAAABwADAAsAAAAAAAAABwAIAAwAAAAAAAAABwAJAA8AAAAAAAAABwAMAA0AAAAAAAAABwAPABAAAAAAAAAABwATAA8AAAAAAAAABwAYAA4AAAAAAAAABwAeABAAAAAAAAAABwAZABAAAAAAAAAABwAgAA4AAAAAAAAABwAcAA8AAAAAAAAABwAVAA4AAAAAAAAABwABAAYAAAAAAAAABwACAAQAAAAAAAAABwAGAAcAAAAAAAAABwARAAcAAAAAAAAABwAWAAgAAAAAAAAABwAVAAoAAAAAAAAABwAdAAoAAAAAAAAABwAhAAoAAAAAAAAABwAfAAcAAAAAAAAABwAZAAcAAAAAAAAABwASAAMAAAAAAAAABwAVAAQAAAAAAAAABwATAAYAAAAAAAAABwALAAcAAAAAAAAABwAdAAMAAAAAAAAABwAZAAQAAAAAAAAABwAbAAYAAAAAAAAABwAeAAEAAAAAAAAABwAhAAMAAAAAAAAABwAeAAUAAAAAAAAABwAgAP3/AAAAAAAABwAgAAAAAAAAAAAABwAeAP7/AAAAAAAABwAgAPn/AAAAAAAABwAdAPn/AAAAAAAABwAdAPz/AAAAAAAABwAfAPv/AAAAAAAABwAeAPj/AAAAAAAABwAXAPj/AAAAAAAABwAXAP7/AAAAAAAABwAZAP7/AAAAAAAABwATAPr/AAAAAAAABwAWAPr/AAAAAAAABwAVAPf/AAAAAAAABwAHAAUAAAAAAAAABwAMAPb/AAAAAAAABwAQAPn/AAAAAAAABwASAPj/AAAAAAAABwAYAPv/AAAAAAAABwAZAPf/AAAAAAAABwA=")
 tile_set = SubResource("TileSet_b0sm6")
-
-[node name="Town Sign" type="Area2D" parent="NavRegion"]
-collision_layer = 4
-collision_mask = 4
-script = ExtResource("19_218dk")
-sign_text = "This Paths Follows To The Town"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Town Sign"]
-position = Vector2(-104, 9)
-shape = SubResource("CircleShape2D_tc8jh")
-
-[node name="Town Sign2" type="Area2D" parent="NavRegion"]
-collision_layer = 4
-collision_mask = 4
-script = ExtResource("19_218dk")
-sign_text = "This Paths Follows To Big Adventure"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Town Sign2"]
-visible = false
-position = Vector2(88, 248)
-shape = SubResource("CircleShape2D_tc8jh")
-
-[node name="Town Sign3" type="Area2D" parent="NavRegion"]
-collision_layer = 4
-collision_mask = 4
-script = ExtResource("19_218dk")
-sign_text = "This Paths Follows To The GreenHouse"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Town Sign3"]
-visible = false
-position = Vector2(489, 232)
-shape = SubResource("CircleShape2D_tc8jh")
-
-[node name="Town Sign4" type="Area2D" parent="NavRegion"]
-collision_layer = 4
-collision_mask = 4
-script = ExtResource("19_218dk")
-sign_text = "This Paths Follows To The Beach"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Town Sign4"]
-position = Vector2(408, -87)
-shape = SubResource("CircleShape2D_tc8jh")
 
 [node name="spawn_outside" type="Marker2D" parent="."]
 position = Vector2(65, 4)
