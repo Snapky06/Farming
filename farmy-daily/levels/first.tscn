@@ -846,38 +846,39 @@ script = ExtResource("19_218dk")
 sign_text = "This Paths Follows To The Town"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign"]
+visible = false
 position = Vector2(-104, 9)
 shape = SubResource("CircleShape2D_tc8jh")
 
-[node name="Town Sign2" type="Area2D" parent="NavRegion/Path"]
+[node name="Adventure Sign" type="Area2D" parent="NavRegion/Path"]
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("19_218dk")
 sign_text = "This Paths Follows To Big Adventure"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign2"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Adventure Sign"]
 visible = false
 position = Vector2(88, 248)
 shape = SubResource("CircleShape2D_tc8jh")
 
-[node name="Town Sign3" type="Area2D" parent="NavRegion/Path"]
+[node name="Greenhouse Sign" type="Area2D" parent="NavRegion/Path"]
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("19_218dk")
 sign_text = "This Paths Follows To The GreenHouse"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign3"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Greenhouse Sign"]
 visible = false
 position = Vector2(489, 232)
 shape = SubResource("CircleShape2D_tc8jh")
 
-[node name="Town Sign4" type="Area2D" parent="NavRegion/Path"]
+[node name="Beach Sign" type="Area2D" parent="NavRegion/Path"]
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("19_218dk")
 sign_text = "This Paths Follows To The Beach	"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Town Sign4"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Path/Beach Sign"]
 visible = false
 position = Vector2(408, -87)
 shape = SubResource("CircleShape2D_tc8jh")
