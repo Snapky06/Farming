@@ -7,7 +7,7 @@ signal hour_passed
 
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
-const REAL_SECONDS_PER_GAME_DAY = 50.0 
+const REAL_SECONDS_PER_GAME_DAY = 1200.0 
 const GAME_SECONDS_PER_DAY = 86400.0 
 const TIME_SCALE = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY 
 
@@ -15,8 +15,8 @@ const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 const MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 var current_time_seconds = 0.0
-var current_day = 1
-var current_month = 10
+var current_day = 20
+var current_month = 4
 var current_year = 2025
 var current_season = Seasons.SPRING
 var last_hour = -1
