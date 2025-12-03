@@ -16,7 +16,7 @@ const MONTH_NAMES = ["", "January", "February", "March", "April", "May", "June",
 
 var current_time_seconds = 0.0
 var current_day = 20
-var current_month = 4
+var current_month = 9
 var current_year = 2025
 var current_season = Seasons.SPRING
 var last_hour = -1
