@@ -2,12 +2,12 @@ extends Node2D
 
 @onready var player: CharacterBody2D = $Player
 @onready var inventory_interface: Control = $UI/InventoryInterface
-@onready var chest: StaticBody2D = null
 @onready var hot_bar_inventory: PanelContainer = $UI/HotBarInventory
 @onready var tile_selector: Sprite2D = $TileSelector
-@onready var ground_layer: TileMapLayer = $Start/NavRegion/Ground
 
+var ground_layer: TileMapLayer = null
 var obstruction_layers: Array[TileMapLayer] = []
+
 var hoe_cooldown: bool = false
 var tree_sort_index: int = 11
 
@@ -23,15 +23,10 @@ var transition_layer: CanvasLayer = null
 var transition_rect: ColorRect = null
 
 func _ready() -> void:
+	_refresh_layer_references(self)
+	
 	_setup_transition_layer()
 	_connect_all_chests(self)
-
-	if is_instance_valid(ground_layer):
-		var parent_node = ground_layer.get_parent()
-		if parent_node:
-			for child in parent_node.get_children():
-				if child is TileMapLayer and child != ground_layer:
-					obstruction_layers.append(child)
 
 	var spawn_node: Node2D = null
 	if TimeManager.player_spawn_tag != "":
@@ -62,7 +57,9 @@ func _ready() -> void:
 	hot_bar_inventory.hotbar_slot_selected.connect(player.update_equipped_item)
 	hot_bar_inventory.hotbar_slot_selected.connect(_on_hotbar_slot_selected)
 
-	tile_selector.visible = false
+	if is_instance_valid(tile_selector):
+		tile_selector.visible = false
+	
 	hot_bar_inventory.deselect_all()
 
 	if TimeManager.has_signal("time_updated"):
@@ -72,6 +69,21 @@ func _ready() -> void:
 
 	await get_tree().process_frame
 	set_camera_limits()
+
+func _refresh_layer_references(root: Node) -> void:
+	ground_layer = null
+	obstruction_layers.clear()
+	
+	var all_layers: Array[Node] = root.find_children("*", "TileMapLayer", true, false)
+	
+	for layer in all_layers:
+		if layer.name == "Ground":
+			ground_layer = layer
+		else:
+			obstruction_layers.append(layer)
+			
+	if ground_layer == null:
+		push_error("CRITICAL: No TileMapLayer named 'Ground' found in this level!")
 
 func _connect_all_chests(node: Node) -> void:
 	if node.has_signal("chest_opened"):
@@ -163,44 +175,48 @@ func _on_hotbar_slot_selected(_index: int) -> void:
 
 func refresh_tile_selector() -> void:
 	if not is_instance_valid(tile_selector): return
+	
 	if inventory_interface.visible or hoe_cooldown:
 		tile_selector.visible = false
 		return
+		
 	if not is_instance_valid(player) or not player.equipped_item:
 		tile_selector.visible = false
 		return
 
 	var item_name = str(player.equipped_item.name)
 	var mouse_pos = get_global_mouse_position()
+	
 	var center_pos = get_tile_center_position(mouse_pos)
+	if center_pos == Vector2.ZERO: 
+		tile_selector.visible = false
+		return
+
+	tile_selector.global_position = center_pos
+	
+	var is_valid = false
+	var show_selector = false
 
 	if item_name == "Hoe":
-		if is_tile_farmable(mouse_pos):
-			tile_selector.visible = true
-			tile_selector.global_position = center_pos
-		else:
-			tile_selector.visible = false
-		return
+		show_selector = true
+		is_valid = is_tile_farmable(mouse_pos)
 
-	if item_name == "Watering Can":
-		if is_tile_waterable(mouse_pos):
-			tile_selector.visible = true
-			tile_selector.global_position = center_pos
-		else:
-			tile_selector.visible = false
-		return
+	elif item_name == "Watering Can":
+		show_selector = true
+		is_valid = is_tile_waterable(mouse_pos)
 
-	if "Seed" in item_name or "Seeds" in item_name:
+	elif "Seed" in item_name or "Seeds" in item_name:
+		show_selector = true
+		is_valid = can_plant_seed(mouse_pos)
+	
+	if show_selector:
 		tile_selector.visible = true
-		tile_selector.global_position = center_pos
-		
-		if can_plant_seed(mouse_pos):
+		if is_valid:
 			tile_selector.modulate = Color(0, 1, 0, 0.5)
 		else:
 			tile_selector.modulate = Color(1, 0, 0, 0.5)
-		return
-
-	tile_selector.visible = false
+	else:
+		tile_selector.visible = false
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(player) and player.equipped_item:
@@ -268,18 +284,13 @@ func is_tile_occupied(center: Vector2) -> bool:
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = center
 	query.collide_with_bodies = true
-	
-	# FIX: Disable Area collision to prevent blocking by triggers/zones
 	query.collide_with_areas = false 
-	
-	# Mask 1 (Walls) | Mask 4 (Interactables/Crops/Trees)
 	query.collision_mask = 1 | 4 
 	
 	var results = space_state.intersect_point(query)
 	
 	for result in results:
 		var collider = result.collider
-		# Double check we aren't colliding with player
 		if collider == player or (player and player.is_ancestor_of(collider)):
 			continue
 		return true
@@ -296,8 +307,9 @@ func is_tile_farmable(global_pos: Vector2) -> bool:
 		return false
 		
 	for layer in obstruction_layers:
-		if is_instance_valid(layer) and layer.get_cell_source_id(tile_pos) != -1:
-			return false
+		if is_instance_valid(layer):
+			if layer.get_cell_source_id(tile_pos) != -1:
+				return false
 	
 	var tile_data = ground_layer.get_cell_tile_data(tile_pos)
 	if not tile_data:
@@ -338,39 +350,23 @@ func can_plant_seed(global_pos: Vector2) -> bool:
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	var target_center = get_tile_center_position(global_pos)
 
-	# --- TREE LOGIC ---
 	if "Tree Seed" in item.name:
-		# Strict 3x3 neighbor check only for trees
 		for x in range(-1, 2):
 			for y in range(-1, 2):
 				var neighbor_map_pos = tile_pos + Vector2i(x, y)
 				var neighbor_center = ground_layer.to_global(ground_layer.map_to_local(neighbor_map_pos))
 				if is_tile_occupied(neighbor_center):
 					return false
-					
 		var source_id = ground_layer.get_cell_source_id(tile_pos)
 		if source_id == -1: return false
 		return true
 	
-	# --- CROP LOGIC ---
-	
-	# 1. Check for physical obstruction (Crop, Wall)
 	if is_tile_occupied(target_center):
 		return false
 		
 	var atlas_coords = ground_layer.get_cell_atlas_coords(tile_pos)
-	
-	# 2. FIX: If it is visually Tilled or Watered, ALLOW planting immediately.
 	if atlas_coords == HOED_ATLAS_COORDS or atlas_coords == WATERED_ATLAS_COORDS:
 		return true
-		
-	# 3. Fallback: Check metadata only if not already tilled (unlikely for seeds)
-	var tile_data = ground_layer.get_cell_tile_data(tile_pos)
-	if not tile_data: return false
-	
-	var can_farm = tile_data.get_custom_data("can_farm")
-	if typeof(can_farm) == TYPE_BOOL and not can_farm:
-		return false
 		
 	return false
 
@@ -534,10 +530,6 @@ func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
 	while old_level_root.get_parent() != self and old_level_root.get_parent() != null:
 		old_level_root = old_level_root.get_parent()
 		
-	if old_level_root.get_parent() == null:
-		push_warning("Could not determine level root from ground_layer.")
-		return
-		
 	TimeManager.player_spawn_tag = spawn_tag
 	var parent: Node = old_level_root.get_parent()
 	var index: int = old_level_root.get_index()
@@ -551,19 +543,7 @@ func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
 	
 	await get_tree().process_frame
 	
-	var new_ground_layer: TileMapLayer = _find_ground_layer(new_level_root)
-	if new_ground_layer == null:
-		push_warning("No Ground TileMapLayer found under new level root.")
-		return
-		
-	ground_layer = new_ground_layer
-	obstruction_layers.clear()
-	
-	if ground_layer.get_parent():
-		var parent_node2: Node = ground_layer.get_parent()
-		for child in parent_node2.get_children():
-			if child is TileMapLayer and child != ground_layer:
-				obstruction_layers.append(child)
+	_refresh_layer_references(new_level_root)
 				
 	var spawn_node: Node2D = null
 	if TimeManager.player_spawn_tag != "":
@@ -594,20 +574,3 @@ func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
 		
 	if is_instance_valid(player):
 		player.is_movement_locked = false
-
-func _find_ground_layer(root: Node) -> TileMapLayer:
-	var node = root.get_node_or_null("NavRegion/Ground")
-	if node is TileMapLayer: return node
-	
-	node = root.get_node_or_null("Backgrounds/NavRegion/Ground")
-	if node is TileMapLayer: return node
-	
-	var queue: Array = [root]
-	while queue.size() > 0:
-		var current: Node = queue[0]
-		queue.remove_at(0)
-		if current is TileMapLayer and current.name == "Ground":
-			return current
-		for child in current.get_children():
-			queue.append(child)
-	return null

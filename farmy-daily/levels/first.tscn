@@ -881,6 +881,8 @@ texture = ExtResource("2_ipxjn")
 terrain_set_0/mode = 0
 terrain_set_0/terrain_0/name = "TilledSoil"
 terrain_set_0/terrain_0/color = Color(0.5019608, 0.34509805, 0.2509804, 1)
+custom_data_layer_0/name = "can_farm"
+custom_data_layer_0/type = 1
 sources/3 = SubResource("TileSetAtlasSource_yvs2r")
 
 [sub_resource type="TileSetScenesCollectionSource" id="TileSetScenesCollectionSource_wwp2e"]
