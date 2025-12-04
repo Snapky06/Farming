@@ -1,4 +1,4 @@
-[gd_scene load_steps=166 format=3 uid="uid://buts4ehxirrur"]
+[gd_scene load_steps=173 format=3 uid="uid://buts4ehxirrur"]
 
 [ext_resource type="Script" uid="uid://b45dnx5l0a4v" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.gd" id="1_ktniu"]
 [ext_resource type="Resource" uid="uid://b5f5s6ce6wjb1" path="res://player_inv.tres" id="2_iwuv1"]
@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://daxyhenembldj" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Farming/pickaxe.png" id="7_vvndj"]
 [ext_resource type="Texture2D" uid="uid://xilq6d4648e2" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Farming/watering.png" id="9_6ecp4"]
 [ext_resource type="Texture2D" uid="uid://b0o3i2rcav5p2" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Farming/sickle.png" id="9_6xhmo"]
+[ext_resource type="Texture2D" uid="uid://b8d5njygqu7ic" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Basic/death.png" id="10_sopky"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_yq0bf"]
 atlas = ExtResource("3_6ecp4")
@@ -412,6 +413,30 @@ region = Rect2(320, 160, 80, 80)
 [sub_resource type="AtlasTexture" id="AtlasTexture_yo6f8"]
 atlas = ExtResource("9_6xhmo")
 region = Rect2(400, 160, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pdsi5"]
+atlas = ExtResource("10_sopky")
+region = Rect2(0, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_p2duy"]
+atlas = ExtResource("10_sopky")
+region = Rect2(80, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_3al33"]
+atlas = ExtResource("10_sopky")
+region = Rect2(160, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a602r"]
+atlas = ExtResource("10_sopky")
+region = Rect2(240, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vybi4"]
+atlas = ExtResource("10_sopky")
+region = Rect2(320, 0, 80, 80)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hn3i3"]
+atlas = ExtResource("10_sopky")
+region = Rect2(400, 0, 80, 80)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_hj0o7"]
 atlas = ExtResource("4_hnowp")
@@ -1012,6 +1037,29 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_pdsi5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_p2duy")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_3al33")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a602r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vybi4")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hn3i3")
+}],
+"loop": true,
+"name": &"sleep",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_hj0o7")
 }, {
 "duration": 1.0,
@@ -1215,7 +1263,9 @@ inventory_data = ExtResource("2_iwuv1")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(0.9, 0.9)
 sprite_frames = SubResource("SpriteFrames_2t4pl")
-animation = &"walk_down"
+animation = &"sleep"
+frame = 4
+frame_progress = 0.3632407
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 0)
