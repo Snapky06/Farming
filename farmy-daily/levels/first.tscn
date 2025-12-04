@@ -1,4 +1,4 @@
-[gd_scene load_steps=60 format=4 uid="uid://cawg1tq3uaqq7"]
+[gd_scene load_steps=61 format=4 uid="uid://cawg1tq3uaqq7"]
 
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="1_7vv13"]
 [ext_resource type="Texture2D" uid="uid://cpmrsd74pic64" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Winter/winter.png" id="2_ipxjn"]
@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://cqmo0v2k2l640" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/House.png" id="11_smn5b"]
 [ext_resource type="Script" uid="uid://ftgpquhc8isc" path="res://levels/scene_transition.gd" id="12_ipxjn"]
 [ext_resource type="PackedScene" uid="uid://c6l7cs6ihrf0r" path="res://interactable/trees/pine_tree.tscn" id="12_u4jaw"]
+[ext_resource type="Script" uid="uid://cios878i8ov7y" path="res://levels/house_seasonal_layer.gd" id="13_wwp2e"]
 [ext_resource type="PackedScene" uid="uid://for0vksr8o2l" path="res://interactable/chest.tscn" id="14_a52kp"]
 [ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="15_0olos"]
 [ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="16_4ste1"]
@@ -366,12 +367,6 @@ texture = ExtResource("11_smn5b")
 9:0/0/texture_origin = Vector2i(0, -6)
 10:0/0 = 0
 10:0/0/texture_origin = Vector2i(0, -6)
-14:0/0 = 0
-15:0/0 = 0
-16:0/0 = 0
-17:0/0 = 0
-18:0/0 = 0
-19:0/0 = 0
 0:1/0 = 0
 1:1/0 = 0
 2:1/0 = 0
@@ -392,12 +387,6 @@ texture = ExtResource("11_smn5b")
 12:1/0/texture_origin = Vector2i(0, -6)
 13:1/0 = 0
 13:1/0/texture_origin = Vector2i(0, -6)
-14:1/0 = 0
-15:1/0 = 0
-16:1/0 = 0
-17:1/0 = 0
-18:1/0 = 0
-19:1/0 = 0
 0:2/0 = 0
 1:2/0 = 0
 2:2/0 = 0
@@ -424,12 +413,6 @@ texture = ExtResource("11_smn5b")
 13:2/0 = 0
 13:2/0/texture_origin = Vector2i(0, -6)
 13:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -1.7985859, -1.4388695, -2.1583042, -1.6187286, 13.669264, -7.913784, 14.208841)
-14:2/0 = 0
-15:2/0 = 0
-16:2/0 = 0
-17:2/0 = 0
-18:2/0 = 0
-19:2/0 = 0
 0:3/0 = 0
 1:3/0 = 0
 2:3/0 = 0
@@ -481,10 +464,15 @@ texture = ExtResource("11_smn5b")
 5:5/0 = 0
 6:5/0 = 0
 9:5/0 = 0
+9:5/0/texture_origin = Vector2i(0, -6)
 10:5/0 = 0
+10:5/0/texture_origin = Vector2i(0, -6)
 11:5/0 = 0
+11:5/0/texture_origin = Vector2i(0, -6)
 12:5/0 = 0
+12:5/0/texture_origin = Vector2i(0, -6)
 13:5/0 = 0
+13:5/0/texture_origin = Vector2i(0, -6)
 0:6/0 = 0
 1:6/0 = 0
 2:6/0 = 0
@@ -494,11 +482,17 @@ texture = ExtResource("11_smn5b")
 6:6/0 = 0
 7:6/0 = 0
 8:6/0 = 0
+8:6/0/texture_origin = Vector2i(0, -6)
 9:6/0 = 0
+9:6/0/texture_origin = Vector2i(0, -6)
 10:6/0 = 0
+10:6/0/texture_origin = Vector2i(0, -6)
 11:6/0 = 0
+11:6/0/texture_origin = Vector2i(0, -6)
 12:6/0 = 0
+12:6/0/texture_origin = Vector2i(0, -6)
 13:6/0 = 0
+13:6/0/texture_origin = Vector2i(0, -6)
 0:7/0 = 0
 1:7/0 = 0
 2:7/0 = 0
@@ -508,15 +502,23 @@ texture = ExtResource("11_smn5b")
 6:7/0 = 0
 7:7/0 = 0
 8:7/0 = 0
+8:7/0/texture_origin = Vector2i(0, -6)
+8:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-5.75548, -8, 8, -8, 8, 8, -5.935338, 8, -3.956892, 1.4388714)
 9:7/0 = 0
+9:7/0/texture_origin = Vector2i(0, -6)
+9:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 10:7/0 = 0
+10:7/0/texture_origin = Vector2i(0, -6)
+10:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 11:7/0 = 0
+11:7/0/texture_origin = Vector2i(0, -6)
+11:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 12:7/0 = 0
+12:7/0/texture_origin = Vector2i(0, -6)
+12:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 8, -8, 8)
 13:7/0 = 0
-14:7/0 = 0
-15:7/0 = 0
-16:7/0 = 0
-17:7/0 = 0
+13:7/0/texture_origin = Vector2i(0, -6)
+13:7/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 0.5395756, -8, -0.5395756, 8, -8, 8)
 0:8/0 = 0
 1:8/0 = 0
 2:8/0 = 0
@@ -526,15 +528,19 @@ texture = ExtResource("11_smn5b")
 6:8/0 = 0
 7:8/0 = 0
 8:8/0 = 0
+8:8/0/texture_origin = Vector2i(0, -6)
+8:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-5.75548, -8, 8, -8, 8, 8, 1.2590103, 8, -3.4173164, 2.5180225, -6.2950554, -1.2590103)
 9:8/0 = 0
+9:8/0/texture_origin = Vector2i(0, -6)
 10:8/0 = 0
+10:8/0/texture_origin = Vector2i(0, -6)
 11:8/0 = 0
+11:8/0/texture_origin = Vector2i(0, -6)
 12:8/0 = 0
+12:8/0/texture_origin = Vector2i(0, -6)
 13:8/0 = 0
-14:8/0 = 0
-15:8/0 = 0
-16:8/0 = 0
-17:8/0 = 0
+13:8/0/texture_origin = Vector2i(0, -6)
+13:8/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, -2.5180225, -8, -3.2374573, 8, -8, 8)
 0:9/0 = 0
 1:9/0 = 0
 2:9/0 = 0
@@ -544,39 +550,23 @@ texture = ExtResource("11_smn5b")
 6:9/0 = 0
 7:9/0 = 0
 8:9/0 = 0
+8:9/0/texture_origin = Vector2i(0, -6)
+8:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(8, -8, 8, 4.6763268, 2.5180225, 3.956892, -1.0791531, 0, 0.17985916, -8)
 9:9/0 = 0
+9:9/0/texture_origin = Vector2i(0, -6)
+9:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 3.7770348, -8, 3.5971756)
 10:9/0 = 0
+10:9/0/texture_origin = Vector2i(0, -6)
+10:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, 3.7770348, -8, 3.5971756)
 11:9/0 = 0
+11:9/0/texture_origin = Vector2i(0, -6)
+11:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, -4.3166084, -1.2590122, -4.3166084, -0.17985916, 3.2374573, -8, 3.5971756)
 12:9/0 = 0
+12:9/0/texture_origin = Vector2i(0, -6)
+12:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, 8, -8, 8, -4.3166084, -8, -4.6763268)
 13:9/0 = 0
-14:9/0 = 0
-15:9/0 = 0
-16:9/0 = 0
-17:9/0 = 0
-0:10/0 = 0
-0:10/0/y_sort_origin = -2
-1:10/0 = 0
-1:10/0/y_sort_origin = -2
-2:10/0 = 0
-3:10/0 = 0
-0:11/0 = 0
-0:11/0/y_sort_origin = -2
-1:11/0 = 0
-1:11/0/y_sort_origin = -2
-2:11/0 = 0
-3:11/0 = 0
-0:12/0 = 0
-1:12/0 = 0
-2:12/0 = 0
-3:12/0 = 0
-4:12/0 = 0
-5:12/0 = 0
-0:13/0 = 0
-1:13/0 = 0
-0:14/0 = 0
-1:14/0 = 0
-2:14/0 = 0
-3:14/0 = 0
+13:9/0/texture_origin = Vector2i(0, -6)
+13:9/0/physics_layer_0/polygon_0/points = PackedVector2Array(-8, -8, -2.5180225, -8, -4.4964685, -4.6763268, -8, -4.6763268)
 8:0/0 = 0
 8:0/0/texture_origin = Vector2i(0, -6)
 11:0/0 = 0
@@ -585,6 +575,12 @@ texture = ExtResource("11_smn5b")
 12:0/0/texture_origin = Vector2i(0, -6)
 13:0/0 = 0
 13:0/0/texture_origin = Vector2i(0, -6)
+4:0/0 = 0
+3:0/0 = 0
+2:0/0 = 0
+1:0/0 = 0
+0:0/0 = 0
+7:0/0 = 0
 
 [sub_resource type="TileSet" id="TileSet_rgosd"]
 physics_layer_0/collision_layer = 1
@@ -1325,6 +1321,7 @@ shape = SubResource("CircleShape2D_tc8jh")
 z_index = 2
 tile_map_data = PackedByteArray("AAACAPr/AAAIAAAAAAAFAPr/AAALAAAAAAAGAPr/AAAMAAAAAAAFAPv/AAALAAEAAAAGAPv/AAAMAAEAAAAGAPz/AAAMAAIAAAAFAPz/AAALAAIAAAAFAP3/AAALAAMAAAAGAP3/AAAMAAMAAAAHAPz/AAANAAIAAAAHAPv/AAANAAEAAAAHAPr/AAANAAAAAAAGAP7/AAAMAAQAAAAFAP7/AAALAAQAAAAEAP7/AAAKAAQAAAADAP7/AAAJAAQAAAAEAP3/AAAKAAMAAAAHAP3/AAANAAMAAAAHAP7/AAANAAQAAAAEAPr/AAAKAAAAAAADAPr/AAAJAAAAAAACAP7/AAAIAAQAAAACAP3/AAAIAAMAAAADAP3/AAAJAAMAAAADAPz/AAAJAAIAAAAEAPz/AAAKAAIAAAAEAPv/AAAKAAEAAAADAPv/AAAJAAEAAAACAPz/AAAIAAIAAAACAPv/AAAIAAEAAAA=")
 tile_set = SubResource("TileSet_rgosd")
+script = ExtResource("13_wwp2e")
 
 [node name="Door" type="TileMapLayer" parent="NavRegion/House2"]
 z_index = 3
@@ -1336,7 +1333,7 @@ collision_layer = 4
 collision_mask = 4
 script = ExtResource("12_ipxjn")
 target_scene_path = "uid://4dp808w623li"
-target_spawn_tag = "\"spawn_from_outside\""
+target_spawn_tag = "spawn_from_outside"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/House2/Door/Area2D"]
 position = Vector2(64, -21.5)
@@ -1386,7 +1383,7 @@ collision_layer = 4
 collision_mask = 4
 script = ExtResource("12_ipxjn")
 target_scene_path = "uid://cfyf0y6d3cek6"
-target_spawn_tag = "\"spawn_to_town\""
+target_spawn_tag = "spawn_to_town"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Changes/Area2D"]
 position = Vector2(-161, -9)
