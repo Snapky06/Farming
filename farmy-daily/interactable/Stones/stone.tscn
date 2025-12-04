@@ -38,7 +38,9 @@ z_index = 3
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("2_mwavs")
-stone_item = ExtResource("3_ef31x")
+item_drop = ExtResource("3_ef31x")
+min_drops = 2
+max_drops = 5
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 position = Vector2(0, 3)

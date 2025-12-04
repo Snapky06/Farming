@@ -3,6 +3,7 @@ extends CharacterBody2D
 @export var speed := 100.0
 @export var stop_distance := 4.0
 @export var inventory_data: InventoryData
+
 @onready var agent := $NavigationAgent2D
 @onready var sprite := $AnimatedSprite2D
 @onready var cam := $Camera2D
@@ -19,9 +20,8 @@ const TREE_SCENES = [
 var audio_player: AudioStreamPlayer2D
 var impact_audio_player: AudioStreamPlayer2D
 
-# --- AUDIO VARIABLES ---
 var sfx_hit_tree: AudioStream
-var sfx_hit_rock: AudioStream # New variable for rock sound
+var sfx_hit_rock: AudioStream
 var sfx_hoe: AudioStream
 var sfx_swing: AudioStream
 var sfx_seeds: AudioStream
@@ -43,11 +43,10 @@ var equipped_item: ItemData = null
 var equipped_slot_index: int = -1
 var is_movement_locked: bool = false
 
-# --- ACTION STATE VARIABLES ---
 var pending_tool_action_pos: Vector2 = Vector2.ZERO
 var pending_tool_name: String = ""
 var pending_target_body: Node2D = null
-var pending_impact_sound: AudioStream = null # New variable to store which sound to play
+var pending_impact_sound: AudioStream = null
 var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE = 50.0
 
@@ -67,7 +66,6 @@ func _ready():
 
 func load_sounds():
 	if FileAccess.file_exists("res://sounds/hit_tree.mp3"): sfx_hit_tree = load("res://sounds/hit_tree.mp3")
-	# Ensure you have a file named "hit_rock.mp3" or "pickaxe.mp3" in your sounds folder
 	if FileAccess.file_exists("res://sounds/hit_rock.mp3"): sfx_hit_rock = load("res://sounds/hit_rock.mp3")
 	elif FileAccess.file_exists("res://sounds/pickaxe.mp3"): sfx_hit_rock = load("res://sounds/pickaxe.mp3")
 	
@@ -143,7 +141,7 @@ func attempt_action_at(mouse_pos: Vector2):
 	elif equipped_item.name == "Scythe":
 		check_reach_and_act(mouse_pos, "scythe")
 	
-	elif equipped_item.name == "Axe": 
+	elif equipped_item.name == "Axe" or equipped_item.name == "Pickaxe":
 		var space_state = get_world_2d().direct_space_state
 		var query = PhysicsPointQueryParameters2D.new()
 		query.position = mouse_pos
@@ -155,24 +153,22 @@ func attempt_action_at(mouse_pos: Vector2):
 		if results.size() > 0:
 			var collider = results[0].collider
 			if collider.has_method("hit"):
-				var is_falling_tree = false
+				var is_falling = false
 				if "is_falling" in collider and collider.is_falling:
-					is_falling_tree = true
+					is_falling = true
 				
-				if not is_falling_tree:
-					# DETERMINE ANIMATION AND SOUND
-					var anim_name = "axe" 
-					var impact_sound = sfx_hit_tree # Default to tree sound
+				if not is_falling:
+					var tool_anim = "axe"
+					var tool_sound = sfx_hit_tree
 					
-					# If name contains Rock, Stone or Ore, switch to pickaxe logic
-					if "Rock" in collider.name or "Stone" in collider.name or "Ore" in collider.name:
-						anim_name = "pickaxe"
-						impact_sound = sfx_hit_rock # Use rock sound
+					if collider.is_in_group("rock") or "Rock" in collider.name or "Stone" in collider.name:
+						tool_anim = "pickaxe"
+						tool_sound = sfx_hit_rock
 					
 					if global_position.distance_to(collider.global_position) <= TOOL_REACH_DISTANCE:
-						start_tool_loop(collider, anim_name, impact_sound)
+						start_tool_loop(collider, tool_anim, tool_sound)
 					else:
-						start_move_interact(collider.global_position, anim_name, collider, impact_sound)
+						start_move_interact(collider.global_position, tool_anim, collider, tool_sound)
 		return
 
 	elif "Tree Seed" in equipped_item.name:
@@ -186,7 +182,6 @@ func attempt_action_at(mouse_pos: Vector2):
 	else:
 		interact()
 
-# Updated to accept optional sound argument
 func check_reach_and_act(target_pos: Vector2, tool_name: String):
 	if global_position.distance_to(target_pos) <= TOOL_REACH_DISTANCE:
 		perform_tool_action(target_pos, tool_name)
@@ -257,7 +252,6 @@ func interact() -> void:
 	if closest_node:
 		closest_node.interact(self)
 
-# Updated to accept sound argument
 func start_move_interact(pos, tool_name, target=null, impact_sound=null):
 	if not is_movement_locked:
 		is_moving_to_interact = true
@@ -280,7 +274,6 @@ func execute_pending_action():
 		if global_position.distance_to(pending_tool_action_pos) <= TOOL_REACH_DISTANCE + 10.0:
 			perform_tool_action(pending_tool_action_pos, pending_tool_name)
 
-# Updated loop to handle specific sound AND force remove destroyed rocks
 func start_tool_loop(target_node, tool_anim_name, impact_sfx=null):
 	if is_movement_locked: return
 	if "is_falling" in target_node and target_node.is_falling: return
@@ -291,7 +284,7 @@ func start_tool_loop(target_node, tool_anim_name, impact_sfx=null):
 	
 	while is_touching and is_instance_valid(target_node):
 		if "is_falling" in target_node and target_node.is_falling: break
-			
+		
 		sprite.flip_h = false
 		var anim = tool_anim_name + "_"
 		if abs(last_direction.x) > abs(last_direction.y):
@@ -302,7 +295,6 @@ func start_tool_loop(target_node, tool_anim_name, impact_sfx=null):
 		else:
 			anim += "down" if last_direction.y > 0 else "up"
 		
-		# Play Swing Sound
 		if sfx_swing and audio_player:
 			audio_player.stream = sfx_swing
 			audio_player.play()
@@ -316,17 +308,13 @@ func start_tool_loop(target_node, tool_anim_name, impact_sfx=null):
 		if not is_instance_valid(target_node): break
 		if "is_falling" in target_node and target_node.is_falling: break
 		
-		# Play specific impact sound (Rock vs Tree)
 		if impact_sfx and impact_audio_player:
 			impact_audio_player.stream = impact_sfx
 			impact_audio_player.play()
 		
 		if is_instance_valid(target_node) and target_node.has_method("hit"):
-			target_node.hit(global_position)
-			
-			# FORCE DISAPPEAR if health is <= 0
+			target_node.hit(1)
 			if "health" in target_node and target_node.health <= 0:
-				target_node.queue_free()
 				break
 
 	is_movement_locked = false

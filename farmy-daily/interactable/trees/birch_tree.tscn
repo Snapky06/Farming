@@ -135,6 +135,7 @@ animations = [{
 radius = 6.0
 
 [node name="BirchTree" type="AnimatedSprite2D"]
+z_index = 4
 sprite_frames = SubResource("SpriteFrames_fun6p")
 animation = &"big_cycle"
 
