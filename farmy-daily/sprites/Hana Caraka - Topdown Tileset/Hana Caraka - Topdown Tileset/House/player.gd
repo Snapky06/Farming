@@ -17,31 +17,39 @@ const TREE_SCENES = [
 ]
 
 var audio_player: AudioStreamPlayer2D
-var impact_audio_player: AudioStreamPlayer2D 
+var impact_audio_player: AudioStreamPlayer2D
+
+# --- AUDIO VARIABLES ---
 var sfx_hit_tree: AudioStream
-var sfx_hoe: AudioStream 
-var sfx_swing: AudioStream 
-var sfx_seeds: AudioStream 
-var sfx_water: AudioStream 
+var sfx_hit_rock: AudioStream # New variable for rock sound
+var sfx_hoe: AudioStream
+var sfx_swing: AudioStream
+var sfx_seeds: AudioStream
+var sfx_water: AudioStream
 
 var last_direction := Vector2.DOWN
 signal toggle_inventory()
 
-const DOUBLE_TAP_DELAY = 0.3
+const DOUBLE_TAP_DELAY_MS = 300
+const LONG_PRESS_DURATION = 0.3
+var last_tap_time = 0
+var is_touching = false
+var touch_start_time = 0.0
+var has_acted_this_touch = false
 var tap_count = 0
-var double_tap_timer = 0.0
-var last_tap_position = Vector2.ZERO
 
 var is_holding: bool = false
 var equipped_item: ItemData = null
 var equipped_slot_index: int = -1
 var is_movement_locked: bool = false
 
+# --- ACTION STATE VARIABLES ---
 var pending_tool_action_pos: Vector2 = Vector2.ZERO
-var pending_tool_name: String = "" 
+var pending_tool_name: String = ""
 var pending_target_body: Node2D = null
+var pending_impact_sound: AudioStream = null # New variable to store which sound to play
 var is_moving_to_interact: bool = false
-const TOOL_REACH_DISTANCE = 40.0 
+const TOOL_REACH_DISTANCE = 50.0
 
 func _ready():
 	z_index = 1
@@ -59,6 +67,10 @@ func _ready():
 
 func load_sounds():
 	if FileAccess.file_exists("res://sounds/hit_tree.mp3"): sfx_hit_tree = load("res://sounds/hit_tree.mp3")
+	# Ensure you have a file named "hit_rock.mp3" or "pickaxe.mp3" in your sounds folder
+	if FileAccess.file_exists("res://sounds/hit_rock.mp3"): sfx_hit_rock = load("res://sounds/hit_rock.mp3")
+	elif FileAccess.file_exists("res://sounds/pickaxe.mp3"): sfx_hit_rock = load("res://sounds/pickaxe.mp3")
+	
 	if FileAccess.file_exists("res://sounds/hoe.mp3"): sfx_hoe = load("res://sounds/hoe.mp3")
 	if FileAccess.file_exists("res://sounds/swing.mp3"): sfx_swing = load("res://sounds/swing.mp3")
 	if FileAccess.file_exists("res://sounds/seeds.mp3"): sfx_seeds = load("res://sounds/seeds.mp3")
@@ -67,6 +79,7 @@ func load_sounds():
 func reset_states():
 	is_moving_to_interact = false
 	is_holding = false
+	is_touching = false
 	tap_count = 0
 	velocity = Vector2.ZERO
 	hold_timer.stop()
@@ -74,8 +87,7 @@ func reset_states():
 
 func _unhandled_input(event):
 	if Input.is_action_just_pressed("use"):
-		interact()
-	
+		attempt_action_at(get_global_mouse_position())
 	if Input.is_action_just_pressed("inventory"):
 		reset_states()
 		toggle_inventory.emit()
@@ -83,38 +95,105 @@ func _unhandled_input(event):
 		return
 	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.is_pressed():
-			is_moving_to_interact = false 
-			is_holding = true
-			hold_timer.start()
+		if event.pressed:
+			is_touching = true
+			touch_start_time = Time.get_ticks_msec() / 1000.0
+			has_acted_this_touch = false
 			
-			tap_count += 1
-			last_tap_position = get_global_mouse_position() 
-			
-			if tap_count == 1:
-				double_tap_timer = DOUBLE_TAP_DELAY
-			elif tap_count == 2:
+			var current_time = Time.get_ticks_msec()
+			if current_time - last_tap_time < DOUBLE_TAP_DELAY_MS:
 				reset_states()
 				toggle_inventory.emit()
 				tap_count = 0
-				double_tap_timer = 0.0
+			else:
+				tap_count = 1
+			last_tap_time = current_time
+			
 		else:
+			var press_duration = (Time.get_ticks_msec() / 1000.0) - touch_start_time
+			is_touching = false
 			is_holding = false
-			hold_timer.stop()
+			
+			if press_duration < LONG_PRESS_DURATION and not has_acted_this_touch:
+				if not is_movement_locked:
+					is_moving_to_interact = false
+					agent.target_position = get_global_mouse_position()
+
+func _process(_delta):
+	if is_touching and not has_acted_this_touch and not is_movement_locked:
+		var duration = (Time.get_ticks_msec() / 1000.0) - touch_start_time
+		if duration >= LONG_PRESS_DURATION:
+			has_acted_this_touch = true
+			is_holding = true
+			attempt_action_at(get_global_mouse_position())
+
+func attempt_action_at(mouse_pos: Vector2):
+	if not equipped_item:
+		interact()
+		return
+
+	if equipped_item.name == "Hoe":
+		if get_parent().has_method("is_tile_farmable") and not get_parent().is_tile_farmable(mouse_pos): return
+		check_reach_and_act(mouse_pos, "hoe")
+		
+	elif equipped_item.name == "Watering Can":
+		if get_parent().has_method("is_tile_waterable") and not get_parent().is_tile_waterable(mouse_pos): return
+		check_reach_and_act(mouse_pos, "watering")
+
+	elif equipped_item.name == "Scythe":
+		check_reach_and_act(mouse_pos, "scythe")
+	
+	elif equipped_item.name == "Axe": 
+		var space_state = get_world_2d().direct_space_state
+		var query = PhysicsPointQueryParameters2D.new()
+		query.position = mouse_pos
+		query.collide_with_bodies = true
+		query.collide_with_areas = true
+		query.collision_mask = 4
+		var results = space_state.intersect_point(query)
+		
+		if results.size() > 0:
+			var collider = results[0].collider
+			if collider.has_method("hit"):
+				var is_falling_tree = false
+				if "is_falling" in collider and collider.is_falling:
+					is_falling_tree = true
+				
+				if not is_falling_tree:
+					# DETERMINE ANIMATION AND SOUND
+					var anim_name = "axe" 
+					var impact_sound = sfx_hit_tree # Default to tree sound
+					
+					# If name contains Rock, Stone or Ore, switch to pickaxe logic
+					if "Rock" in collider.name or "Stone" in collider.name or "Ore" in collider.name:
+						anim_name = "pickaxe"
+						impact_sound = sfx_hit_rock # Use rock sound
+					
+					if global_position.distance_to(collider.global_position) <= TOOL_REACH_DISTANCE:
+						start_tool_loop(collider, anim_name, impact_sound)
+					else:
+						start_move_interact(collider.global_position, anim_name, collider, impact_sound)
+		return
+
+	elif "Tree Seed" in equipped_item.name:
+		if get_parent().has_method("can_plant_seed") and not get_parent().can_plant_seed(mouse_pos): return
+		check_reach_and_act(mouse_pos, "planting")
+	
+	elif "Seeds" in equipped_item.name:
+		if get_parent().has_method("can_plant_seed") and not get_parent().can_plant_seed(mouse_pos): return
+		check_reach_and_act(mouse_pos, "planting_crop")
+	
+	else:
+		interact()
+
+# Updated to accept optional sound argument
+func check_reach_and_act(target_pos: Vector2, tool_name: String):
+	if global_position.distance_to(target_pos) <= TOOL_REACH_DISTANCE:
+		perform_tool_action(target_pos, tool_name)
+	else:
+		start_move_interact(target_pos, tool_name)
 
 func _physics_process(_delta):
-	if is_movement_locked and not sprite.is_playing():
-		pass 
-		
-	if double_tap_timer > 0.0:
-		double_tap_timer -= _delta
-		if double_tap_timer <= 0.0:
-			if not is_holding and tap_count > 0:
-				if not is_movement_locked:
-					agent.target_position = last_tap_position
-					is_moving_to_interact = false
-			tap_count = 0
-	
 	if is_movement_locked:
 		return
 
@@ -160,9 +239,6 @@ func update_idle_animation(direction: Vector2):
 		sprite.play("idle_down" if direction.y > 0 else "idle_up")
 
 func interact() -> void:
-	tap_count = 0
-	double_tap_timer = 0.0
-	
 	var candidates = []
 	candidates.append_array(interaction_area.get_overlapping_bodies())
 	candidates.append_array(interaction_area.get_overlapping_areas())
@@ -181,126 +257,43 @@ func interact() -> void:
 	if closest_node:
 		closest_node.interact(self)
 
-func _on_PlayerHoldTimer_timeout():
-	if is_moving_to_interact: return
-		
-	if is_holding:
-		tap_count = 0
-		double_tap_timer = 0.0
-		var mouse_pos = get_global_mouse_position()
-		
-		if not is_movement_locked and equipped_item:
-			
-			if equipped_item.name == "Hoe":
-				if not get_parent().is_tile_farmable(mouse_pos): return
-				if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
-					perform_tool_action(mouse_pos, "hoe")
-				else:
-					start_move_interact(mouse_pos, "hoe")
-				return
-			
-			elif equipped_item.name == "Watering Can":
-				if get_parent().has_method("is_tile_waterable"):
-					if not get_parent().is_tile_waterable(mouse_pos): return
-				
-				if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
-					perform_tool_action(mouse_pos, "watering")
-				else:
-					start_move_interact(mouse_pos, "watering")
-				return
-
-			elif equipped_item.name == "Scythe":
-				var space_state = get_world_2d().direct_space_state
-				var query = PhysicsPointQueryParameters2D.new()
-				query.position = mouse_pos
-				query.collide_with_bodies = true
-				query.collide_with_areas = true
-				var results = space_state.intersect_point(query)
-				
-				for result in results:
-					var collider = result.collider
-					if collider.has_method("harvest"):
-						if "current_stage" in collider and "max_stage" in collider:
-							if collider.current_stage >= collider.max_stage:
-								if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
-									perform_tool_action(mouse_pos, "scythe")
-								else:
-									start_move_interact(mouse_pos, "scythe")
-								return
-			
-			elif equipped_item.name == "Axe":
-				var space_state = get_world_2d().direct_space_state
-				var query = PhysicsPointQueryParameters2D.new()
-				query.position = mouse_pos
-				query.collide_with_bodies = true
-				query.collide_with_areas = true
-				query.collision_mask = 4 
-				var results = space_state.intersect_point(query)
-				
-				if results.size() > 0:
-					var collider = results[0].collider
-					if collider.has_method("hit") and not collider.get("is_falling"):
-						if global_position.distance_to(collider.global_position) <= TOOL_REACH_DISTANCE:
-							start_axe_loop(collider)
-						else:
-							start_move_interact(collider.global_position, "axe", collider)
-				return
-
-			elif "Tree Seed" in equipped_item.name:
-				if get_parent().has_method("can_plant_seed"):
-					if not get_parent().can_plant_seed(mouse_pos):
-						return
-				
-				if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
-					perform_tool_action(mouse_pos, "planting")
-				else:
-					start_move_interact(mouse_pos, "planting")
-				return
-			
-			elif "Seeds" in equipped_item.name:
-				# FIX: Changed 'can_plant_crop' to 'can_plant_seed'
-				if get_parent().has_method("can_plant_seed"):
-					if not get_parent().can_plant_seed(mouse_pos):
-						return
-				
-				if global_position.distance_to(mouse_pos) <= TOOL_REACH_DISTANCE:
-					perform_tool_action(mouse_pos, "planting_crop")
-				else:
-					start_move_interact(mouse_pos, "planting_crop")
-				return
-
-		interact()
-
-func start_move_interact(pos, tool_name, target=null):
+# Updated to accept sound argument
+func start_move_interact(pos, tool_name, target=null, impact_sound=null):
 	if not is_movement_locked:
 		is_moving_to_interact = true
 		pending_tool_action_pos = pos
 		pending_tool_name = tool_name
 		pending_target_body = target
+		pending_impact_sound = impact_sound
 		agent.target_position = pos
 
 func execute_pending_action():
-	if pending_tool_name == "axe":
-		if is_instance_valid(pending_target_body) and not pending_target_body.get("is_falling"):
+	if pending_tool_name == "axe" or pending_tool_name == "pickaxe":
+		var is_target_valid = is_instance_valid(pending_target_body)
+		if is_target_valid and "is_falling" in pending_target_body and pending_target_body.is_falling:
+			is_target_valid = false
+			
+		if is_target_valid:
 			if global_position.distance_to(pending_target_body.global_position) <= TOOL_REACH_DISTANCE + 10.0:
-				start_axe_loop(pending_target_body)
+				start_tool_loop(pending_target_body, pending_tool_name, pending_impact_sound)
 	else:
 		if global_position.distance_to(pending_tool_action_pos) <= TOOL_REACH_DISTANCE + 10.0:
 			perform_tool_action(pending_tool_action_pos, pending_tool_name)
 
-func start_axe_loop(target_node):
+# Updated loop to handle specific sound AND force remove destroyed rocks
+func start_tool_loop(target_node, tool_anim_name, impact_sfx=null):
 	if is_movement_locked: return
-	if target_node.get("is_falling"): return
+	if "is_falling" in target_node and target_node.is_falling: return
 	
 	is_movement_locked = true
 	velocity = Vector2.ZERO
 	last_direction = (target_node.global_position - global_position).normalized()
 	
-	while is_holding and is_instance_valid(target_node):
-		if target_node.get("is_falling"): break
+	while is_touching and is_instance_valid(target_node):
+		if "is_falling" in target_node and target_node.is_falling: break
 			
 		sprite.flip_h = false
-		var anim = "axe_"
+		var anim = tool_anim_name + "_"
 		if abs(last_direction.x) > abs(last_direction.y):
 			if last_direction.x > 0: anim += "right"
 			else:
@@ -309,34 +302,44 @@ func start_axe_loop(target_node):
 		else:
 			anim += "down" if last_direction.y > 0 else "up"
 		
+		# Play Swing Sound
 		if sfx_swing and audio_player:
 			audio_player.stream = sfx_swing
 			audio_player.play()
 		
-		sprite.play(anim)
-		await sprite.animation_finished
+		if sprite.sprite_frames.has_animation(anim):
+			sprite.play(anim)
+			await sprite.animation_finished
+		else:
+			await get_tree().create_timer(0.25).timeout
 		
-		if not is_instance_valid(target_node) or target_node.get("is_falling"): break
+		if not is_instance_valid(target_node): break
+		if "is_falling" in target_node and target_node.is_falling: break
 		
-		if sfx_hit_tree and impact_audio_player:
-			impact_audio_player.stream = sfx_hit_tree
+		# Play specific impact sound (Rock vs Tree)
+		if impact_sfx and impact_audio_player:
+			impact_audio_player.stream = impact_sfx
 			impact_audio_player.play()
 		
 		if is_instance_valid(target_node) and target_node.has_method("hit"):
 			target_node.hit(global_position)
-			if target_node.get("health") <= 0: break
+			
+			# FORCE DISAPPEAR if health is <= 0
+			if "health" in target_node and target_node.health <= 0:
+				target_node.queue_free()
+				break
 
 	is_movement_locked = false
 	update_idle_animation(last_direction)
 
 func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
-	if global_position.distance_to(target_pos) > TOOL_REACH_DISTANCE + 10.0:
+	if global_position.distance_to(target_pos) > TOOL_REACH_DISTANCE + 20.0:
 		is_movement_locked = false
 		is_moving_to_interact = false
 		return
 
 	is_movement_locked = true
-	pending_tool_action_pos = target_pos 
+	pending_tool_action_pos = target_pos
 	velocity = Vector2.ZERO
 	last_direction = (target_pos - global_position).normalized()
 	sprite.flip_h = false
@@ -357,10 +360,9 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	var has_anim = sprite.sprite_frames.has_animation(anim_name)
 	if has_anim:
 		sprite.play(anim_name)
-		while sprite.is_playing() and sprite.frame < 1:
-			await get_tree().process_frame
+		await sprite.animation_finished
 	else:
-		await get_tree().create_timer(0.15).timeout
+		await get_tree().create_timer(0.25).timeout
 	
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
 		if sfx_hoe and impact_audio_player:
@@ -411,11 +413,9 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		spawn_crop(target_pos)
 		play_seed_sound()
 	
-	if has_anim and sprite.is_playing():
-		await sprite.animation_finished
-	
 	if tool_name == "watering" and audio_player:
-		audio_player.stop()
+		await get_tree().create_timer(0.1).timeout
+		if audio_player.stream == sfx_water: audio_player.stop()
 
 	sprite.flip_h = false
 	is_movement_locked = false
@@ -425,7 +425,6 @@ func play_seed_sound():
 	if sfx_seeds and audio_player:
 		audio_player.stream = sfx_seeds
 		audio_player.play()
-		get_tree().create_timer(0.5).timeout.connect(func(): if audio_player.stream == sfx_seeds: audio_player.stop())
 
 func find_tree_script(node: Node):
 	if node.has_method("setup_as_seed"):
@@ -504,7 +503,6 @@ func consume_equipped_item():
 func update_equipped_item(index: int) -> void:
 	reset_states()
 	equipped_slot_index = index
-	
 	is_movement_locked = false
 	
 	if index == -1:

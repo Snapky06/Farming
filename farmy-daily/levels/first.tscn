@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=4 uid="uid://cawg1tq3uaqq7"]
+[gd_scene load_steps=62 format=4 uid="uid://cawg1tq3uaqq7"]
 
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="1_7vv13"]
 [ext_resource type="Texture2D" uid="uid://cpmrsd74pic64" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Winter/winter.png" id="2_ipxjn"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://0fd882p2dmgx" path="res://interactable/pickables/leftlittlestone.tscn" id="8_218dk"]
 [ext_resource type="PackedScene" uid="uid://dvcui1fwvlpy8" path="res://interactable/pickables/middlelittlestone.tscn" id="9_tc8jh"]
 [ext_resource type="PackedScene" uid="uid://3ynhvm56eklt" path="res://interactable/pickables/rightlittlestone.tscn" id="10_jw3rq"]
+[ext_resource type="PackedScene" uid="uid://niykfjtmlth4" path="res://interactable/Stones/stone.tscn" id="11_hhr5t"]
 [ext_resource type="Texture2D" uid="uid://cqmo0v2k2l640" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/House.png" id="11_smn5b"]
 [ext_resource type="Script" uid="uid://ftgpquhc8isc" path="res://levels/scene_transition.gd" id="12_ipxjn"]
 [ext_resource type="PackedScene" uid="uid://c6l7cs6ihrf0r" path="res://interactable/trees/pine_tree.tscn" id="12_u4jaw"]
@@ -352,6 +353,7 @@ sources/1 = SubResource("TileSetAtlasSource_4ste1")
 scenes/1/scene = ExtResource("8_218dk")
 scenes/2/scene = ExtResource("9_tc8jh")
 scenes/3/scene = ExtResource("10_jw3rq")
+scenes/4/scene = ExtResource("11_hhr5t")
 
 [sub_resource type="TileSet" id="TileSet_l7d7m"]
 sources/0 = SubResource("TileSetScenesCollectionSource_tab5i")
@@ -1267,7 +1269,7 @@ tile_set = SubResource("TileSet_orxg8")
 
 [node name="Interactables" type="TileMapLayer" parent="NavRegion"]
 z_index = 2
-tile_map_data = PackedByteArray("AAD9//z/AAAAAAAAAQD9//r/AAAAAAAAAQD6/wQAAAAAAAAAAwD4/wMAAAAAAAAAAwD3/wUAAAAAAAAAAgD2/wQAAAAAAAAAAgAAAAUAAAAAAAAAAgAGAAIAAAAAAAAAAgADAAMAAAAAAAAAAgAHAAUAAAAAAAAAAgAKAAEAAAAAAAAAAgANAAMAAAAAAAAAAgABAAQAAAAAAAAAAQAGAAMAAAAAAAAAAQAOAAAAAAAAAAAAAQAKAAAAAAAAAAAAAQAPAAQAAAAAAAAAAQAPAPv/AAAAAAAAAwANAPn/AAAAAAAAAwALAPj/AAAAAAAAAwALAPv/AAAAAAAAAwAIAPn/AAAAAAAAAwD///v/AAAAAAAAAwD3//3/AAAAAAAAAwD5//z/AAAAAAAAAgD2//r/AAAAAAAAAgD5//j/AAAAAAAAAgD+//j/AAAAAAAAAgD+/wIAAAAAAAAAAgABAAIAAAAAAAAAAwANAAUAAAAAAAAAAwA=")
+tile_map_data = PackedByteArray("AAD9//z/AAAAAAAAAQD9//r/AAAAAAAAAQD6/wQAAAAAAAAAAwD4/wMAAAAAAAAAAwD3/wUAAAAAAAAAAgD2/wQAAAAAAAAAAgAAAAUAAAAAAAAAAgAGAAIAAAAAAAAAAgADAAMAAAAAAAAAAgAHAAUAAAAAAAAAAgAKAAEAAAAAAAAAAgANAAMAAAAAAAAAAgABAAQAAAAAAAAAAQAGAAMAAAAAAAAAAQAOAAAAAAAAAAAAAQAKAAAAAAAAAAAAAQAPAAQAAAAAAAAAAQAPAPv/AAAAAAAAAwANAPn/AAAAAAAAAwALAPj/AAAAAAAAAwALAPv/AAAAAAAAAwAIAPn/AAAAAAAAAwD///v/AAAAAAAAAwD3//3/AAAAAAAAAwD5//z/AAAAAAAAAgD2//r/AAAAAAAAAgD5//j/AAAAAAAAAgD+//j/AAAAAAAAAgD+/wIAAAAAAAAAAgABAAIAAAAAAAAAAwANAAUAAAAAAAAAAwD9////AAAAAAAABAA=")
 tile_set = SubResource("TileSet_l7d7m")
 
 [node name="Signs" type="Node2D" parent="NavRegion"]

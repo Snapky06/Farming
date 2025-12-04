@@ -3,12 +3,11 @@ extends Node2D
 @onready var player: CharacterBody2D = $Player
 @onready var inventory_interface: Control = $UI/InventoryInterface
 @onready var hot_bar_inventory: PanelContainer = $UI/HotBarInventory
-@onready var tile_selector: Sprite2D = $TileSelector
+@onready var tile_selector: Node2D = $TileSelector 
 
 var ground_layer: TileMapLayer = null
 var obstruction_layers: Array[TileMapLayer] = []
 
-var hoe_cooldown: bool = false
 var tree_sort_index: int = 11
 
 const HOED_SOURCE_ID: int = 1
@@ -24,7 +23,6 @@ var transition_rect: ColorRect = null
 
 func _ready() -> void:
 	_refresh_layer_references(self)
-	
 	_setup_transition_layer()
 	_connect_all_chests(self)
 
@@ -79,6 +77,8 @@ func _refresh_layer_references(root: Node) -> void:
 	for layer in all_layers:
 		if layer.name == "Ground":
 			ground_layer = layer
+			if is_instance_valid(tile_selector) and tile_selector.has_method("set_tile_size"):
+				tile_selector.set_tile_size(ground_layer.tile_set.tile_size)
 		else:
 			obstruction_layers.append(layer)
 			
@@ -176,7 +176,7 @@ func _on_hotbar_slot_selected(_index: int) -> void:
 func refresh_tile_selector() -> void:
 	if not is_instance_valid(tile_selector): return
 	
-	if inventory_interface.visible or hoe_cooldown:
+	if inventory_interface.visible:
 		tile_selector.visible = false
 		return
 		
@@ -211,21 +211,14 @@ func refresh_tile_selector() -> void:
 	
 	if show_selector:
 		tile_selector.visible = true
-		if is_valid:
-			tile_selector.modulate = Color(0, 1, 0, 0.5)
-		else:
-			tile_selector.modulate = Color(1, 0, 0, 0.5)
+		if tile_selector.has_method("set_status"):
+			tile_selector.set_status(is_valid)
 	else:
 		tile_selector.visible = false
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(player) and player.equipped_item:
 		refresh_tile_selector()
-
-func _unhandled_input(_event: InputEvent) -> void:
-	if Input.is_action_just_pressed("inventory"):
-		toggle_inventory_interface()
-		get_viewport().set_input_as_handled()
 
 func toggle_inventory_interface() -> void:
 	if inventory_interface.visible:
@@ -297,7 +290,7 @@ func is_tile_occupied(center: Vector2) -> bool:
 	return false
 
 func is_tile_farmable(global_pos: Vector2) -> bool:
-	if hoe_cooldown or not is_instance_valid(ground_layer): 
+	if not is_instance_valid(ground_layer): 
 		return false
 	
 	var local_pos = ground_layer.to_local(global_pos)
@@ -329,7 +322,7 @@ func is_tile_farmable(global_pos: Vector2) -> bool:
 	return true
 
 func is_tile_waterable(global_pos: Vector2) -> bool:
-	if hoe_cooldown or not is_instance_valid(ground_layer): 
+	if not is_instance_valid(ground_layer): 
 		return false
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
@@ -340,7 +333,7 @@ func is_tile_waterable(global_pos: Vector2) -> bool:
 	return false
 
 func can_plant_seed(global_pos: Vector2) -> bool:
-	if hoe_cooldown or not is_instance_valid(ground_layer) or not is_instance_valid(player): 
+	if not is_instance_valid(ground_layer) or not is_instance_valid(player): 
 		return false
 	
 	var item = player.equipped_item
@@ -370,45 +363,28 @@ func can_plant_seed(global_pos: Vector2) -> bool:
 		
 	return false
 
-func plant_crop(global_pos: Vector2, crop_scene: PackedScene) -> void:
-	if not can_plant_seed(global_pos):
-		return
-	var tile_center = get_tile_center_position(global_pos)
-	if tile_center == Vector2.ZERO: 
-		return
-	
-	var crop = crop_scene.instantiate()
-	get_tree().current_scene.add_child(crop)
-	crop.global_position = tile_center
-
 func use_hoe(global_pos: Vector2) -> void:
-	if not is_tile_farmable(global_pos):
-		return
-	
-	hoe_cooldown = true
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	
 	spawn_till_effect(get_tile_center_position(global_pos))
 	
-	await get_tree().create_timer(0.15).timeout
-	
 	if is_instance_valid(ground_layer):
 		ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)
 	
-	hoe_cooldown = false
 	refresh_tile_selector()
 
-func water_tile(global_pos: Vector2) -> void:
-	if not is_tile_waterable(global_pos):
-		return
-		
+func use_water(global_pos: Vector2) -> void:
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
+	var tile_center = ground_layer.to_global(ground_layer.map_to_local(tile_pos))
 	
+	spawn_water_effect(tile_center)
+	
+	await get_tree().create_timer(0.25).timeout
+
 	if is_instance_valid(ground_layer):
 		ground_layer.set_cell(tile_pos, WATERED_SOURCE_ID, WATERED_ATLAS_COORDS)
-		var tile_center = ground_layer.to_global(ground_layer.map_to_local(tile_pos))
 		
 		watered_tiles[tile_pos] = {
 			"day": TimeManager.current_day,
@@ -416,54 +392,59 @@ func water_tile(global_pos: Vector2) -> void:
 			"time": TimeManager.current_time_seconds
 		}
 		save_watered_tiles()
-		spawn_water_effect(tile_center)
-
-func use_water(global_pos: Vector2) -> void:
-	water_tile(global_pos)
+	
+	refresh_tile_selector()
 
 func spawn_till_effect(pos: Vector2) -> void:
 	var particles = CPUParticles2D.new()
-	particles.amount = 12
-	particles.lifetime = 0.5
-	particles.explosiveness = 0.95
+	particles.amount = 6
+	particles.lifetime = 0.6
+	particles.explosiveness = 1.0
 	particles.one_shot = true
 	particles.direction = Vector2(0, -1)
-	particles.spread = 50.0
-	particles.initial_velocity_min = 40.0
-	particles.initial_velocity_max = 60.0
-	particles.gravity = Vector2(0, 300)
-	particles.scale_amount_min = 2.0
-	particles.scale_amount_max = 3.5
-	particles.color = Color(0.35, 0.25, 0.2)
+	particles.spread = 40.0
+	particles.initial_velocity_min = 50.0
+	particles.initial_velocity_max = 80.0
+	particles.gravity = Vector2(0, 400)
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 4.0
+	particles.color = Color(0.4, 0.3, 0.2)
 	particles.position = pos
 	particles.z_index = 5
-	add_child(particles)
+	
+	get_tree().current_scene.add_child(particles)
+	await get_tree().process_frame
 	particles.emitting = true
+	
 	await get_tree().create_timer(1.0).timeout
 	if is_instance_valid(particles):
 		particles.queue_free()
 
 func spawn_water_effect(pos: Vector2) -> void:
 	var particles = CPUParticles2D.new()
-	particles.amount = 12
-	particles.lifetime = 0.4
+	particles.amount = 6
+	particles.lifetime = 0.3
 	particles.one_shot = true
-	particles.explosiveness = 0.1
-	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE 
-	particles.emission_sphere_radius = 2.0 
-	particles.direction = Vector2(0, 1)
-	particles.spread = 20.0
-	particles.initial_velocity_min = 5.0 
-	particles.initial_velocity_max = 15.0 
-	particles.gravity = Vector2(0, 80) 
-	particles.scale_amount_min = 1.0
-	particles.scale_amount_max = 2.0
-	particles.color = Color(0.2, 0.5, 0.9, 0.9)
-	particles.position = pos + Vector2(0, -2) 
-	particles.z_index = 5
-	add_child(particles)
+	particles.explosiveness = 1.0
+	
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_POINT 
+	particles.direction = Vector2(0, -1) 
+	particles.spread = 25.0 
+	particles.initial_velocity_min = 50.0 
+	particles.initial_velocity_max = 70.0 
+	particles.gravity = Vector2(0, 800) 
+	
+	particles.scale_amount_min = 1.5
+	particles.scale_amount_max = 2.5
+	particles.color = Color(0.2, 0.6, 1.0, 1.0)
+	particles.position = pos
+	particles.z_index = 20
+	
+	get_tree().current_scene.add_child(particles)
+	await get_tree().process_frame
 	particles.emitting = true
-	await get_tree().create_timer(1.0).timeout
+	
+	await get_tree().create_timer(0.5).timeout
 	if is_instance_valid(particles):
 		particles.queue_free()
 
