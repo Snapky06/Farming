@@ -33,6 +33,7 @@ position = Vector2(175, 143)
 script = ExtResource("11_6x66l")
 
 [node name="QuestLog" parent="UI" instance=ExtResource("6_qayf5")]
+visible = false
 offset = Vector2(0, 10)
 transform = Transform2D(1, 0, 0, 1, 0, 10)
 

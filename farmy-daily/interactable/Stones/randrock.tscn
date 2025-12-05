@@ -1,0 +1,47 @@
+[gd_scene load_steps=8 format=3 uid="uid://by5wfhs5ri84m"]
+
+[ext_resource type="Texture2D" uid="uid://bioys05xqqbhq" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Rock/rock.png" id="1_lsh5r"]
+[ext_resource type="Script" uid="uid://c5jtb4b7kvaco" path="res://interactable/Stones/rock.gd" id="2_445fr"]
+[ext_resource type="Resource" uid="uid://clronqqu1fqig" path="res://Item/items/stones.tres" id="3_12xxd"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lsh5r"]
+atlas = ExtResource("1_lsh5r")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_445fr"]
+atlas = ExtResource("1_lsh5r")
+region = Rect2(32, 32, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_fun6p"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lsh5r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_445fr")
+}],
+"loop": true,
+"name": &"cycle",
+"speed": 5.0
+}]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_wc76d"]
+radius = 17.0
+
+[node name="RandRock" type="AnimatedSprite2D"]
+sprite_frames = SubResource("SpriteFrames_fun6p")
+animation = &"cycle"
+
+[node name="StaticBody2D" type="StaticBody2D" parent="."]
+z_index = 3
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("2_445fr")
+item_drop = ExtResource("3_12xxd")
+min_drops = 2
+max_drops = 5
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
+position = Vector2(0, 3)
+shape = SubResource("CircleShape2D_wc76d")

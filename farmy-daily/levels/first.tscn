@@ -11,7 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://0fd882p2dmgx" path="res://interactable/pickables/leftlittlestone.tscn" id="8_218dk"]
 [ext_resource type="PackedScene" uid="uid://dvcui1fwvlpy8" path="res://interactable/pickables/middlelittlestone.tscn" id="9_tc8jh"]
 [ext_resource type="PackedScene" uid="uid://3ynhvm56eklt" path="res://interactable/pickables/rightlittlestone.tscn" id="10_jw3rq"]
-[ext_resource type="PackedScene" uid="uid://niykfjtmlth4" path="res://interactable/Stones/stone.tscn" id="11_hhr5t"]
+[ext_resource type="PackedScene" uid="uid://niykfjtmlth4" path="res://interactable/Stones/rightrock.tscn" id="11_hhr5t"]
 [ext_resource type="Texture2D" uid="uid://cqmo0v2k2l640" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/House.png" id="11_smn5b"]
 [ext_resource type="Script" uid="uid://ftgpquhc8isc" path="res://levels/scene_transition.gd" id="12_ipxjn"]
 [ext_resource type="PackedScene" uid="uid://c6l7cs6ihrf0r" path="res://interactable/trees/pine_tree.tscn" id="12_u4jaw"]

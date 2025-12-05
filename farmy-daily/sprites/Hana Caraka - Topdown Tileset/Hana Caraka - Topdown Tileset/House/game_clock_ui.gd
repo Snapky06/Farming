@@ -1,15 +1,12 @@
 extends CanvasLayer
 
-
-@onready var time_label: Label = $Time/TimeAndMonth/ActualTime
-
-@onready var date_label: Label = $Time/TimeAndMonth/NameMonthAndDate
+@onready var time_label: Label = $TimeAndMonth/ActualTime
+@onready var date_label: Label = $TimeAndMonth/NameMonthAndDate
 
 func _ready() -> void:
 	if TimeManager:
 		TimeManager.time_updated.connect(_on_time_updated)
 		TimeManager.date_updated.connect(_on_date_updated)
-		
 		TimeManager.emit_all_signals()
 
 func _on_time_updated(time_string: String) -> void:

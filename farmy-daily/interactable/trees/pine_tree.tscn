@@ -136,7 +136,7 @@ radius = 6.0
 
 [node name="PineTree" type="AnimatedSprite2D"]
 sprite_frames = SubResource("SpriteFrames_17sca")
-animation = &"little_cycle"
+animation = &"big_cycle"
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 z_index = 4
