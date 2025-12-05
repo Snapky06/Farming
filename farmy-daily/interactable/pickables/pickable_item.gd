@@ -2,7 +2,7 @@ extends StaticBody2D
 
 @export var item_to_pick_up: ItemData 
 @export var quantity_to_pick_up: int = 1 
-@export var pickup_sound: AudioStream #
+@export var pickup_sound: AudioStream 
 
 @onready var sprite_root: Sprite2D = get_parent() as Sprite2D 
 
@@ -20,7 +20,13 @@ func interact(player) -> void:
 		if player.inventory_data.pick_up_slot_data(slot_data):
 			is_picked_up = true
 			
-			play_sound() # Play the sound
+			# Disable collision immediately so the tile is free instantly
+			collision_layer = 0
+			collision_mask = 0
+			if has_node("CollisionShape2D"):
+				$CollisionShape2D.set_deferred("disabled", true)
+			
+			play_sound() 
 			await play_pickup_animation()
 			
 			sprite_root.queue_free()
@@ -32,7 +38,6 @@ func play_sound() -> void:
 		temp_player.global_position = global_position
 		temp_player.stream = pickup_sound
 		temp_player.play()
-		# Queue free the audio player when sound finishes
 		temp_player.finished.connect(temp_player.queue_free)
 
 func play_pickup_animation() -> void:

@@ -46,6 +46,9 @@ func hit(_arg):
 		destroy_rock()
 
 func destroy_rock():
+	# Immediately disable physics presence
+	collision_layer = 0
+	collision_mask = 0
 	if has_node("CollisionShape2D"):
 		$CollisionShape2D.set_deferred("disabled", true)
 	

@@ -264,20 +264,43 @@ func hit(_pos):
 			fall_tree()
 
 func destroy_sapling():
+	# Disable collision immediately so player can walk
+	collision_layer = 0
+	collision_mask = 0
+	
 	spawn_drops(wood_item, 1)
 	if randf() < 0.3: spawn_drops(seed_item, 1)
-	queue_free()
-	if sprite_root: sprite_root.queue_free()
+	
+	if sprite_root:
+		# Add fade out effect
+		var t = create_tween()
+		t.tween_property(sprite_root, "modulate:a", 0.0, 0.5)
+		await t.finished
+		sprite_root.queue_free()
+	else:
+		queue_free()
 
 func destroy_stump():
+	# Disable collision immediately
+	collision_layer = 0
+	collision_mask = 0
+	
 	spawn_drops(wood_item, 1)
-	if sprite_root: sprite_root.queue_free()
-	else: queue_free()
+	
+	if sprite_root:
+		# Add fade out effect
+		var t = create_tween()
+		t.tween_property(sprite_root, "modulate:a", 0.0, 0.5)
+		await t.finished
+		sprite_root.queue_free()
+	else:
+		queue_free()
 
 func fall_tree():
 	if is_falling: return
 	is_falling = true
-	# Removed collision disable here so stump stays solid
+	# We DO NOT disable collision here because the stump should remain solid
+	
 	play_sound(sfx_fall)
 	
 	var wood_count = 3
