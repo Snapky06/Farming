@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=4 uid="uid://4dp808w623li"]
+[gd_scene load_steps=35 format=4 uid="uid://4dp808w623li"]
 
 [ext_resource type="Texture2D" uid="uid://tbil2uhcba15" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Floor/Floor - all.png" id="1_w4fnf"]
 [ext_resource type="Texture2D" uid="uid://d36kgewqg6ucf" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/door.png" id="2_yxpej"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://c8xna76hgk7kd" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/shelf.png" id="8_u8ey1"]
 [ext_resource type="Texture2D" uid="uid://de6bausyobfbj" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/sofa.png" id="9_xf0dq"]
 [ext_resource type="Texture2D" uid="uid://bn81h1mdcqfea" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Structure/Structure.png" id="11_u8ey1"]
+[ext_resource type="PackedScene" uid="uid://j5f6e4lwmjjq" path="res://interactable/house/bed.tscn" id="12_c3bqx"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_b0sm6"]
 vertices = PackedVector2Array(-74, 38, -91.078125, 38, -90.46875, 27.34375, -74, -106, -46, -58, -46, -75.25, -22, -74.72656, 13.25, -58, 13.8203125, -74.99219, -10, -75.52344, -22, -106, -10, -106, 42, -58, 42, -75.07031, 58, -74.72656, 86, -58, 58, -75.07031, 74, -74.72656, 86, -118, 74, -106, -150, -118, -150, 38, -131.77344, 27.148438, -133.53906, 38, -114.02344, 30.101563)
@@ -423,13 +424,13 @@ tile_map_data = PackedByteArray("AAD1/wMAAAAEAAEAAGD2/wMAAAAEAAEAAGD3/wMAAAAEAAE
 tile_set = SubResource("TileSet_isily")
 
 [node name="more decor" type="TileMapLayer" parent="NavRegion"]
-z_index = 1
-tile_map_data = PackedByteArray("AAACAPv/AAAAAAAAAAD2//b/BAACAAMAAAD2//f/BAACAAQAAAD2//j/BAACAAUAAAD3//b/BAADAAMAAAD3//f/BAADAAQAAAD3//j/BAADAAUAAAD4//b/BAACAAMAAAD4//f/BAACAAQAAAD4//j/BAACAAUAAAD5//b/BAADAAMAAAD5//f/BAADAAQAAAD5//j/BAADAAUAAAD6//b/BAAAAAAAAAD6//f/BAAAAAEAAAD6//j/BAAAAAIAAAD7//b/BAABAAAAAAD7//f/BAABAAEAAAD7//j/BAABAAIAAAD3//n/BQAAAAAAAAD3//r/BQAAAAEAAAD3//v/BQAAAAIAAAD5//n/BQAAAAAAABD5//r/BQAAAAEAABD5//v/BQAAAAIAABAFAPj/AAABAAAAAAD9//z/AAABAAEAAAAAAPz/AwABAAIAAAD9//r/AwAAAAMAAAD///z/AgADAAAAAAD9//n/AwAAAAIAAAA=")
+z_index = 3
+tile_map_data = PackedByteArray("AAD2//b/BAACAAMAAAD2//f/BAACAAQAAAD2//j/BAACAAUAAAD3//b/BAADAAMAAAD3//f/BAADAAQAAAD3//j/BAADAAUAAAD4//b/BAACAAMAAAD4//f/BAACAAQAAAD4//j/BAACAAUAAAD5//b/BAADAAMAAAD5//f/BAADAAQAAAD5//j/BAADAAUAAAD6//b/BAAAAAAAAAD6//f/BAAAAAEAAAD6//j/BAAAAAIAAAD7//b/BAABAAAAAAD7//f/BAABAAEAAAD7//j/BAABAAIAAAD3//n/BQAAAAAAAAD3//r/BQAAAAEAAAD3//v/BQAAAAIAAAD5//n/BQAAAAAAABD5//r/BQAAAAEAABD5//v/BQAAAAIAABAFAPj/AAABAAAAAAD9//z/AAABAAEAAAAAAPz/AwABAAIAAAD9//r/AwAAAAMAAAD9//n/AwAAAAIAAAAFAPr/AwAAAAAAAAA=")
 tile_set = SubResource("TileSet_xvksy")
 
 [node name="Decor" type="TileMapLayer" parent="NavRegion"]
-z_index = 1
-tile_map_data = PackedByteArray("AAACAPv/AQAAAAAAAAACAPz/AQAAAAEAAAADAPv/AQABAAAAAAADAPz/AQABAAEAAAAEAPv/AQACAAAAAAAEAPz/AQACAAEAAAD3//b/AQAHAAMAAAD3//f/AQAHAAQAAAD3//j/AQAHAAUAAAD4//b/AQAIAAMAAAD4//f/AQAIAAQAAAD4//j/AQAIAAUAAAD5//b/AQAJAAAAAAD5//f/AQAJAAEAAAD5//j/AQAJAAIAAAD6//b/AQAKAAAAAAD6//f/AQAKAAEAAAD6//j/AQAKAAIAAAD3//r/AQABAAkAAFD5//r/AQABAAkAAGD4//r/AQABAAgAAGD+//z/AQACAAYAAAD///z/AQADAAYAAAA=")
+z_index = 2
+tile_map_data = PackedByteArray("AAD3//b/AQAHAAMAAAD3//f/AQAHAAQAAAD3//j/AQAHAAUAAAD4//b/AQAIAAMAAAD4//f/AQAIAAQAAAD4//j/AQAIAAUAAAD5//b/AQAJAAAAAAD5//f/AQAJAAEAAAD5//j/AQAJAAIAAAD6//b/AQAKAAAAAAD6//f/AQAKAAEAAAD6//j/AQAKAAIAAAD3//r/AQABAAkAAFD5//r/AQABAAkAAGD4//r/AQABAAgAAGD+//z/AQACAAYAAAD///z/AQADAAYAAAACAPj/AQAJAAAAAAACAPn/AQAJAAEAAAACAPr/AQAJAAIAAAADAPj/AQAKAAAAAAADAPn/AQAKAAEAAAADAPr/AQAKAAIAAAAFAPv/AQABAAgAAAAFAPz/AQABAAkAAAAFAPr/AQABAAkAADAEAPv/AQACAAMAAAA=")
 tile_set = SubResource("TileSet_xf0dq")
 
 [node name="Structure" type="TileMapLayer" parent="NavRegion"]
@@ -440,5 +441,12 @@ tile_set = SubResource("TileSet_opqtv")
 tile_map_data = PackedByteArray("AAD8/wIAAAAAAAEAAAD8/wEAAAAAAAEAAAD8/wAAAAAAAAEAAAD8////AAAAAAEAAAD8//7/AAAAAAEAAAD8//3/AAAAAAAAAAD9//3/AAABAAAAAAD+//3/AAABAAAAAAD///3/AAABAAAAAAAAAP3/AAABAAAAAAABAP3/AAABAAAAAAACAP3/AAABAAAAAAADAP3/AAABAAAAAAAEAP3/AAABAAAAAAAFAP3/AAABAAAAAAAGAP3/AAAEAAEAAAAGAPz/AAAAAAEAAAAGAPv/AAAAAAEAAAAGAPr/AAAAAAEAAAAGAPn/AAAAAAEAAAAGAPj/AAAAAAEAAAAGAPf/AAAEAAAAAAAFAPf/AAABAAIAAAAEAPf/AAABAAIAAAADAPf/AAABAAIAAAACAPf/AAABAAIAAAABAPf/AAABAAIAAAAAAPf/AAABAAIAAAD///f/AAABAAIAAAD+//f/AAABAAIAAAD9//f/AAABAAIAAAD8//f/AAABAAIAAAD7//f/AAABAAIAAAD6//f/AAABAAIAAAD5//f/AAABAAIAAAD4//f/AAABAAIAAAD3//f/AAABAAIAAAD2//f/AAABAAIAAAD1//f/AAADAAAAAAD1//j/AAACAAEAAAD1//n/AAACAAEAAAD1//r/AAACAAEAAAD1//v/AAACAAEAAAD1//z/AAACAAEAAAD1//3/AAACAAEAAAD1//7/AAACAAEAAAD1////AAACAAEAAAD1/wAAAAACAAEAAAD1/wEAAAACAAEAAAD1/wIAAAACAAEAAAD1/wMAAAADAAEAAAD2/wMAAAABAAAAAAD3/wMAAAABAAAAAAD4/wMAAAABAAAAAAD5/wMAAAABAAAAAAD6/wMAAAABAAAAAAD7/wMAAAABAAAAAAD8/wMAAAAEAAEAAAA=")
 tile_set = SubResource("TileSet_aaw6y")
 
-[node name="spawn_from_outside" type="Marker2D" parent="."]
+[node name="spawn_from_outside" type="Marker2D" parent="NavRegion"]
 position = Vector2(-113, 23)
+
+[node name="sleep" type="Marker2D" parent="NavRegion"]
+position = Vector2(50, -63)
+
+[node name="Bed" parent="." instance=ExtResource("12_c3bqx")]
+z_index = 0
+position = Vector2(45, -64)
