@@ -1382,19 +1382,32 @@ script = ExtResource("26_yvs2r")
 
 [node name="Changes" type="Node2D" parent="NavRegion"]
 
-[node name="Area2D" type="Area2D" parent="NavRegion/Changes"]
+[node name="ToTown" type="Area2D" parent="NavRegion/Changes"]
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("12_ipxjn")
 target_scene_path = "uid://cfyf0y6d3cek6"
 target_spawn_tag = "spawn_to_town"
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Changes/Area2D"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Changes/ToTown"]
 position = Vector2(-161, -9)
 shape = SubResource("RectangleShape2D_831bh")
 
 [node name="to_town" type="Marker2D" parent="NavRegion/Changes"]
 position = Vector2(-153, -9)
+
+[node name="ToFarm" type="Area2D" parent="NavRegion/Changes"]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("12_ipxjn")
+target_scene_path = "uid://crkat5fhv85hm"
+target_spawn_tag = "spawn_farm"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Changes/ToFarm"]
+position = Vector2(107, 272)
+shape = SubResource("RectangleShape2D_831bh")
+
+[node name="from_farm" type="Marker2D" parent="NavRegion/Changes"]
 
 [node name="spawn_outside" type="Marker2D" parent="."]
 position = Vector2(65, 4)

@@ -21,6 +21,9 @@ TimeManager="*res://Global/time_manager.gd"
 
 [display]
 
+window/size/viewport_width=648
+window/size/resizable=false
+window/stretch/mode="canvas_items"
 window/main_scene="uid://cki8q0nelsrsa"
 
 [input]

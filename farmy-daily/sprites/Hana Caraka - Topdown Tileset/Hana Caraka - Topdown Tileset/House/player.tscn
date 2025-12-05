@@ -1355,7 +1355,6 @@ inventory_data = ExtResource("2_iwuv1")
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-scale = Vector2(0.9, 0.9)
 sprite_frames = SubResource("SpriteFrames_2t4pl")
 animation = &"sleep_down"
 
