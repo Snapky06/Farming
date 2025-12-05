@@ -93,3 +93,27 @@ func pick_up_slot_data(slot_data: SlotData) -> bool:
 
 func on_slot_clicked(index: int, button: int) -> void:
 	inventory_interact.emit(self, index, button)
+
+func serialize() -> Array:
+	var serialized_slots = []
+	for slot in slot_datas:
+		if slot and slot.item_data:
+			serialized_slots.append({
+				"item_path": slot.item_data.resource_path,
+				"quantity": slot.quantity
+			})
+		else:
+			serialized_slots.append(null)
+	return serialized_slots
+
+func deserialize(data: Array) -> void:
+	for i in range(data.size()):
+		if i < slot_datas.size():
+			if data[i] == null:
+				slot_datas[i] = null
+			else:
+				var new_slot = SlotData.new()
+				new_slot.item_data = load(data[i]["item_path"])
+				new_slot.quantity = int(data[i]["quantity"])
+				slot_datas[i] = new_slot
+	inventory_updated.emit(self)

@@ -18,6 +18,8 @@ config/icon="res://icon.svg"
 [autoload]
 
 TimeManager="*res://Global/time_manager.gd"
+SaveManager="*res://Global/SaveManager.gd"
+QuestManager="*res://quests/quest_manager.gd"
 
 [display]
 

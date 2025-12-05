@@ -120,3 +120,14 @@ func reset_all() -> void:
 	active_quests.clear()
 	completed_quests.clear()
 	quests_changed.emit()
+
+func get_save_data() -> Dictionary:
+	return {
+		"active": active_quests,
+		"completed": completed_quests
+	}
+
+func load_save_data(data: Dictionary) -> void:
+	active_quests = data.get("active", {})
+	completed_quests = data.get("completed", {})
+	quests_changed.emit()

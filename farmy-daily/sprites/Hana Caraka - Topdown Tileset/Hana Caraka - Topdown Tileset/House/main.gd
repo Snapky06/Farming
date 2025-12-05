@@ -21,10 +21,15 @@ var current_open_chest: StaticBody2D = null
 var transition_layer: CanvasLayer = null
 var transition_rect: ColorRect = null
 
+var pause_menu_scene = preload("res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/PauseMenu.tscn")
+
 func _ready() -> void:
 	_refresh_layer_references(self)
 	_setup_transition_layer()
 	_connect_all_chests(self)
+	
+	var menu = pause_menu_scene.instantiate()
+	add_child(menu)
 
 	var spawn_node: Node2D = null
 	if TimeManager.player_spawn_tag != "":
@@ -555,3 +560,31 @@ func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
 		
 	if is_instance_valid(player):
 		player.is_movement_locked = false
+
+func get_level_data() -> Dictionary:
+	return {
+		"watered_tiles": watered_tiles,
+		"ground_modifications": _get_ground_modifications()
+	}
+
+func load_level_data(data: Dictionary) -> void:
+	watered_tiles = data.get("watered_tiles", {})
+	
+	var mods = data.get("ground_modifications", {})
+	if is_instance_valid(ground_layer):
+		for key in mods:
+			var coords = str_to_var("Vector2i" + key)
+			var tile_info = mods[key]
+			ground_layer.set_cell(coords, tile_info["source_id"], str_to_var("Vector2i" + tile_info["atlas_coords"]))
+
+func _get_ground_modifications() -> Dictionary:
+	var mods = {}
+	if is_instance_valid(ground_layer):
+		for tile_pos in ground_layer.get_used_cells():
+			var atlas = ground_layer.get_cell_atlas_coords(tile_pos)
+			if atlas == HOED_ATLAS_COORDS or atlas == WATERED_ATLAS_COORDS:
+				mods[str(tile_pos)] = {
+					"source_id": ground_layer.get_cell_source_id(tile_pos),
+					"atlas_coords": str(atlas)
+				}
+	return mods

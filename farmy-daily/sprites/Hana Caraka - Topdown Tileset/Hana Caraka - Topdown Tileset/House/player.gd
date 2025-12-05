@@ -54,7 +54,13 @@ func _ready():
 	z_index = 1
 	agent.target_desired_distance = stop_distance
 	agent.path_desired_distance = 2.0
-	cam.enabled = true
+	
+	if cam:
+		cam.enabled = true
+		cam.position_smoothing_enabled = true
+		cam.position_smoothing_speed = 5.0
+		cam.process_callback = Camera2D.CAMERA2D_PROCESS_IDLE
+	
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	
 	audio_player = AudioStreamPlayer2D.new()

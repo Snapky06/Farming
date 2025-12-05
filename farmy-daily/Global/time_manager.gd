@@ -207,3 +207,29 @@ func _do_auto_sleep_penalty() -> void:
 		var t2 = create_tween()
 		t2.tween_property(transition_rect, "modulate:a", 0.0, 1.0)
 		await t2.finished
+
+func get_save_data() -> Dictionary:
+	return {
+		"time_seconds": current_time_seconds,
+		"day": current_day,
+		"month": current_month,
+		"year": current_year,
+		"season": current_season,
+		"penalty": auto_sleep_penalty_applied
+	}
+
+func load_save_data(data: Dictionary) -> void:
+	current_time_seconds = data.get("time_seconds", 8.0 * 3600.0)
+	current_day = data.get("day", 1)
+	current_month = data.get("month", 1)
+	current_year = data.get("year", 2025)
+	current_season = data.get("season", Seasons.SPRING)
+	auto_sleep_penalty_applied = data.get("penalty", false)
+	last_hour = int(current_time_seconds / 3600.0) % 24
+	emit_all_signals()
+
+func save_watered_tiles(data: Dictionary) -> void:
+	pass 
+
+func load_watered_tiles() -> Dictionary:
+	return {}

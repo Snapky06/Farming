@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bt6yu66rx5g0l"]
+[gd_scene load_steps=15 format=3 uid="uid://bt6yu66rx5g0l"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_0ppkx"]
 [ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_hy8hq"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://dho66uk5v1m1h" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/QuestLog.tscn" id="6_qayf5"]
 [ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="11_6x66l"]
 [ext_resource type="Script" uid="uid://c1uydoq5x125w" path="res://Inventory/inventory_interface.gd" id="12_8fpue"]
+[ext_resource type="PackedScene" uid="uid://bugpfxrl8ucqo" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/PauseMenu.tscn" id="12_cjaoi"]
 [ext_resource type="Script" uid="uid://8srtvjvdab6y" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/cursor_selector.gd" id="12_qayf5"]
 [ext_resource type="PackedScene" uid="uid://chqgfuqs3wn4q" path="res://Inventory/inventory.tscn" id="13_ykfl3"]
 [ext_resource type="PackedScene" uid="uid://bpfmoo7pgcvyl" path="res://Inventory/slot.tscn" id="14_nnk2e"]
@@ -151,28 +152,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="Settings" type="CanvasLayer" parent="UI"]
-
-[node name="OptionsContainer" type="Panel" parent="UI/Settings"]
-offset_left = 3.0
-offset_top = 3.0
-offset_right = 83.0
-offset_bottom = 43.0
-
-[node name="X" type="Label" parent="UI/Settings/OptionsContainer"]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -5.0
-offset_top = -11.5
-offset_right = 5.0
-offset_bottom = 11.5
-grow_horizontal = 2
-grow_vertical = 2
-text = "Options"
+[node name="PauseMenu" parent="UI" instance=ExtResource("12_cjaoi")]
 
 [node name="TileSelector" type="Sprite2D" parent="."]
 visible = false
