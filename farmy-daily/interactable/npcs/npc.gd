@@ -2,9 +2,14 @@ extends Node2D
 
 @export var dialog_lines: Array[String] = []
 @export var text_speed: float = 0.03
+@export var offered_quest: QuestData
+@export var start_event_name: String = ""
+@export var finish_event_name: String = ""
+@export var finish_on_last_line: bool = false
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var type_timer: Timer = $Timer
+@onready var quest_manager: Node = get_node_or_null("/root/QuestManager")
 
 var dialog_active: bool = false
 var is_typing: bool = false
@@ -32,6 +37,11 @@ func on_interact(player) -> void:
 		return
 	if dialog_active:
 		return
+	if quest_manager:
+		if offered_quest and not quest_manager.is_quest_active(offered_quest.id) and not quest_manager.is_quest_completed(offered_quest.id):
+			quest_manager.start_quest(offered_quest)
+		if start_event_name != "":
+			quest_manager.notify_event(start_event_name, 1, name)
 	_start_dialog(player)
 
 func _start_dialog(player) -> void:
@@ -61,9 +71,9 @@ func _ensure_dialog_ui() -> void:
 	dialog_panel.offset_top = 0.0
 	dialog_panel.offset_bottom = 0.0
 	dialog_panel.custom_minimum_size = Vector2(0, 120)
-	dialog_panel.modulate = Color(0.92, 0.84, 0.70, 0.97)
+	dialog_panel.modulate = Color(0.912, 0.757, 0.459, 0.97)
 
-	var border_color := Color(0.92, 0.84, 0.70, 0.97)
+	var border_color := Color(0.912, 0.757, 0.459, 0.97)
 	var border_size := 5.0
 
 	var top := ColorRect.new()
@@ -125,8 +135,7 @@ func _ensure_dialog_ui() -> void:
 	dialog_label.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	dialog_label.set("theme_override_font_sizes/font_size", 22)
 	dialog_label.set("theme_override_fonts/font", dialog_font)
-	dialog_label.set("theme_override_colors/font_color", Color(0.92, 0.84, 0.70, 0.97)
-)
+	dialog_label.set("theme_override_colors/font_color", Color(0.912, 0.757, 0.459, 0.97))
 
 	next_button = Button.new()
 	next_button.text = "Next"
@@ -141,7 +150,7 @@ func _ensure_dialog_ui() -> void:
 	next_button.modulate = border_color
 	next_button.focus_mode = Control.FOCUS_NONE
 	next_button.set("theme_override_fonts/font", dialog_font)
-	next_button.set("theme_override_colors/font_color", Color(0.92, 0.84, 0.70, 0.97))
+	next_button.set("theme_override_colors/font_color", Color(0.912, 0.757, 0.459, 0.97))
 	next_button.pressed.connect(_on_next_button_pressed)
 
 	close_button = Button.new()
@@ -157,7 +166,7 @@ func _ensure_dialog_ui() -> void:
 	close_button.modulate = border_color
 	close_button.focus_mode = Control.FOCUS_NONE
 	close_button.set("theme_override_fonts/font", dialog_font)
-	close_button.set("theme_override_colors/font_color", Color(0.92, 0.84, 0.70, 0.97))
+	close_button.set("theme_override_colors/font_color", Color(0.912, 0.757, 0.459, 0.97))
 	close_button.pressed.connect(_on_close_button_pressed)
 
 	dialog_panel.add_child(top)
@@ -236,6 +245,8 @@ func _advance_or_close() -> void:
 	if next_index < dialog_lines.size():
 		_show_line(next_index)
 	else:
+		if quest_manager and finish_on_last_line and finish_event_name != "":
+			quest_manager.notify_event(finish_event_name, 1, name)
 		_end_dialog()
 
 func _end_dialog() -> void:

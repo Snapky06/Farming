@@ -1,9 +1,10 @@
-[gd_scene load_steps=13 format=3 uid="uid://bt6yu66rx5g0l"]
+[gd_scene load_steps=14 format=3 uid="uid://bt6yu66rx5g0l"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_0ppkx"]
 [ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_hy8hq"]
 [ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="3_c3bvi"]
 [ext_resource type="PackedScene" uid="uid://4dp808w623li" path="res://levels/playerhouse.tscn" id="4_r73uj"]
+[ext_resource type="PackedScene" uid="uid://dho66uk5v1m1h" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/QuestLog.tscn" id="6_qayf5"]
 [ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="11_6x66l"]
 [ext_resource type="Script" uid="uid://c1uydoq5x125w" path="res://Inventory/inventory_interface.gd" id="12_8fpue"]
 [ext_resource type="Script" uid="uid://8srtvjvdab6y" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/cursor_selector.gd" id="12_qayf5"]
@@ -30,6 +31,10 @@ position = Vector2(175, 143)
 
 [node name="UI" type="CanvasLayer" parent="."]
 script = ExtResource("11_6x66l")
+
+[node name="QuestLog" parent="UI" instance=ExtResource("6_qayf5")]
+offset = Vector2(0, 10)
+transform = Transform2D(1, 0, 0, 1, 0, 10)
 
 [node name="InventoryInterface" type="Control" parent="UI"]
 visible = false
@@ -93,10 +98,10 @@ grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(1.2, 1.2)
 
-[node name="Time" type="CanvasLayer" parent="."]
+[node name="Time" type="CanvasLayer" parent="UI"]
 script = ExtResource("11_6x66l")
 
-[node name="TimeAndMonth" type="Panel" parent="Time"]
+[node name="TimeAndMonth" type="Panel" parent="UI/Time"]
 anchors_preset = -1
 anchor_left = 0.9713542
 anchor_right = 1.0
@@ -108,7 +113,7 @@ offset_bottom = 88.0
 grow_horizontal = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_tuhlx")
 
-[node name="ActualTime" type="Label" parent="Time/TimeAndMonth"]
+[node name="ActualTime" type="Label" parent="UI/Time/TimeAndMonth"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -128,7 +133,7 @@ text = "T"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NameMonthAndDate" type="Label" parent="Time/TimeAndMonth"]
+[node name="NameMonthAndDate" type="Label" parent="UI/Time/TimeAndMonth"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.55940646
@@ -149,15 +154,15 @@ horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="Settings" type="CanvasLayer" parent="."]
+[node name="Settings" type="CanvasLayer" parent="UI"]
 
-[node name="OptionsContainer" type="Panel" parent="Settings"]
+[node name="OptionsContainer" type="Panel" parent="UI/Settings"]
 offset_left = 3.0
 offset_top = 3.0
 offset_right = 83.0
 offset_bottom = 43.0
 
-[node name="X" type="Label" parent="Settings/OptionsContainer"]
+[node name="X" type="Label" parent="UI/Settings/OptionsContainer"]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
