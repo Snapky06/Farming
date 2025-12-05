@@ -14,7 +14,7 @@
 [ext_resource type="FontFile" uid="uid://bvn3wtsegknv" path="res://fonts/MineMouseRegular-BL3DB.ttf" id="16_j4iur"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tuhlx"]
-bg_color = Color(0.4379362, 0.68035144, 0.21081644, 0.16862746)
+bg_color = Color(0.3764706, 0.26666668, 0, 0.47843137)
 
 [node name="Game" type="Node2D"]
 script = ExtResource("1_0ppkx")
@@ -47,34 +47,31 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("12_8fpue")
 
-[node name="PlayerInventory" parent="UI/InventoryInterface" instance=ExtResource("13_ykfl3")]
+[node name="CenterContainer" type="CenterContainer" parent="UI/InventoryInterface"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -83.0
-offset_top = 96.0
-offset_right = -3.0
-offset_bottom = 176.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(1.2, 1.2)
+
+[node name="HBoxContainer" type="VBoxContainer" parent="UI/InventoryInterface/CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="ExternalInventory" parent="UI/InventoryInterface/CenterContainer/HBoxContainer" instance=ExtResource("13_ykfl3")]
+visible = false
+custom_minimum_size = Vector2(300, 200)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 mouse_filter = 2
 
-[node name="ExternalInventory" parent="UI/InventoryInterface" instance=ExtResource("13_ykfl3")]
-visible = false
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -83.0
-offset_top = 70.0
-offset_right = -3.0
-offset_bottom = 150.0
-grow_horizontal = 2
-scale = Vector2(1.2, 1.2)
+[node name="PlayerInventory" parent="UI/InventoryInterface/CenterContainer/HBoxContainer" instance=ExtResource("13_ykfl3")]
+custom_minimum_size = Vector2(300, 200)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 mouse_filter = 2
 
 [node name="GrabbedSlot" parent="UI/InventoryInterface" instance=ExtResource("14_nnk2e")]
@@ -90,9 +87,9 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -32.0
+offset_left = -14.0
 offset_top = -84.0
-offset_right = 32.0
+offset_right = 50.0
 offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 0
@@ -126,7 +123,7 @@ offset_right = 22.5
 offset_bottom = 36.5
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
+theme_override_colors/font_color = Color(0.914, 0.753, 0.459, 0.969)
 theme_override_fonts/font = ExtResource("16_j4iur")
 theme_override_font_sizes/font_size = 20
 text = "T"
@@ -146,7 +143,7 @@ offset_right = 26.5
 offset_bottom = -45.5
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0, 0.2901961, 0, 1)
+theme_override_colors/font_color = Color(0.914, 0.753, 0.459, 0.969)
 theme_override_fonts/font = ExtResource("16_j4iur")
 theme_override_font_sizes/font_size = 20
 text = "M"

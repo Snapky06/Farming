@@ -150,7 +150,7 @@ func _ensure_dialog_ui() -> void:
 	next_button.modulate = border_color
 	next_button.focus_mode = Control.FOCUS_NONE
 	next_button.set("theme_override_fonts/font", dialog_font)
-	next_button.set("theme_override_colors/font_color", Color(0.912, 0.757, 0.459, 0.97))
+	next_button.set("theme_override_colors/font_color", Color(0.914, 0.753, 0.459, 0.969))
 	next_button.pressed.connect(_on_next_button_pressed)
 
 	close_button = Button.new()
@@ -212,7 +212,7 @@ func _update_portraits() -> void:
 	var center_y := (panel_top + panel_bottom) * 0.5
 
 	npc_portrait.position = Vector2(size.x * 0.16, center_y)
-	player_portrait.position = Vector2(size.x * 0.84, center_y)
+	player_portrait.position = Vector2(size.x * 0.86, center_y)
 
 func _show_line(index: int) -> void:
 	current_line_index = index

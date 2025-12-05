@@ -5,15 +5,16 @@ var external_inventory_owner
 var player
 const PICK_UP = preload("res://Item/pick_up/pick_up.tscn")
 
-@onready var player_inventory: PanelContainer = $PlayerInventory
+@onready var player_inventory: PanelContainer = $CenterContainer/HBoxContainer/PlayerInventory
 @onready var grabbed_slot: PanelContainer = $GrabbedSlot
-@onready var external_inventory: PanelContainer = $ExternalInventory
+@onready var external_inventory: PanelContainer = $CenterContainer/HBoxContainer/ExternalInventory
 
 signal hide_inventory()
 
 const DOUBLE_TAP_DELAY = 0.3
 var tap_count = 0
 var double_tap_timer = 0.0
+
 
 func _ready() -> void:
 	visible = false
@@ -27,6 +28,7 @@ func _process(delta: float) -> void:
 
 	if grabbed_slot.visible:
 		grabbed_slot.global_position = get_global_mouse_position() + Vector2(5, 5)
+
 
 func open() -> void:
 	visible = true
