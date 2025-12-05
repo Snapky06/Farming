@@ -1,6 +1,8 @@
-[gd_scene load_steps=17 format=3 uid="uid://swisabq3xg7g"]
+[gd_scene load_steps=19 format=3 uid="uid://swisabq3xg7g"]
 
+[ext_resource type="Script" uid="uid://d2gr834u208gh" path="res://interactable/npcs/npc.gd" id="1_s4hjy"]
 [ext_resource type="Texture2D" uid="uid://doeqxpst2fe5i" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Premade Character/Inn Keeper/inn keeper - idle.png" id="1_xfe3p"]
+[ext_resource type="Script" uid="uid://co41majoe4uq8" path="res://interactable/npcs/npc_interact_area.gd" id="3_cu7ry"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xfe3p"]
 atlas = ExtResource("1_xfe3p")
@@ -112,15 +114,22 @@ height = 16.0
 radius = 17.029387
 
 [node name="Aunt" type="CharacterBody2D"]
+script = ExtResource("1_s4hjy")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_mgshb")
-animation = &"idle_right"
+animation = &"idle_down"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_xfe3p")
 
-[node name="chat_detection_area" type="StaticBody2D" parent="."]
+[node name="chat_detection_area" type="Area2D" parent="."]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("3_cu7ry")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="chat_detection_area"]
 shape = SubResource("CircleShape2D_s4hjy")
+
+[node name="Timer" type="Timer" parent="."]
+autostart = true
