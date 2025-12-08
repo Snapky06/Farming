@@ -1,6 +1,9 @@
 extends Resource
 class_name InventoryData
 
+enum InventoryType { PLAYER, CHEST, SHOP, SELL_BIN }
+@export var type: InventoryType = InventoryType.PLAYER
+
 signal inventory_updated(inventory_data: InventoryData)
 signal inventory_interact(inventory_data: InventoryData, index: int, button: int)
 
@@ -10,9 +13,14 @@ func grab_slot_data(index:int) -> SlotData:
 	var slot_data = slot_datas[index]
 	
 	if slot_data:
-		slot_datas[index] = null
-		inventory_updated.emit(self)
-		return slot_data
+		if type == InventoryType.SHOP:
+			var new_slot = slot_data.duplicate()
+			new_slot.quantity = 1
+			return new_slot
+		else:
+			slot_datas[index] = null
+			inventory_updated.emit(self)
+			return slot_data
 	else:
 		return null
 
@@ -22,6 +30,11 @@ func grab_single_slot_data(index: int) -> SlotData:
 	if not slot_data:
 		return null
 	
+	if type == InventoryType.SHOP:
+		var new_slot = slot_data.duplicate()
+		new_slot.quantity = 1
+		return new_slot
+
 	if slot_data.quantity == 1:
 		slot_datas[index] = null
 		inventory_updated.emit(self)
@@ -36,6 +49,9 @@ func grab_single_slot_data(index: int) -> SlotData:
 	return new_grabbed_slot
 
 func drop_slot_data(grabbed_slot_data: SlotData , index:int) -> SlotData:
+	if type == InventoryType.SHOP:
+		return grabbed_slot_data
+
 	var slot_data = slot_datas[index]
 	var return_slot_data: SlotData
 	
@@ -50,6 +66,9 @@ func drop_slot_data(grabbed_slot_data: SlotData , index:int) -> SlotData:
 	return return_slot_data
 
 func drop_single_slot_data(grabbed_slot_data: SlotData, index: int) -> SlotData:
+	if type == InventoryType.SHOP:
+		return grabbed_slot_data
+
 	var slot_data = slot_datas[index]
 	
 	if not slot_data:

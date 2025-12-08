@@ -79,6 +79,7 @@ var health: int = 3
 var is_stump: bool = false
 var is_falling: bool = false 
 var default_layer: int = 1 
+var is_destroyed: bool = false # Added flag
 
 const VISUAL_TRANSITION_WINDOW: int = 3 
 
@@ -264,7 +265,7 @@ func hit(_pos):
 			fall_tree()
 
 func destroy_sapling():
-	# Disable collision immediately so player can walk
+	is_destroyed = true # Mark as destroyed
 	collision_layer = 0
 	collision_mask = 0
 	
@@ -272,7 +273,6 @@ func destroy_sapling():
 	if randf() < 0.3: spawn_drops(seed_item, 1)
 	
 	if sprite_root:
-		# Add fade out effect
 		var t = create_tween()
 		t.tween_property(sprite_root, "modulate:a", 0.0, 0.5)
 		await t.finished
@@ -281,14 +281,13 @@ func destroy_sapling():
 		queue_free()
 
 func destroy_stump():
-	# Disable collision immediately
+	is_destroyed = true # Mark as destroyed
 	collision_layer = 0
 	collision_mask = 0
 	
 	spawn_drops(wood_item, 1)
 	
 	if sprite_root:
-		# Add fade out effect
 		var t = create_tween()
 		t.tween_property(sprite_root, "modulate:a", 0.0, 0.5)
 		await t.finished
@@ -299,7 +298,7 @@ func destroy_stump():
 func fall_tree():
 	if is_falling: return
 	is_falling = true
-	# We DO NOT disable collision here because the stump should remain solid
+	# We DO NOT set is_destroyed here because the stump stays
 	
 	play_sound(sfx_fall)
 	

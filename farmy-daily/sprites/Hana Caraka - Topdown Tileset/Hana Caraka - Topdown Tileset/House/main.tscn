@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://bt6yu66rx5g0l"]
+[gd_scene load_steps=17 format=3 uid="uid://bt6yu66rx5g0l"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_0ppkx"]
 [ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_hy8hq"]
@@ -13,6 +13,13 @@
 [ext_resource type="PackedScene" uid="uid://bpfmoo7pgcvyl" path="res://Inventory/slot.tscn" id="14_nnk2e"]
 [ext_resource type="PackedScene" uid="uid://cy1g05gn51fat" path="res://Inventory/hot_bar_inventory.tscn" id="15_iurc1"]
 [ext_resource type="FontFile" uid="uid://bvn3wtsegknv" path="res://fonts/MineMouseRegular-BL3DB.ttf" id="16_j4iur"]
+
+[sub_resource type="CompressedTexture2D" id="CompressedTexture2D_cjaoi"]
+load_path = "res://.godot/imported/eggplant.png-ff4b9a0b4b8f066e40a755a0dcfd50b7.ctex"
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_22615"]
+atlas = SubResource("CompressedTexture2D_cjaoi")
+region = Rect2(16, 16, 16, 16)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tuhlx"]
 bg_color = Color(0.3764706, 0.26666668, 0, 0.47843137)
@@ -47,6 +54,7 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("12_8fpue")
+money_icon = SubResource("AtlasTexture_22615")
 
 [node name="CenterContainer" type="CenterContainer" parent="UI/InventoryInterface"]
 layout_mode = 1

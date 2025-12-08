@@ -6,7 +6,8 @@ extends StaticBody2D
 
 @onready var sprite_root: Sprite2D = get_parent() as Sprite2D 
 
-var is_picked_up: bool = false  	
+var is_picked_up: bool = false
+var is_destroyed: bool = false # Added flag to fix "red tile" issue
 
 func interact(player) -> void:
 	if is_picked_up:
@@ -19,8 +20,8 @@ func interact(player) -> void:
 		
 		if player.inventory_data.pick_up_slot_data(slot_data):
 			is_picked_up = true
+			is_destroyed = true # Immediately mark as destroyed so the tile is free
 			
-			# Disable collision immediately so the tile is free instantly
 			collision_layer = 0
 			collision_mask = 0
 			if has_node("CollisionShape2D"):

@@ -23,7 +23,8 @@ func save_game():
 		save_data["player"] = {
 			"position_x": player.global_position.x,
 			"position_y": player.global_position.y,
-			"scene_path": root.scene_file_path
+			"scene_path": root.scene_file_path,
+			"money": player.money
 		}
 		
 		if player.inventory_data:
@@ -62,6 +63,9 @@ func load_game():
 		var player = get_tree().current_scene.find_child("Player", true, false)
 		if player:
 			player.global_position = Vector2(player_data["position_x"], player_data["position_y"])
+			if player_data.has("money"):
+				player.money = player_data["money"]
+				player.money_updated.emit(player.money)
 			
 			if save_data.has("inventory") and player.inventory_data:
 				player.inventory_data.deserialize(save_data["inventory"])

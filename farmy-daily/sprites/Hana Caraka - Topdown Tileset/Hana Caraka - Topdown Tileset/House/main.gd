@@ -291,6 +291,13 @@ func is_tile_occupied(center: Vector2) -> bool:
 		var collider = result.collider
 		if collider == player or (player and player.is_ancestor_of(collider)):
 			continue
+		
+		# CRITICAL FIX: Check for 'is_destroyed' property safely using .get()
+		# This ensures that if the object is in the process of being destroyed/picked up,
+		# we treat the tile as empty immediately.
+		if collider.get("is_destroyed"):
+			continue
+			
 		return true
 	return false
 

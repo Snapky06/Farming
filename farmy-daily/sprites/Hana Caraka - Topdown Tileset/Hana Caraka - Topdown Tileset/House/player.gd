@@ -10,6 +10,11 @@ extends CharacterBody2D
 @onready var interaction_area: Area2D = $InteractionComponent
 @onready var hold_timer: Timer = $PlayerHoldTimer
 
+var money: int = 100
+
+signal money_updated(new_amount)
+signal toggle_inventory()
+
 const TREE_SCENES = [
 	preload("res://interactable/trees/maple_tree.tscn"),
 	preload("res://interactable/trees/pine_tree.tscn"),
@@ -28,7 +33,6 @@ var sfx_seeds: AudioStream
 var sfx_water: AudioStream
 
 var last_direction := Vector2.DOWN
-signal toggle_inventory()
 
 const DOUBLE_TAP_DELAY_MS = 300
 const LONG_PRESS_DURATION = 0.3
@@ -50,7 +54,7 @@ var pending_impact_sound: AudioStream = null
 var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE = 50.0
 
-func _ready():
+func _ready() -> void:
 	z_index = 1
 	agent.target_desired_distance = stop_distance
 	agent.path_desired_distance = 2.0
@@ -69,6 +73,11 @@ func _ready():
 	add_child(impact_audio_player)
 	
 	load_sounds()
+	emit_signal("money_updated", money)
+
+func update_money(amount: int) -> void:
+	money += amount
+	emit_signal("money_updated", money)
 
 func load_sounds():
 	if FileAccess.file_exists("res://sounds/hit_tree.mp3"): sfx_hit_tree = load("res://sounds/hit_tree.mp3")

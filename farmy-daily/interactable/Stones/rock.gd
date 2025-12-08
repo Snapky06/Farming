@@ -8,6 +8,8 @@ extends StaticBody2D
 @onready var sprite_root = get_parent()
 const PICK_UP_SCENE = preload("res://Item/pick_up/pick_up.tscn")
 
+var is_destroyed: bool = false # Added flag
+
 func _ready():
 	add_to_group("rock")
 	
@@ -46,7 +48,8 @@ func hit(_arg):
 		destroy_rock()
 
 func destroy_rock():
-	# Immediately disable physics presence
+	is_destroyed = true # Immediately mark as destroyed
+	
 	collision_layer = 0
 	collision_mask = 0
 	if has_node("CollisionShape2D"):

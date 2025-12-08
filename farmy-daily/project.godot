@@ -27,6 +27,10 @@ window/size/resizable=false
 window/stretch/mode="viewport"
 window/main_scene="uid://cki8q0nelsrsa"
 
+[global_group]
+
+external_inventory=""
+
 [input]
 
 grab={
