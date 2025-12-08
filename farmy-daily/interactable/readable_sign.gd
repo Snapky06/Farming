@@ -51,6 +51,7 @@ func _build_ui() -> void:
 	margin.add_child(label)
 
 func interact(user = null) -> void:
+	var _local_mouse = get_local_mouse_position()
 	if ui_root.visible:
 		close()
 	else:
@@ -59,7 +60,6 @@ func interact(user = null) -> void:
 func open(user) -> void:
 	active_player = user
 	
-	# Update text dynamically
 	var control = ui_root.get_child(0)
 	var panel = control.get_child(0)
 	var margin = panel.get_child(0)
@@ -85,13 +85,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		# If double click logic is handled elsewhere, single click outside is fine for closing
-		# We check if we clicked outside the panel
 		var control = ui_root.get_child(0)
 		var panel = control.get_child(0) as PanelContainer
 		if panel:
 			var local_mouse = panel.get_local_mouse_position()
 			if not panel.get_rect().has_point(panel.get_global_transform().affine_inverse() * get_viewport().get_mouse_position()):
-				# Simple click outside closes it
 				close()
 				get_viewport().set_input_as_handled()

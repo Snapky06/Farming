@@ -15,6 +15,9 @@ var money_container: PanelContainer
 var money_label: Label
 var money_icon_rect: TextureRect
 
+var bin_value_container: PanelContainer
+var bin_value_label: Label
+
 signal hide_inventory()
 
 const DOUBLE_TAP_DELAY = 0.3
@@ -25,6 +28,7 @@ func _ready() -> void:
 	visible = false
 	grabbed_slot.visible = false
 	setup_money_display()
+	setup_bin_value_display()
 	find_player()
 
 func setup_money_display() -> void:
@@ -68,6 +72,31 @@ func setup_money_display() -> void:
 	money_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	hbox.add_child(money_label)
 
+func setup_bin_value_display() -> void:
+	bin_value_container = PanelContainer.new()
+	add_child(bin_value_container)
+	bin_value_container.visible = false
+	
+	bin_value_container.layout_mode = 1
+	bin_value_container.anchors_preset = Control.PRESET_CENTER_TOP
+	bin_value_container.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	bin_value_container.position = Vector2(0, 100)
+	
+	var margin = MarginContainer.new()
+	margin.add_theme_constant_override("margin_left", 10)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_top", 5)
+	margin.add_theme_constant_override("margin_bottom", 5)
+	bin_value_container.add_child(margin)
+	
+	bin_value_label = Label.new()
+	bin_value_label.text = "Bin Value: 0"
+	var font = load("res://fonts/MineMouseRegular-BL3DB.ttf")
+	if font:
+		bin_value_label.add_theme_font_override("font", font)
+	bin_value_label.add_theme_font_size_override("font_size", 32)
+	margin.add_child(bin_value_label)
+
 func find_player() -> void:
 	if player: return
 	
@@ -85,6 +114,13 @@ func find_player() -> void:
 func update_money_text(amount: int) -> void:
 	if money_label:
 		money_label.text = str(amount)
+
+func update_bin_value(inventory_data: InventoryData) -> void:
+	var total = 0
+	for slot in inventory_data.slot_datas:
+		if slot and slot.item_data and slot.item_data.is_sellable:
+			total += slot.item_data.price * slot.quantity
+	bin_value_label.text = "Bin Value: " + str(total)
 
 func _process(delta: float) -> void:
 	if not player:
@@ -105,11 +141,20 @@ func open() -> void:
 
 func close() -> void:
 	visible = false
+	bin_value_container.visible = false
 
 func set_external_inventory(external_inventory_data: InventoryData):
 	external_inventory_owner = external_inventory_data
 	var inventory_data = external_inventory_data
 	inventory_data.inventory_interact.connect(on_inventory_interact)
+	
+	if inventory_data.type == InventoryData.InventoryType.SELL_BIN:
+		if not inventory_data.inventory_updated.is_connected(update_bin_value):
+			inventory_data.inventory_updated.connect(func(_data): update_bin_value(_data))
+		bin_value_container.visible = true
+		update_bin_value(inventory_data)
+	else:
+		bin_value_container.visible = false
 
 	external_inventory.set_inventory_data(inventory_data)
 	external_inventory.show()
@@ -121,7 +166,8 @@ func clear_external_inventory():
 		var inventory_data = external_inventory_owner
 		
 		if inventory_data.type == InventoryData.InventoryType.SELL_BIN:
-			sell_contents(inventory_data)
+			if inventory_data.inventory_updated.is_connected(update_bin_value):
+				inventory_data.inventory_updated.disconnect(update_bin_value)
 	
 		inventory_data.inventory_interact.disconnect(on_inventory_interact)
 		external_inventory.clear_inventory_grid()

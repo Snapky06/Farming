@@ -1,7 +1,15 @@
-[gd_scene load_steps=22 format=3 uid="uid://for0vksr8o2l"]
+[gd_scene load_steps=25 format=3 uid="uid://for0vksr8o2l"]
 
 [ext_resource type="Script" uid="uid://ql5xleyfe2an" path="res://interactable/Chest.gd" id="1_a43qq"]
+[ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="2_2komg"]
 [ext_resource type="Texture2D" uid="uid://cv1w5l0qsrs0c" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Other/chest 2.png" id="2_a43qq"]
+[ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="3_jlun7"]
+
+[sub_resource type="Resource" id="Resource_2komg"]
+script = ExtResource("2_2komg")
+type = 1
+slot_datas = Array[ExtResource("3_jlun7")]([null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+metadata/_custom_type_script = "uid://b3nysasbdcim0"
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_t25cg"]
 atlas = ExtResource("2_a43qq")
@@ -148,11 +156,12 @@ z_index = 10
 collision_layer = 4
 collision_mask = 4
 script = ExtResource("1_a43qq")
+chest_inventory = SubResource("Resource_2komg")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 position = Vector2(12, 11)
 sprite_frames = SubResource("SpriteFrames_51w3n")
-animation = &"opening"
+animation = &"idle"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(12, 12)
