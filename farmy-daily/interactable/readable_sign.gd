@@ -51,7 +51,6 @@ func _build_ui() -> void:
 	margin.add_child(label)
 
 func interact(user = null) -> void:
-	var _local_mouse = get_local_mouse_position()
 	if ui_root.visible:
 		close()
 	else:
@@ -69,7 +68,6 @@ func open(user) -> void:
 	
 	ui_root.visible = true
 	
-	# Pause player movement if possible
 	if user and "is_movement_locked" in user:
 		user.is_movement_locked = true
 
@@ -88,7 +86,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		var control = ui_root.get_child(0)
 		var panel = control.get_child(0) as PanelContainer
 		if panel:
-			var local_mouse = panel.get_local_mouse_position()
+			var _local_mouse = panel.get_local_mouse_position() 
 			if not panel.get_rect().has_point(panel.get_global_transform().affine_inverse() * get_viewport().get_mouse_position()):
 				close()
 				get_viewport().set_input_as_handled()

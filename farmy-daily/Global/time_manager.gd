@@ -228,7 +228,7 @@ func load_save_data(data: Dictionary) -> void:
 	last_hour = int(current_time_seconds / 3600.0) % 24
 	emit_all_signals()
 
-func save_watered_tiles(data: Dictionary) -> void:
+func save_watered_tiles(_data: Dictionary) -> void: # Fixed unused parameter
 	pass 
 
 func load_watered_tiles() -> Dictionary:
