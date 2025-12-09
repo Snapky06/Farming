@@ -12,4 +12,5 @@ script = ExtResource("1_wrxes")
 name = "Axe"
 description = "Used To Destroy Trees "
 texture = SubResource("AtlasTexture_wrxes")
+is_sellable = false
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

@@ -12,4 +12,5 @@ script = ExtResource("1_ixkvp")
 name = "Hoe"
 description = "Used To Mow Down Dirt"
 texture = SubResource("AtlasTexture_t6tbm")
+is_sellable = false
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

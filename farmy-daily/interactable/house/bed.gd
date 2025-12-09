@@ -21,11 +21,11 @@ func interact(user = null) -> void:
 
 	var current_hour := int(time_manager.current_time_seconds / 3600.0) % 24
 
-	if current_hour >= 2 and current_hour < 19:
+	if current_hour >= 2 and current_hour < 19 and time_manager.current_energy > 20.0:
 		return
 
 	var target_hour := 6
-	var is_next_day := current_hour >= 19
+	var is_next_day := current_hour >= 19 or current_hour < 6
 
 	_start_sleep(player, target_hour, is_next_day)
 
@@ -80,6 +80,9 @@ func _start_sleep(player, target_hour: int, is_next_day: bool) -> void:
 		await t.finished
 
 	_advance_time_to(target_hour, is_next_day)
+	
+	if time_manager.has_method("restore_energy"):
+		time_manager.restore_energy()
 
 	player.global_position = bed_position
 	if player.has_method("update_idle_animation"):

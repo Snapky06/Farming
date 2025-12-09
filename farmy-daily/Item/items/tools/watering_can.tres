@@ -14,4 +14,5 @@ script = ExtResource("1_s6qjo")
 name = "Watering Can"
 description = "WOOOOSHH"
 texture = SubResource("AtlasTexture_3cq2o")
+is_sellable = false
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

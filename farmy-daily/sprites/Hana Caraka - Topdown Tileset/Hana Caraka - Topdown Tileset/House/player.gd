@@ -9,6 +9,7 @@ extends CharacterBody2D
 @onready var cam := $Camera2D
 @onready var interaction_area: Area2D = $InteractionComponent
 @onready var hold_timer: Timer = $PlayerHoldTimer
+@onready var time_manager = get_node("/root/TimeManager")
 
 var money: int = 100
 
@@ -99,28 +100,37 @@ func reset_states():
 	update_idle_animation(last_direction)
 
 func _unhandled_input(event):
-	if Input.is_action_just_pressed("use"):
-		attempt_action_at(get_global_mouse_position())
+	# Keyboard inventory toggle
 	if Input.is_action_just_pressed("inventory"):
 		reset_states()
 		toggle_inventory.emit()
 		get_viewport().set_input_as_handled()
 		return
 	
+	# Keyboard 'use' action (only if free to move)
+	if not is_movement_locked and Input.is_action_just_pressed("use"):
+		attempt_action_at(get_global_mouse_position())
+	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
-			is_touching = true
-			touch_start_time = Time.get_ticks_msec() / 1000.0
-			has_acted_this_touch = false
-			
+			# DOUBLE TAP LOGIC (Runs BEFORE movement lock check)
 			var current_time = Time.get_ticks_msec()
 			if current_time - last_tap_time < DOUBLE_TAP_DELAY_MS:
 				reset_states()
 				toggle_inventory.emit()
 				tap_count = 0
+				last_tap_time = current_time
+				# Stop here so we don't start moving or holding
+				return
 			else:
 				tap_count = 1
 			last_tap_time = current_time
+
+			# MOVEMENT/INTERACTION START (Only if NOT locked)
+			if not is_movement_locked:
+				is_touching = true
+				touch_start_time = Time.get_ticks_msec() / 1000.0
+				has_acted_this_touch = false
 			
 		else:
 			var press_duration = (Time.get_ticks_msec() / 1000.0) - touch_start_time
@@ -128,11 +138,13 @@ func _unhandled_input(event):
 			is_holding = false
 			
 			if press_duration < LONG_PRESS_DURATION and not has_acted_this_touch:
+				# Single tap movement (Only if NOT locked)
 				if not is_movement_locked:
 					is_moving_to_interact = false
 					agent.target_position = get_global_mouse_position()
 
 func _process(_delta):
+	# Hold interaction logic
 	if is_touching and not has_acted_this_touch and not is_movement_locked:
 		var duration = (Time.get_ticks_msec() / 1000.0) - touch_start_time
 		if duration >= LONG_PRESS_DURATION:
@@ -146,14 +158,17 @@ func attempt_action_at(mouse_pos: Vector2):
 		return
 
 	if equipped_item.name == "Hoe":
+		if time_manager and time_manager.current_energy <= 0: return
 		if get_parent().has_method("is_tile_farmable") and not get_parent().is_tile_farmable(mouse_pos): return
 		check_reach_and_act(mouse_pos, "hoe")
 		
 	elif equipped_item.name == "Watering Can":
+		if time_manager and time_manager.current_energy <= 0: return
 		if get_parent().has_method("is_tile_waterable") and not get_parent().is_tile_waterable(mouse_pos): return
 		check_reach_and_act(mouse_pos, "watering")
 
 	elif equipped_item.name == "Scythe":
+		if time_manager and time_manager.current_energy <= 0: return
 		check_reach_and_act(mouse_pos, "scythe")
 	
 	elif equipped_item.name == "Axe" or equipped_item.name == "Pickaxe":
@@ -173,6 +188,7 @@ func attempt_action_at(mouse_pos: Vector2):
 					is_falling = true
 				
 				if not is_falling:
+					if time_manager and time_manager.current_energy <= 0: return
 					var tool_anim = "axe"
 					var tool_sound = sfx_hit_tree
 					
@@ -298,6 +314,11 @@ func start_tool_loop(target_node, tool_anim_name, impact_sfx=null):
 	last_direction = (target_node.global_position - global_position).normalized()
 	
 	while is_touching and is_instance_valid(target_node):
+		if time_manager and time_manager.current_energy <= 0:
+			# If energy is 0, quit loop AND function immediately
+			# Do NOT continue to unlock movement below
+			return 
+
 		if "is_falling" in target_node and target_node.is_falling: break
 		
 		sprite.flip_h = false
@@ -320,6 +341,12 @@ func start_tool_loop(target_node, tool_anim_name, impact_sfx=null):
 		else:
 			await get_tree().create_timer(0.25).timeout
 		
+		if time_manager and time_manager.has_method("use_tool_energy"):
+			time_manager.use_tool_energy()
+			# Check again immediately after using energy
+			if time_manager.current_energy <= 0:
+				return 
+
 		if not is_instance_valid(target_node): break
 		if "is_falling" in target_node and target_node.is_falling: break
 		
@@ -366,6 +393,13 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 		await sprite.animation_finished
 	else:
 		await get_tree().create_timer(0.25).timeout
+	
+	if tool_name in ["hoe", "watering", "scythe"]:
+		if time_manager and time_manager.has_method("use_tool_energy"):
+			time_manager.use_tool_energy()
+			# If we fainted, stop here. TimeManager has locked the player.
+			if time_manager.current_energy <= 0:
+				return 
 	
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
 		if sfx_hoe and impact_audio_player:

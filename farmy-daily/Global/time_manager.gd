@@ -4,6 +4,7 @@ signal time_updated(time_string)
 signal date_updated(date_string)
 signal season_changed(season)
 signal hour_passed
+signal energy_updated(current, max)
 
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
@@ -38,9 +39,14 @@ var last_hour: int = -1
 var player_spawn_tag: String = ""
 var auto_sleep_penalty_applied: bool = false
 
+var max_energy: float = 100.0
+var current_energy: float = 100.0
+var last_half_hour_check: int = -1
+
 func _ready() -> void:
 	current_time_seconds = 8.0 * 3600.0
 	last_hour = int(current_time_seconds / 3600.0) % 24
+	last_half_hour_check = int(current_time_seconds / 1800.0)
 	recalculate_season()
 	emit_all_signals()
 
@@ -56,6 +62,11 @@ func _process(delta: float) -> void:
 		last_hour = current_hour
 		hour_passed.emit()
 		_check_auto_sleep_penalty()
+
+	var current_half_hour = int(current_time_seconds / 1800.0)
+	if current_half_hour != last_half_hour_check:
+		last_half_hour_check = current_half_hour
+		_consume_energy(5.0)
 
 	emit_time_signal()
 
@@ -91,6 +102,7 @@ func emit_all_signals() -> void:
 	emit_time_signal()
 	emit_date_signal()
 	season_changed.emit(current_season)
+	energy_updated.emit(current_energy, max_energy)
 
 func emit_time_signal() -> void:
 	var total_minutes := int(current_time_seconds / 60.0)
@@ -121,11 +133,13 @@ func _check_auto_sleep_penalty() -> void:
 		auto_sleep_penalty_applied = false
 		return
 
-	if current_hour == 2 and not auto_sleep_penalty_applied:
+	if (current_hour == 2 or current_energy <= 0) and not auto_sleep_penalty_applied:
+		print("Fainting triggered from _check_auto_sleep_penalty")
 		auto_sleep_penalty_applied = true
 		_do_auto_sleep_penalty()
 
 func _do_auto_sleep_penalty() -> void:
+	print("Starting auto sleep penalty...")
 	var root := get_tree().current_scene
 	if root == null:
 		return
@@ -135,11 +149,11 @@ func _do_auto_sleep_penalty() -> void:
 		return
 
 	if "is_movement_locked" in player:
-		if player.is_movement_locked:
-			return
 		player.is_movement_locked = true
 	if "velocity" in player:
 		player.velocity = Vector2.ZERO
+	if "reset_states" in player:
+		player.reset_states()
 
 	var sprite: AnimatedSprite2D = player.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
 
@@ -153,8 +167,13 @@ func _do_auto_sleep_penalty() -> void:
 
 	if sprite:
 		sprite.flip_h = false
-		sprite.play("sleep_down")
-		await sprite.animation_finished
+		if sprite.sprite_frames.has_animation("sleep_down"):
+			sprite.play("sleep_down")
+			await sprite.animation_finished
+		else:
+			await get_tree().create_timer(1.0).timeout
+	else:
+		await get_tree().create_timer(1.0).timeout
 
 	if transition_rect:
 		var t = create_tween()
@@ -178,6 +197,9 @@ func _do_auto_sleep_penalty() -> void:
 		last_hour = current_hour
 		hour_passed.emit()
 
+	restore_energy()
+	last_half_hour_check = int(current_time_seconds / 1800.0)
+	auto_sleep_penalty_applied = false 
 	emit_all_signals()
 
 	if root.has_method("change_level_to"):
@@ -215,7 +237,8 @@ func get_save_data() -> Dictionary:
 		"month": current_month,
 		"year": current_year,
 		"season": current_season,
-		"penalty": auto_sleep_penalty_applied
+		"penalty": auto_sleep_penalty_applied,
+		"energy": current_energy
 	}
 
 func load_save_data(data: Dictionary) -> void:
@@ -225,11 +248,31 @@ func load_save_data(data: Dictionary) -> void:
 	current_year = data.get("year", 2025)
 	current_season = data.get("season", Seasons.SPRING)
 	auto_sleep_penalty_applied = data.get("penalty", false)
+	current_energy = data.get("energy", 100.0)
 	last_hour = int(current_time_seconds / 3600.0) % 24
+	last_half_hour_check = int(current_time_seconds / 1800.0)
 	emit_all_signals()
 
-func save_watered_tiles(_data: Dictionary) -> void: # Fixed unused parameter
+func save_watered_tiles(_data: Dictionary) -> void:
 	pass 
 
 func load_watered_tiles() -> Dictionary:
 	return {}
+
+func use_tool_energy() -> void:
+	_consume_energy(4.0)
+
+func _consume_energy(amount: float) -> void:
+	current_energy -= amount
+	if current_energy <= 0:
+		current_energy = 0
+		if not auto_sleep_penalty_applied:
+			print("Energy depleted. Triggering faint.")
+			auto_sleep_penalty_applied = true
+			_do_auto_sleep_penalty()
+	
+	energy_updated.emit(current_energy, max_energy)
+
+func restore_energy() -> void:
+	current_energy = max_energy
+	energy_updated.emit(current_energy, max_energy)

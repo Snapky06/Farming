@@ -14,4 +14,5 @@ script = ExtResource("1_awj1s")
 name = "Scythe"
 description = "Used To Farm Crops"
 texture = SubResource("AtlasTexture_3s3x7")
+is_sellable = false
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"
