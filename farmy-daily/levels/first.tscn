@@ -1368,7 +1368,6 @@ tile_set = SubResource("TileSet_lhpcw")
 script = ExtResource("26_yvs2r")
 
 [node name="Changes" type="Node2D" parent="NavRegion"]
-visible = false
 
 [node name="ToTown" type="Area2D" parent="NavRegion/Changes"]
 collision_layer = 4
@@ -1396,6 +1395,7 @@ position = Vector2(107, 272)
 shape = SubResource("RectangleShape2D_831bh")
 
 [node name="from_farm" type="Marker2D" parent="NavRegion/Changes"]
+position = Vector2(106, 281)
 
 [node name="ShippingBin" parent="NavRegion" instance=ExtResource("29_lhpcw")]
 position = Vector2(97, -23)

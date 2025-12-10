@@ -2,8 +2,16 @@ extends Node
 
 const SAVE_PATH = "user://save_game.dat"
 
-# Stores state for all levels: { "res://level1.tscn": { "100,200": { "destroyed": true } } }
 var world_state = {}
+var level_drops = {}
+
+var _current_scene_path = ""
+
+func _process(_delta):
+	var scene = get_tree().current_scene
+	if scene and scene.scene_file_path != _current_scene_path:
+		_current_scene_path = scene.scene_file_path
+		_spawn_drops_for_level(_current_scene_path)
 
 func save_game():
 	var save_data = {
@@ -12,7 +20,8 @@ func save_game():
 		"player": {},
 		"inventory": [],
 		"level": {},
-		"world_state": world_state
+		"world_state": world_state,
+		"level_drops": level_drops
 	}
 
 	if has_node("/root/TimeManager"):
@@ -54,6 +63,11 @@ func load_game():
 		world_state = save_data["world_state"]
 	else:
 		world_state = {}
+		
+	if save_data.has("level_drops"):
+		level_drops = save_data["level_drops"]
+	else:
+		level_drops = {}
 
 	if save_data.has("time") and has_node("/root/TimeManager"):
 		get_node("/root/TimeManager").load_save_data(save_data["time"])
@@ -81,8 +95,9 @@ func load_game():
 
 	if save_data.has("level") and get_tree().current_scene.has_method("load_level_data"):
 		get_tree().current_scene.load_level_data(save_data["level"])
-
-# --- Persistence Helpers ---
+	
+	_current_scene_path = get_tree().current_scene.scene_file_path
+	_spawn_drops_for_level(_current_scene_path)
 
 func get_object_state(node: Node2D) -> Dictionary:
 	var level_id = _get_level_id(node)
@@ -99,7 +114,6 @@ func save_object_state(node: Node2D, data: Dictionary):
 	if not world_state.has(level_id):
 		world_state[level_id] = {}
 	
-	# Merge with existing data to prevent overwriting keys not passed in 'data'
 	if not world_state[level_id].has(object_id):
 		world_state[level_id][object_id] = {}
 		
@@ -107,7 +121,6 @@ func save_object_state(node: Node2D, data: Dictionary):
 		world_state[level_id][object_id][key] = data[key]
 
 func _get_level_id(node: Node) -> String:
-	# Prefer owner filename (scene root), fallback to current scene
 	if node.owner and node.owner.scene_file_path:
 		return node.owner.scene_file_path
 	var current = get_tree().current_scene
@@ -116,6 +129,47 @@ func _get_level_id(node: Node) -> String:
 	return "unknown_level"
 
 func _get_object_id(node: Node2D) -> String:
-	# Use snapped position as unique ID for static objects. 
-	# Allows renaming/reordering nodes without breaking save data.
 	return str(Vector2i(node.global_position))
+
+func update_drop(level_id: String, uuid: String, data: Dictionary):
+	if not level_drops.has(level_id):
+		level_drops[level_id] = {}
+	level_drops[level_id][uuid] = data
+
+func remove_drop(level_id: String, uuid: String):
+	if level_drops.has(level_id) and level_drops[level_id].has(uuid):
+		level_drops[level_id].erase(uuid)
+
+func _spawn_drops_for_level(level_id: String):
+	if not level_drops.has(level_id): return
+	
+	var drops_data = level_drops[level_id]
+	var current_time = Time.get_unix_time_from_system()
+	var pick_up_scene = load("res://Item/pick_up/pick_up.tscn")
+	var slot_script = load("res://Inventory/slot_data.gd")
+	
+	var to_remove = []
+
+	for uuid in drops_data:
+		var data = drops_data[uuid]
+		
+		if current_time - data.get("time", 0) > 1200:
+			to_remove.append(uuid)
+			continue
+			
+		var instance = pick_up_scene.instantiate()
+		instance.uuid = uuid
+		instance.creation_time = data.get("time", current_time)
+		instance.position = Vector2(data["x"], data["y"])
+		
+		var slot = slot_script.new()
+		if data.has("item_path") and ResourceLoader.exists(data["item_path"]):
+			slot.item_data = load(data["item_path"])
+			slot.quantity = data.get("quantity", 1)
+			instance.slot_data = slot
+			get_tree().current_scene.add_child(instance)
+		else:
+			to_remove.append(uuid)
+	
+	for uuid in to_remove:
+		level_drops[level_id].erase(uuid)

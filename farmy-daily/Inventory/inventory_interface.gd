@@ -26,7 +26,6 @@ var double_tap_timer = 0.0
 func _ready() -> void:
 	add_to_group("inventory_interface")
 	
-	# Ensure the interface covers the whole screen so anchors work
 	anchors_preset = Control.PRESET_FULL_RECT
 	
 	visible = false
@@ -35,7 +34,6 @@ func _ready() -> void:
 	setup_money_display()
 	setup_bin_value_display()
 	
-	# Auto-update money when inventory opens/closes
 	visibility_changed.connect(_on_visibility_changed)
 	
 	find_player()
@@ -59,13 +57,11 @@ func setup_money_display() -> void:
 	money_container.anchors_preset = Control.PRESET_BOTTOM_RIGHT
 	money_container.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 	money_container.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	# Adjust these offsets if it's too close to the edge
 	money_container.offset_left = -160
 	money_container.offset_top = -70
 	money_container.offset_right = -20
 	money_container.offset_bottom = -20
 	
-	# Dark styling
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color(0.15, 0.15, 0.15, 0.9)
 	style.set_corner_radius_all(8)
@@ -111,7 +107,6 @@ func setup_bin_value_display() -> void:
 	bin_value_label.add_theme_font_size_override("font_size", 28)
 	bin_value_label.text = "Value: 0"
 	
-	# Shadow for better visibility
 	bin_value_label.add_theme_color_override("font_shadow_color", Color.BLACK)
 	bin_value_label.add_theme_constant_override("shadow_offset_x", 1)
 	bin_value_label.add_theme_constant_override("shadow_offset_y", 1)
@@ -154,7 +149,6 @@ func _process(delta: float) -> void:
 		grabbed_slot.global_position = get_global_mouse_position() + Vector2(5, 5)
 		
 	if bin_value_label.visible and external_inventory.visible:
-		# Keep label attached to top-right of external inventory panel
 		var panel_rect = external_inventory.get_global_rect()
 		bin_value_label.global_position = Vector2(panel_rect.end.x - bin_value_label.size.x, panel_rect.position.y - bin_value_label.size.y - 5)
 
@@ -251,6 +245,12 @@ func update_grabbed_slot() -> void:
 		grabbed_slot.hide()
 
 func drop_grabbed_item() -> void:
+	if not grabbed_slot_data or not grabbed_slot_data.item_data:
+		return
+		
+	if not grabbed_slot_data.item_data.is_sellable:
+		return
+	
 	var pick_up = PICK_UP.instantiate()
 	pick_up.slot_data = grabbed_slot_data
 	
