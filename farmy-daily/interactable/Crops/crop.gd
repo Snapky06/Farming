@@ -50,6 +50,7 @@ func _ready():
 		if not time_manager.date_updated.is_connected(_on_day_passed):
 			time_manager.date_updated.connect(_on_day_passed)
 	
+	_load_persistence()
 	update_visuals()
 	check_ground_water_state()
 
@@ -96,6 +97,7 @@ func _sync_soil_state():
 func water():
 	is_watered_today = true
 	days_unwatered = 0
+	_save_persistence()
 	update_visuals()
 
 func _on_hour_passed():
@@ -115,15 +117,18 @@ func grow_next_stage():
 	if current_stage > max_stage:
 		current_stage = max_stage
 	hours_for_next_stage += hours_to_grow_per_stage
+	_save_persistence()
 	update_visuals()
 
 func _on_day_passed(_date_string):
 	if not is_watered_today:
 		days_unwatered += 1
+		_save_persistence()
 		if days_unwatered >= wither_days_limit:
 			wither()
 	else:
 		is_watered_today = false
+		_save_persistence()
 		update_visuals()
 
 func update_visuals():
@@ -218,3 +223,20 @@ func _play_harvest_tween_and_free():
 	t.tween_property(root, "scale", root.scale * 1.1, 0.1)
 	t.tween_property(root, "scale", Vector2.ZERO, 0.15)
 	t.finished.connect(root.queue_free)
+
+func _save_persistence():
+	if has_node("/root/SaveManager"):
+		get_node("/root/SaveManager").save_object_state(self, { 
+			"stage": current_stage, 
+			"watered": is_watered_today, 
+			"hours": total_hours_watered,
+			"unwatered": days_unwatered
+		})
+
+func _load_persistence():
+	if has_node("/root/SaveManager"):
+		var data = get_node("/root/SaveManager").get_object_state(self)
+		current_stage = data.get("stage", current_stage)
+		is_watered_today = data.get("watered", is_watered_today)
+		total_hours_watered = data.get("hours", total_hours_watered)
+		days_unwatered = data.get("unwatered", days_unwatered)

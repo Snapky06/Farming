@@ -7,7 +7,10 @@ extends StaticBody2D
 @onready var sprite_root: Sprite2D = get_parent() as Sprite2D 
 
 var is_picked_up: bool = false
-var is_destroyed: bool = false # Added flag to fix "red tile" issue
+var is_destroyed: bool = false 
+
+func _ready():
+	_load_persistence()
 
 func interact(player) -> void:
 	if is_picked_up:
@@ -20,7 +23,8 @@ func interact(player) -> void:
 		
 		if player.inventory_data.pick_up_slot_data(slot_data):
 			is_picked_up = true
-			is_destroyed = true # Immediately mark as destroyed so the tile is free
+			is_destroyed = true 
+			_save_persistence() # Save state
 			
 			collision_layer = 0
 			collision_mask = 0
@@ -78,3 +82,16 @@ func play_pickup_animation() -> void:
 		sprite_root.modulate = color
 
 		await get_tree().process_frame
+
+func _save_persistence():
+	if has_node("/root/SaveManager"):
+		get_node("/root/SaveManager").save_object_state(self, { "picked_up": is_picked_up })
+
+func _load_persistence():
+	if has_node("/root/SaveManager"):
+		var data = get_node("/root/SaveManager").get_object_state(self)
+		if data.get("picked_up", false):
+			is_picked_up = true
+			is_destroyed = true
+			if sprite_root: sprite_root.queue_free()
+			queue_free()

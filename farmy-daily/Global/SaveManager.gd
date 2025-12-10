@@ -2,13 +2,17 @@ extends Node
 
 const SAVE_PATH = "user://save_game.dat"
 
+# Stores state for all levels: { "res://level1.tscn": { "100,200": { "destroyed": true } } }
+var world_state = {}
+
 func save_game():
 	var save_data = {
 		"time": {},
 		"quests": {},
 		"player": {},
 		"inventory": [],
-		"level": {}
+		"level": {},
+		"world_state": world_state
 	}
 
 	if has_node("/root/TimeManager"):
@@ -46,6 +50,11 @@ func load_game():
 	var save_data = file.get_var()
 	file.close()
 
+	if save_data.has("world_state"):
+		world_state = save_data["world_state"]
+	else:
+		world_state = {}
+
 	if save_data.has("time") and has_node("/root/TimeManager"):
 		get_node("/root/TimeManager").load_save_data(save_data["time"])
 	
@@ -72,3 +81,41 @@ func load_game():
 
 	if save_data.has("level") and get_tree().current_scene.has_method("load_level_data"):
 		get_tree().current_scene.load_level_data(save_data["level"])
+
+# --- Persistence Helpers ---
+
+func get_object_state(node: Node2D) -> Dictionary:
+	var level_id = _get_level_id(node)
+	var object_id = _get_object_id(node)
+	
+	if world_state.has(level_id) and world_state[level_id].has(object_id):
+		return world_state[level_id][object_id]
+	return {}
+
+func save_object_state(node: Node2D, data: Dictionary):
+	var level_id = _get_level_id(node)
+	var object_id = _get_object_id(node)
+	
+	if not world_state.has(level_id):
+		world_state[level_id] = {}
+	
+	# Merge with existing data to prevent overwriting keys not passed in 'data'
+	if not world_state[level_id].has(object_id):
+		world_state[level_id][object_id] = {}
+		
+	for key in data:
+		world_state[level_id][object_id][key] = data[key]
+
+func _get_level_id(node: Node) -> String:
+	# Prefer owner filename (scene root), fallback to current scene
+	if node.owner and node.owner.scene_file_path:
+		return node.owner.scene_file_path
+	var current = get_tree().current_scene
+	if current:
+		return current.scene_file_path
+	return "unknown_level"
+
+func _get_object_id(node: Node2D) -> String:
+	# Use snapped position as unique ID for static objects. 
+	# Allows renaming/reordering nodes without breaking save data.
+	return str(Vector2i(node.global_position))

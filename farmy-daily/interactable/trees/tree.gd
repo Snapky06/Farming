@@ -79,7 +79,7 @@ var health: int = 3
 var is_stump: bool = false
 var is_falling: bool = false 
 var default_layer: int = 1 
-var is_destroyed: bool = false # Added flag
+var is_destroyed: bool = false
 
 const VISUAL_TRANSITION_WINDOW: int = 3 
 
@@ -107,6 +107,8 @@ func _ready():
 	
 	load_audio()
 	_apply_tree_type()
+	
+	_load_persistence() # Load state before first visual refresh
 	_refresh_visuals_immediate()
 
 func _apply_tree_type():
@@ -127,15 +129,18 @@ func setup_as_seed():
 	if active_variant.is_empty():
 		_apply_tree_type()
 	days_until_next_stage = randi_range(1, 3) 
+	_save_persistence() # Save initial seed state
 	_refresh_visuals_immediate()
 
 func _on_day_passed(_date_string):
-	if is_falling: return
+	if is_falling or is_destroyed: return
 	
 	if current_stage != GrowthStage.MATURE and not is_stump:
 		days_until_next_stage -= 1
 		if days_until_next_stage <= 0:
 			advance_growth()
+		else:
+			_save_persistence() # Save days countdown
 	
 	update_visuals()
 
@@ -147,6 +152,7 @@ func advance_growth():
 		current_stage = GrowthStage.MATURE
 		if active_variant.has("min_health"):
 			health = randi_range(active_variant["min_health"], active_variant["max_health"])
+	_save_persistence() # Save new growth stage
 
 func _on_update_visuals(_arg=null):
 	update_visuals()
@@ -155,6 +161,11 @@ func _refresh_visuals_immediate():
 	update_visuals()
 
 func update_visuals():
+	if is_destroyed:
+		if sprite_root: sprite_root.visible = false
+		queue_free()
+		return
+
 	if not sprite_root: return
 	sprite_root.visible = true
 	
@@ -251,6 +262,7 @@ func hit(_pos):
 	
 	play_sound(sfx_leaves)
 	health -= 1
+	_save_persistence() # Save health
 	
 	var t = create_tween()
 	t.tween_property(sprite_root, "position", sprite_root.position + Vector2(2,0), 0.05)
@@ -265,7 +277,8 @@ func hit(_pos):
 			fall_tree()
 
 func destroy_sapling():
-	is_destroyed = true # Mark as destroyed
+	is_destroyed = true 
+	_save_persistence() # Save destroyed state
 	collision_layer = 0
 	collision_mask = 0
 	
@@ -281,7 +294,8 @@ func destroy_sapling():
 		queue_free()
 
 func destroy_stump():
-	is_destroyed = true # Mark as destroyed
+	is_destroyed = true 
+	_save_persistence() # Save destroyed state
 	collision_layer = 0
 	collision_mask = 0
 	
@@ -298,7 +312,6 @@ func destroy_stump():
 func fall_tree():
 	if is_falling: return
 	is_falling = true
-	# We DO NOT set is_destroyed here because the stump stays
 	
 	play_sound(sfx_fall)
 	
@@ -331,6 +344,7 @@ func fall_tree():
 		is_stump = true
 		is_falling = false
 		health = 2
+		_save_persistence() # Save stump state
 		collision_layer = default_layer
 		z_index = 10 
 
@@ -358,3 +372,30 @@ func play_sound(stream):
 		get_tree().current_scene.add_child(p)
 		p.play()
 		p.finished.connect(p.queue_free)
+
+# --- Persistence ---
+func _save_persistence():
+	var data = {
+		"destroyed": is_destroyed,
+		"health": health,
+		"stage": current_stage,
+		"stump": is_stump,
+		"days": days_until_next_stage
+	}
+	if has_node("/root/SaveManager"):
+		get_node("/root/SaveManager").save_object_state(self, data)
+
+func _load_persistence():
+	if has_node("/root/SaveManager"):
+		var data = get_node("/root/SaveManager").get_object_state(self)
+		if data.is_empty(): return
+		
+		is_destroyed = data.get("destroyed", false)
+		if is_destroyed:
+			queue_free()
+			return
+			
+		health = data.get("health", 3)
+		current_stage = data.get("stage", GrowthStage.MATURE)
+		is_stump = data.get("stump", false)
+		days_until_next_stage = data.get("days", 0)
