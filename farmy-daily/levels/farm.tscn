@@ -1,5 +1,6 @@
-[gd_scene load_steps=60 format=4 uid="uid://crkat5fhv85hm"]
+[gd_scene load_steps=61 format=4 uid="uid://crkat5fhv85hm"]
 
+[ext_resource type="Script" uid="uid://bthykutaq31ch" path="res://levels/game_level.gd" id="1_jwbje"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="5_hhscm"]
 [ext_resource type="Texture2D" uid="uid://whiivm7fffny" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Dirt/dirt path.png" id="6_qtb7s"]
 [ext_resource type="Texture2D" uid="uid://bqowlbc4bmtvq" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Sign.png" id="7_5n8jf"]
@@ -1126,6 +1127,7 @@ sources/0 = SubResource("TileSetAtlasSource_fgbwb")
 
 [node name="Farm" type="Node2D"]
 position = Vector2(176, 144)
+script = ExtResource("1_jwbje")
 
 [node name="NavRegion" type="NavigationRegion2D" parent="."]
 light_mask = 9

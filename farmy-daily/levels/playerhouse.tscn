@@ -1,6 +1,7 @@
-[gd_scene load_steps=36 format=4 uid="uid://4dp808w623li"]
+[gd_scene load_steps=37 format=4 uid="uid://4dp808w623li"]
 
 [ext_resource type="Texture2D" uid="uid://tbil2uhcba15" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Floor/Floor - all.png" id="1_w4fnf"]
+[ext_resource type="Script" uid="uid://bthykutaq31ch" path="res://levels/game_level.gd" id="1_wb8r5"]
 [ext_resource type="Texture2D" uid="uid://d36kgewqg6ucf" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Props/door.png" id="2_yxpej"]
 [ext_resource type="Script" uid="uid://ftgpquhc8isc" path="res://levels/scene_transition.gd" id="3_03303"]
 [ext_resource type="Texture2D" uid="uid://cwc37ps5arc11" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Wall/Wall - all.png" id="4_dpkkc"]
@@ -420,6 +421,8 @@ sources/1 = SubResource("TileSetAtlasSource_wb8r5")
 
 [node name="Start" type="Node2D"]
 position = Vector2(176, 144)
+script = ExtResource("1_wb8r5")
+farming_layer_id = 0
 
 [node name="NavRegion" type="NavigationRegion2D" parent="."]
 light_mask = 9

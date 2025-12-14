@@ -77,6 +77,7 @@ func _generate_seed_positions():
 
 func check_ground_water_state():
 	await get_tree().process_frame
+	await get_tree().process_frame
 	_sync_soil_state()
 
 func _sync_soil_state():
@@ -84,15 +85,22 @@ func _sync_soil_state():
 	if not parent_node: return
 	
 	var main_node = parent_node.get_parent()
-	if main_node and "ground_layer" in main_node:
-		var ground = main_node.ground_layer
-		if ground:
-			var local_pos = ground.to_local(global_position)
-			var cell_pos = ground.local_to_map(local_pos)
-			var atlas_coords = ground.get_cell_atlas_coords(cell_pos)
-			if atlas_coords == Vector2i(12, 0):
-				if not is_watered_today:
-					water()
+	var ground = null
+	
+	if main_node.has_node("Ground"):
+		ground = main_node.get_node("Ground")
+	elif main_node.has_method("find_child"):
+		ground = main_node.find_child("Ground")
+
+	if ground:
+		var local_pos = ground.to_local(global_position)
+		var cell_pos = ground.local_to_map(local_pos)
+		
+		var atlas_coords = ground.get_cell_atlas_coords(cell_pos)
+		
+		if atlas_coords == Vector2i(12, 0):
+			if not is_watered_today:
+				water()
 
 func water():
 	is_watered_today = true
@@ -108,7 +116,6 @@ func _on_hour_passed():
 
 	if is_watered_today:
 		total_hours_watered += 1
-		
 		if total_hours_watered >= hours_for_next_stage:
 			grow_next_stage()
 
@@ -130,6 +137,25 @@ func _on_day_passed(_date_string):
 		is_watered_today = false
 		_save_persistence()
 		update_visuals()
+
+func simulate_catch_up(last_save_day_index: int):
+	if last_save_day_index <= 0: return
+	
+	var current_total_days = time_manager.current_day + (time_manager.current_month * 30) + (time_manager.current_year * 365)
+	var days_passed = current_total_days - last_save_day_index
+	
+	if days_passed > 0:
+		for i in range(days_passed):
+			if is_watered_today:
+				grow_next_stage()
+				is_watered_today = false
+				days_unwatered = 0
+			else:
+				days_unwatered += 1
+				if days_unwatered >= wither_days_limit:
+					wither()
+					return
+	update_visuals()
 
 func update_visuals():
 	var color_mod = Color(1, 1, 1)

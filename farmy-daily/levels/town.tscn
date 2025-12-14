@@ -1,5 +1,6 @@
-[gd_scene load_steps=76 format=4 uid="uid://cfyf0y6d3cek6"]
+[gd_scene load_steps=77 format=4 uid="uid://cfyf0y6d3cek6"]
 
+[ext_resource type="Script" uid="uid://bthykutaq31ch" path="res://levels/game_level.gd" id="1_v1y0t"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="5_lelmx"]
 [ext_resource type="Texture2D" uid="uid://cpmrsd74pic64" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Winter/winter.png" id="6_bvx7n"]
 [ext_resource type="Script" uid="uid://cllh3dk7ptp7n" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/seasonal_grass_layer.gd" id="7_s01g3"]
@@ -2240,6 +2241,8 @@ size = Vector2(30, 29)
 
 [node name="Start" type="Node2D"]
 position = Vector2(176, 144)
+script = ExtResource("1_v1y0t")
+farming_layer_id = 0
 
 [node name="NavRegion" type="NavigationRegion2D" parent="."]
 light_mask = 9
