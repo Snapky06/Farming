@@ -1,6 +1,6 @@
 extends StaticBody2D
 
-var TREE_VARIANTS = [
+var TREE_VARIANTS: Array = [
 	{
 		"name": "Pine Tree",
 		"seed_frame": 7,
@@ -71,7 +71,7 @@ var TREE_VARIANTS = [
 @export var seed_item: Resource
 
 enum GrowthStage { SEED, SAPLING, MATURE }
-var current_stage: GrowthStage = GrowthStage.MATURE
+var current_stage: int = GrowthStage.MATURE
 var active_variant: Dictionary = {} 
 var days_until_next_stage: int = 0
 var health: int = 3
@@ -81,15 +81,13 @@ var is_falling: bool = false
 var default_layer: int = 1 
 var is_destroyed: bool = false
 
-const VISUAL_TRANSITION_WINDOW: int = 3 
-
 var sfx_leaves: AudioStream
 var sfx_fall: AudioStream
 
 @onready var sprite_root: AnimatedSprite2D = get_parent()
-const PICK_UP_SCENE = preload("res://Item/pick_up/pick_up.tscn")
+const PICK_UP_SCENE: PackedScene = preload("res://Item/pick_up/pick_up.tscn")
 
-func _ready():
+func _ready() -> void:
 	add_to_group("trees")
 	z_as_relative = false
 	
@@ -98,20 +96,20 @@ func _ready():
 	else:
 		default_layer = 1
 	
-	var time_manager = get_node_or_null("/root/TimeManager")
+	var time_manager: Node = get_node_or_null("/root/TimeManager")
 	if time_manager:
-		if not time_manager.season_changed.is_connected(_on_update_visuals):
-			time_manager.season_changed.connect(_on_update_visuals)
+		if not time_manager.season_visual_changed.is_connected(_on_update_visuals):
+			time_manager.season_visual_changed.connect(_on_update_visuals)
 		if not time_manager.date_updated.is_connected(_on_day_passed):
 			time_manager.date_updated.connect(_on_day_passed)
 	
 	load_audio()
 	_apply_tree_type()
 	
-	_load_persistence() # Load state before first visual refresh
+	_load_persistence() 
 	_refresh_visuals_immediate()
 
-func _apply_tree_type():
+func _apply_tree_type() -> void:
 	for variant in TREE_VARIANTS:
 		if variant["name"] == tree_type:
 			active_variant = variant
@@ -124,15 +122,15 @@ func _apply_tree_type():
 	active_variant = TREE_VARIANTS[0]
 	health = 3
 
-func setup_as_seed():
+func setup_as_seed() -> void:
 	current_stage = GrowthStage.SEED
 	if active_variant.is_empty():
 		_apply_tree_type()
 	days_until_next_stage = randi_range(1, 3) 
-	_save_persistence() # Save initial seed state
+	_save_persistence() 
 	_refresh_visuals_immediate()
 
-func _on_day_passed(_date_string):
+func _on_day_passed(_date_string: String) -> void:
 	if is_falling or is_destroyed: return
 	
 	if current_stage != GrowthStage.MATURE and not is_stump:
@@ -140,11 +138,11 @@ func _on_day_passed(_date_string):
 		if days_until_next_stage <= 0:
 			advance_growth()
 		else:
-			_save_persistence() # Save days countdown
+			_save_persistence()
 	
 	update_visuals()
 
-func advance_growth():
+func advance_growth() -> void:
 	if current_stage == GrowthStage.SEED:
 		current_stage = GrowthStage.SAPLING
 		days_until_next_stage = randi_range(1, 3)
@@ -152,15 +150,15 @@ func advance_growth():
 		current_stage = GrowthStage.MATURE
 		if active_variant.has("min_health"):
 			health = randi_range(active_variant["min_health"], active_variant["max_health"])
-	_save_persistence() # Save new growth stage
+	_save_persistence()
 
-func _on_update_visuals(_arg=null):
+func _on_update_visuals(_arg: Variant = null) -> void:
 	update_visuals()
 
-func _refresh_visuals_immediate():
+func _refresh_visuals_immediate() -> void:
 	update_visuals()
 
-func update_visuals():
+func update_visuals() -> void:
 	if is_destroyed:
 		if sprite_root: sprite_root.visible = false
 		queue_free()
@@ -188,8 +186,8 @@ func update_visuals():
 	collision_layer = default_layer 
 	z_index = 10 
 	
-	var prefix = "big_"
-	var anim_name = "big_cycle"
+	var prefix: String = "big_"
+	var anim_name: String = "big_cycle"
 	
 	if current_stage == GrowthStage.SAPLING:
 		prefix = "little_"
@@ -200,14 +198,14 @@ func update_visuals():
 			sprite_root.play(anim_name)
 		sprite_root.stop() 
 
-	var target_suffix = get_target_season_suffix()
-	var final_key = prefix + target_suffix
+	var target_suffix: String = get_target_season_suffix()
+	var final_key: String = prefix + target_suffix
 	
 	if active_variant.has(final_key):
 		sprite_root.frame = active_variant[final_key]
 	else:
-		var conservative_fallback = get_conservative_fallback_suffix()
-		var fallback_key = prefix + conservative_fallback
+		var fallback: String = get_fallback_season_suffix(target_suffix)
+		var fallback_key: String = prefix + fallback
 		
 		if active_variant.has(fallback_key):
 			sprite_root.frame = active_variant[fallback_key]
@@ -215,56 +213,30 @@ func update_visuals():
 			sprite_root.frame = 0
 
 func get_target_season_suffix() -> String:
-	var time_manager = get_node_or_null("/root/TimeManager")
+	var time_manager: Node = get_node_or_null("/root/TimeManager")
 	if not time_manager: return "spring"
-
-	var m = time_manager.current_month
-	var d = time_manager.current_day
 	
-	if m == 6 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW:
-		return "spring_summer"
-	elif m == 9 and abs(d - 22) <= VISUAL_TRANSITION_WINDOW:
-		if d < 22:
-			return "summer_autumn"
-		else:
-			return "summer_autumn_2"
-
-	match time_manager.current_season:
-		0: return "spring"
-		1: return "summer"
-		2: return "autumn"
-		3: return "winter"
+	if time_manager.has_method("get_current_season_string"):
+		return time_manager.call("get_current_season_string")
 	
 	return "spring"
 
-func get_conservative_fallback_suffix() -> String:
-	var time_manager = get_node_or_null("/root/TimeManager")
-	if not time_manager: return "spring"
-
-	var m = time_manager.current_month
-	var d = time_manager.current_day
-	
-	if m == 6 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW: return "spring"
-	if m == 9 and abs(d - 22) <= VISUAL_TRANSITION_WINDOW: return "summer"
-	if m == 12 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW: return "autumn"
-	if m == 3 and abs(d - 20) <= VISUAL_TRANSITION_WINDOW: return "winter"
-
-	match time_manager.current_season:
-		0: return "spring"
-		1: return "summer"
-		2: return "autumn"
-		3: return "winter"
-	
+func get_fallback_season_suffix(current_suffix: String) -> String:
+	match current_suffix:
+		"winter_spring": return "spring"
+		"spring_summer": return "spring"
+		"summer_autumn": return "summer"
+		"autumn_winter": return "autumn"
 	return "spring"
 
-func hit(_pos):
+func hit(_damage: int) -> void:
 	if is_falling or current_stage == GrowthStage.SEED: return
 	
 	play_sound(sfx_leaves)
-	health -= 1
-	_save_persistence() # Save health
+	health -= _damage
+	_save_persistence() 
 	
-	var t = create_tween()
+	var t: Tween = create_tween()
 	t.tween_property(sprite_root, "position", sprite_root.position + Vector2(2,0), 0.05)
 	t.tween_property(sprite_root, "position", sprite_root.position, 0.05)
 
@@ -276,9 +248,9 @@ func hit(_pos):
 		else:
 			fall_tree()
 
-func destroy_sapling():
+func destroy_sapling() -> void:
 	is_destroyed = true 
-	_save_persistence() # Save destroyed state
+	_save_persistence()
 	collision_layer = 0
 	collision_mask = 0
 	
@@ -286,36 +258,36 @@ func destroy_sapling():
 	if randf() < 0.3: spawn_drops(seed_item, 1)
 	
 	if sprite_root:
-		var t = create_tween()
+		var t: Tween = create_tween()
 		t.tween_property(sprite_root, "modulate:a", 0.0, 0.5)
 		await t.finished
 		sprite_root.queue_free()
 	else:
 		queue_free()
 
-func destroy_stump():
+func destroy_stump() -> void:
 	is_destroyed = true 
-	_save_persistence() # Save destroyed state
+	_save_persistence()
 	collision_layer = 0
 	collision_mask = 0
 	
 	spawn_drops(wood_item, 1)
 	
 	if sprite_root:
-		var t = create_tween()
+		var t: Tween = create_tween()
 		t.tween_property(sprite_root, "modulate:a", 0.0, 0.5)
 		await t.finished
 		sprite_root.queue_free()
 	else:
 		queue_free()
 
-func fall_tree():
+func fall_tree() -> void:
 	if is_falling: return
 	is_falling = true
 	
 	play_sound(sfx_fall)
 	
-	var wood_count = 3
+	var wood_count: int = 3
 	if active_variant.has("min_wood"):
 		wood_count = randi_range(active_variant["min_wood"], active_variant["max_wood"])
 	spawn_drops(wood_item, wood_count)
@@ -324,7 +296,7 @@ func fall_tree():
 		spawn_drops(seed_item, 1)
 
 	if sprite_root:
-		var fall_visual = Sprite2D.new()
+		var fall_visual: Sprite2D = Sprite2D.new()
 		if sprite_root.sprite_frames.has_animation(sprite_root.animation):
 			fall_visual.texture = sprite_root.sprite_frames.get_frame_texture(sprite_root.animation, sprite_root.frame)
 		fall_visual.global_position = sprite_root.global_position
@@ -336,7 +308,7 @@ func fall_tree():
 		sprite_root.stop()
 		sprite_root.frame = active_variant.get("stump_frame", 9)
 		
-		var t = create_tween()
+		var t: Tween = create_tween()
 		t.tween_property(fall_visual, "modulate:a", 0.0, 3.0)
 		await t.finished
 		fall_visual.queue_free()
@@ -344,38 +316,37 @@ func fall_tree():
 		is_stump = true
 		is_falling = false
 		health = 2
-		_save_persistence() # Save stump state
+		_save_persistence()
 		collision_layer = default_layer
 		z_index = 10 
 
-func spawn_drops(item, count):
+func spawn_drops(item: Resource, count: int) -> void:
 	if not item or count <= 0: return
 	for i in range(count):
-		var drop = PICK_UP_SCENE.instantiate()
+		var drop: Node2D = PICK_UP_SCENE.instantiate()
 		if drop:
-			var slot = load("res://Inventory/slot_data.gd").new()
+			var slot: Resource = load("res://Inventory/slot_data.gd").new()
 			slot.item_data = item
 			slot.quantity = 1
 			drop.slot_data = slot
 			drop.global_position = global_position + Vector2(randf_range(-15, 15), randf_range(-15, 15))
 			get_tree().current_scene.call_deferred("add_child", drop)
 
-func load_audio():
+func load_audio() -> void:
 	if FileAccess.file_exists("res://sounds/falling_leaves.mp3"): sfx_leaves = load("res://sounds/falling_leaves.mp3")
 	if FileAccess.file_exists("res://sounds/falling_tree.mp3"): sfx_fall = load("res://sounds/falling_tree.mp3")
 
-func play_sound(stream):
+func play_sound(stream: AudioStream) -> void:
 	if stream:
-		var p = AudioStreamPlayer2D.new()
+		var p: AudioStreamPlayer2D = AudioStreamPlayer2D.new()
 		p.stream = stream
 		p.global_position = global_position
 		get_tree().current_scene.add_child(p)
 		p.play()
 		p.finished.connect(p.queue_free)
 
-# --- Persistence ---
-func _save_persistence():
-	var data = {
+func _save_persistence() -> void:
+	var data: Dictionary = {
 		"destroyed": is_destroyed,
 		"health": health,
 		"stage": current_stage,
@@ -385,9 +356,9 @@ func _save_persistence():
 	if has_node("/root/SaveManager"):
 		get_node("/root/SaveManager").save_object_state(self, data)
 
-func _load_persistence():
+func _load_persistence() -> void:
 	if has_node("/root/SaveManager"):
-		var data = get_node("/root/SaveManager").get_object_state(self)
+		var data: Dictionary = get_node("/root/SaveManager").get_object_state(self)
 		if data.is_empty(): return
 		
 		is_destroyed = data.get("destroyed", false)

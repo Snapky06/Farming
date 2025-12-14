@@ -1,6 +1,5 @@
 extends TileMapLayer
 
-# Drag and drop your 4 season PNGs here in the Inspector
 @export var spring_texture: Texture2D
 @export var summer_texture: Texture2D
 @export var autumn_texture: Texture2D
@@ -8,40 +7,59 @@ extends TileMapLayer
 
 @onready var time_manager: Node = get_node("/root/TimeManager")
 
-# We will find this automatically
 var target_source_id: int = -1 
 
-func _ready():
-	# 1. AUTO-DETECT: Find out what tile ID you used to paint the map
-	var used_cells = get_used_cells()
-	if used_cells.size() > 0:
-		# We just look at the very first tile you painted to find the ID
-		target_source_id = get_cell_source_id(used_cells[0])
-	else:
-		print("SeasonalGrass: No tiles found on this layer to update!")
-		return
-
-	# 2. Connect to TimeManager
-	if time_manager:
-		time_manager.season_changed.connect(_on_season_changed)
-		# Apply the correct season immediately
-		_on_season_changed(time_manager.current_season)
-
-func _on_season_changed(new_season):
-	var new_texture: Texture2D = null
+func _ready() -> void:
+	target_source_id = _find_correct_source_id()
 	
-	match new_season:
-		0: new_texture = spring_texture
-		1: new_texture = summer_texture
-		2: new_texture = autumn_texture
-		3: new_texture = winter_texture
+	if time_manager:
+		if not time_manager.season_visual_changed.is_connected(_on_season_visual_changed):
+			time_manager.season_visual_changed.connect(_on_season_visual_changed)
+		
+		var s: String = "spring"
+		if time_manager.has_method("get_current_season_string"):
+			s = time_manager.call("get_current_season_string")
+		_on_season_visual_changed(s)
+
+func _find_correct_source_id() -> int:
+	if not tile_set:
+		return -1
+		
+	for i in tile_set.get_source_count():
+		var id: int = tile_set.get_source_id(i)
+		var source: TileSetSource = tile_set.get_source(id)
+		
+		if source is TileSetAtlasSource:
+			var current_tex: Texture2D = source.texture
+			if current_tex == spring_texture or current_tex == summer_texture or current_tex == autumn_texture or current_tex == winter_texture:
+				return id
+				
+	var used: Array[Vector2i] = get_used_cells()
+	if used.size() > 0:
+		return get_cell_source_id(used[0])
+		
+	return -1
+
+func _on_season_visual_changed(visual_season: String) -> void:
+	var new_texture: Texture2D = spring_texture
+	
+	match visual_season:
+		"winter_spring": new_texture = winter_texture
+		"spring": new_texture = spring_texture
+		"spring_summer": new_texture = spring_texture
+		"summer": new_texture = summer_texture
+		"summer_autumn": new_texture = summer_texture
+		"autumn": new_texture = autumn_texture
+		"autumn_winter": new_texture = autumn_texture
+		"winter": new_texture = winter_texture
 	
 	_swap_atlas_texture(new_texture)
 
-func _swap_atlas_texture(texture: Texture2D):
-	if texture == null or target_source_id == -1:
+func _swap_atlas_texture(texture: Texture2D) -> void:
+	if texture == null or target_source_id == -1 or not tile_set:
 		return
 		
-	var source = tile_set.get_source(target_source_id)
+	var source: TileSetSource = tile_set.get_source(target_source_id)
 	if source and source is TileSetAtlasSource:
-		source.texture = texture
+		if source.texture != texture:
+			source.texture = texture

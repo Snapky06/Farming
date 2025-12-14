@@ -1,29 +1,33 @@
 extends TileMapLayer
 
-# The vertical offset for each season relative to the Spring (base) position
-const SEASON_OFFSETS = {
+const SEASON_OFFSETS: Dictionary = {
 	"spring": 0,
 	"summer": 3,
 	"autumn": 6
 }
 
-var current_season_state = "spring" 
-var stored_grass_cells = {}
-var is_hidden = false
+var current_season_state: String = "spring" 
+var stored_grass_cells: Dictionary = {}
+var is_hidden: bool = false
 
-@onready var time_manager = get_node("/root/TimeManager")
+@onready var time_manager: Node = get_node("/root/TimeManager")
 
-func _ready():
-	_save_cells_state() # Capture the initial map state
+func _ready() -> void:
+	_save_cells_state()
 	if time_manager:
-		time_manager.season_changed.connect(_on_season_changed)
-		_update_visuals(true)
+		if not time_manager.season_visual_changed.is_connected(_on_season_changed):
+			time_manager.season_visual_changed.connect(_on_season_changed)
+		
+		# Force an immediate update to ensure sync on level load
+		var initial_season: String = _get_season_string()
+		if initial_season != "":
+			_on_season_changed(initial_season)
 
-func _on_season_changed(_new_season):
+func _on_season_changed(_new_season_string: String) -> void:
 	_update_visuals()
 
-func _save_cells_state():
-	var cells = get_used_cells()
+func _save_cells_state() -> void:
+	var cells: Array[Vector2i] = get_used_cells()
 	if cells.size() > 0:
 		stored_grass_cells.clear()
 		for cell in cells:
@@ -33,49 +37,57 @@ func _save_cells_state():
 				"alt": get_cell_alternative_tile(cell)
 			}
 
-func _update_visuals(force_update = false):
-	var new_season = _get_season_string()
+func _update_visuals(force_update: bool = false) -> void:
+	var raw_season: String = _get_season_string()
+	var mapped_season: String = _map_season(raw_season)
 	
-	if new_season == "winter":
+	if mapped_season == "winter":
 		if not is_hidden:
 			_save_cells_state()
 			clear()
 			is_hidden = true
 		return
 
-	# Calculate how many rows we need to shift based on the difference between the old and new season
-	var offset_diff = SEASON_OFFSETS[new_season] - SEASON_OFFSETS[current_season_state]
+	var offset_diff: int = SEASON_OFFSETS.get(mapped_season, 0) - SEASON_OFFSETS.get(current_season_state, 0)
 	
 	if is_hidden:
 		for cell in stored_grass_cells:
-			var data = stored_grass_cells[cell]
-			# Apply the shift to the saved coordinates
-			var new_atlas = Vector2i(data.atlas_coords.x, data.atlas_coords.y + offset_diff)
+			var data: Dictionary = stored_grass_cells[cell]
+			var new_atlas: Vector2i = Vector2i(data.atlas_coords.x, data.atlas_coords.y + offset_diff)
 			set_cell(cell, data.source, new_atlas, data.alt)
 			
 		is_hidden = false
-		current_season_state = new_season
+		current_season_state = mapped_season
 		return
 
-	if not force_update and new_season == current_season_state:
+	if not force_update and mapped_season == current_season_state:
 		return
 		
-	# Apply the shift to currently visible cells
 	for cell in get_used_cells():
-		var source = get_cell_source_id(cell)
-		var atlas = get_cell_atlas_coords(cell)
-		var alt = get_cell_alternative_tile(cell)
+		var source: int = get_cell_source_id(cell)
+		var atlas: Vector2i = get_cell_atlas_coords(cell)
+		var alt: int = get_cell_alternative_tile(cell)
 		
-		var new_atlas = Vector2i(atlas.x, atlas.y + offset_diff)
+		var new_atlas: Vector2i = Vector2i(atlas.x, atlas.y + offset_diff)
 		set_cell(cell, source, new_atlas, alt)
 		
-	current_season_state = new_season
+	current_season_state = mapped_season
 
-func _get_season_string():
-	if not time_manager: return "spring"
-	match time_manager.current_season:
-		0: return "spring"
-		1: return "summer"
-		2: return "autumn"
-		3: return "winter"
+func _get_season_string() -> String:
+	if not time_manager:
+		return "spring"
+	if time_manager.has_method("get_current_season_string"):
+		return time_manager.call("get_current_season_string")
+	return "spring"
+
+func _map_season(val: String) -> String:
+	match val:
+		"winter_spring": return "winter" 
+		"spring": return "spring"
+		"spring_summer": return "spring" 
+		"summer": return "summer"
+		"summer_autumn": return "summer" 
+		"autumn": return "autumn"
+		"autumn_winter": return "autumn" 
+		"winter": return "winter"
 	return "spring"

@@ -3,37 +3,28 @@ extends Node
 signal time_updated(time_string)
 signal date_updated(date_string)
 signal season_changed(season)
+signal season_visual_changed(season_string)
 signal hour_passed
 signal energy_updated(current, max)
 
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
-const REAL_SECONDS_PER_GAME_DAY = 1200.0
-const GAME_SECONDS_PER_DAY = 86400.0
-const TIME_SCALE = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY
+const REAL_SECONDS_PER_GAME_DAY: float = 1200.0
+const GAME_SECONDS_PER_DAY: float = 86400.0
+const TIME_SCALE: float = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY
 
-const DAYS_IN_MONTH = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-const MONTH_NAMES = [
-	"",
-	"January",
-	"February",
-	"March",
-	"April",
-	"May",
-	"June",
-	"July",
-	"August",
-	"September",
-	"October",
-	"November",
-	"December"
+const DAYS_IN_MONTH: Array[int] = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+const MONTH_NAMES: Array[String] = [
+	"", "January", "February", "March", "April", "May", "June",
+	"July", "August", "September", "October", "November", "December"
 ]
 
 var current_time_seconds: float = 0.0
-var current_day: int = 27
+var current_day: int = 20
 var current_month: int = 4
 var current_year: int = 2025
 var current_season: int = Seasons.SPRING
+var current_visual_season: String = "spring"
 var last_hour: int = -1
 
 var player_spawn_tag: String = ""
@@ -57,13 +48,13 @@ func _process(delta: float) -> void:
 		current_time_seconds -= GAME_SECONDS_PER_DAY
 		advance_date()
 
-	var current_hour := int(current_time_seconds / 3600.0) % 24
+	var current_hour: int = int(current_time_seconds / 3600.0) % 24
 	if current_hour != last_hour:
 		last_hour = current_hour
 		hour_passed.emit()
 		_check_auto_sleep_penalty()
 
-	var current_half_hour = int(current_time_seconds / 1800.0)
+	var current_half_hour: int = int(current_time_seconds / 1800.0)
 	if current_half_hour != last_half_hour_check:
 		last_half_hour_check = current_half_hour
 		_consume_energy(5.0)
@@ -84,50 +75,72 @@ func advance_date() -> void:
 	emit_date_signal()
 
 func recalculate_season() -> void:
-	var prev_season := current_season
+	var prev_season: int = current_season
+	var prev_visual: String = current_visual_season
 
-	if (current_month == 3 and current_day >= 20) or (current_month > 3 and current_month < 6) or (current_month == 6 and current_day <= 20):
+	if current_month >= 3 and current_month <= 5:
 		current_season = Seasons.SPRING
-	elif (current_month == 6 and current_day >= 21) or (current_month > 6 and current_month < 9) or (current_month == 9 and current_day <= 21):
+	elif current_month >= 6 and current_month <= 8:
 		current_season = Seasons.SUMMER
-	elif (current_month == 9 and current_day >= 22) or (current_month > 9 and current_month < 12) or (current_month == 12 and current_day <= 20):
+	elif current_month >= 9 and current_month <= 11:
 		current_season = Seasons.AUTUMN
 	else:
 		current_season = Seasons.WINTER
 
+	if (current_month == 1 and current_day >= 15) or (current_month == 2):
+		current_visual_season = "winter_spring"
+	elif (current_month == 3) or (current_month == 4 and current_day < 15):
+		current_visual_season = "spring"
+	elif (current_month == 4 and current_day >= 15) or (current_month == 5):
+		current_visual_season = "spring_summer"
+	elif (current_month == 6) or (current_month == 7 and current_day < 15):
+		current_visual_season = "summer"
+	elif (current_month == 7 and current_day >= 15) or (current_month == 8):
+		current_visual_season = "summer_autumn"
+	elif (current_month == 9) or (current_month == 10 and current_day < 15):
+		current_visual_season = "autumn"
+	elif (current_month == 10 and current_day >= 15) or (current_month == 11):
+		current_visual_season = "autumn_winter"
+	else: 
+		current_visual_season = "winter"
+
 	if current_season != prev_season:
 		season_changed.emit(current_season)
+	
+	if current_visual_season != prev_visual:
+		season_visual_changed.emit(current_visual_season)
 
 func emit_all_signals() -> void:
 	emit_time_signal()
 	emit_date_signal()
 	season_changed.emit(current_season)
+	season_visual_changed.emit(current_visual_season)
 	energy_updated.emit(current_energy, max_energy)
 
 func emit_time_signal() -> void:
-	var total_minutes := int(current_time_seconds / 60.0)
-	var hours := int(total_minutes / 60.0) % 24
-	var minutes := total_minutes % 60
+	var total_minutes: int = int(current_time_seconds / 60.0)
+	var hours: int = int(total_minutes / 60.0) % 24
+	var minutes: int = total_minutes % 60
 
-	var period := "AM"
+	var period: String = "AM"
 	if hours >= 12:
 		period = "PM"
 
-	var display_hour := hours
+	var display_hour: int = hours
 	if hours == 0:
 		display_hour = 12
 	elif hours > 12:
 		display_hour = hours - 12
 
-	var time_str := "%02d:%02d %s" % [display_hour, minutes, period]
+	var time_str: String = "%02d:%02d %s" % [display_hour, minutes, period]
 	time_updated.emit(time_str)
 
 func emit_date_signal() -> void:
-	var date_str := "%s %d" % [MONTH_NAMES[current_month], current_day]
+	var date_str: String = "%s %d" % [MONTH_NAMES[current_month], current_day]
 	date_updated.emit(date_str)
 
 func _check_auto_sleep_penalty() -> void:
-	var current_hour := int(current_time_seconds / 3600.0) % 24
+	var current_hour: int = int(current_time_seconds / 3600.0) % 24
 
 	if current_hour < 2:
 		auto_sleep_penalty_applied = false
@@ -140,20 +153,19 @@ func _check_auto_sleep_penalty() -> void:
 
 func _do_auto_sleep_penalty() -> void:
 	print("Starting auto sleep penalty...")
-	var root := get_tree().current_scene
+	var root: Node = get_tree().current_scene
 	if root == null:
 		return
 
-	var player = root.find_child("Player", true, false)
+	var player: Node2D = root.find_child("Player", true, false)
 	if player == null:
 		return
 
-	if "is_movement_locked" in player:
-		player.is_movement_locked = true
+	player.set("is_movement_locked", true)
 	if "velocity" in player:
 		player.velocity = Vector2.ZERO
-	if "reset_states" in player:
-		player.reset_states()
+	if player.has_method("reset_states"):
+		player.call("reset_states")
 
 	var sprite: AnimatedSprite2D = player.get_node_or_null("AnimatedSprite2D") as AnimatedSprite2D
 
@@ -176,13 +188,13 @@ func _do_auto_sleep_penalty() -> void:
 		await get_tree().create_timer(1.0).timeout
 
 	if transition_rect:
-		var t = create_tween()
+		var t: Tween = create_tween()
 		t.tween_property(transition_rect, "modulate:a", 1.0, 0.5)
 		await t.finished
 
-	var target_hour := 15
-	var current_hour := int(current_time_seconds / 3600.0) % 24
-	var hours_to_advance := 0
+	var target_hour: int = 15
+	var current_hour: int = int(current_time_seconds / 3600.0) % 24
+	var hours_to_advance: int = 0
 
 	if target_hour > current_hour:
 		hours_to_advance = target_hour - current_hour
@@ -203,30 +215,29 @@ func _do_auto_sleep_penalty() -> void:
 	emit_all_signals()
 
 	if root.has_method("change_level_to"):
-		await root.change_level_to("res://levels/playerhouse.tscn", "sleep")
-		if "is_movement_locked" in player:
-			player.is_movement_locked = false
+		await root.call("change_level_to", "res://levels/playerhouse.tscn", "sleep")
+		player.set("is_movement_locked", false)
 		return
 
 	var target_pos: Vector2 = player.global_position
-	var sleep_marker = root.find_child("sleep", true, false)
+	var sleep_marker: Node = root.find_child("sleep", true, false)
 	if sleep_marker and sleep_marker is Node2D:
 		target_pos = sleep_marker.global_position
 
 	player.global_position = target_pos
 
 	if player.has_node("NavigationAgent2D"):
-		var agent = player.get_node("NavigationAgent2D")
+		var agent: NavigationAgent2D = player.get_node("NavigationAgent2D")
 		if agent:
 			agent.target_position = target_pos
 
 	if player.has_method("update_idle_animation"):
-		player.update_idle_animation(Vector2.DOWN)
-	if "is_movement_locked" in player:
-		player.is_movement_locked = false
+		player.call("update_idle_animation", Vector2.DOWN)
+	
+	player.set("is_movement_locked", false)
 
 	if transition_rect:
-		var t2 = create_tween()
+		var t2: Tween = create_tween()
 		t2.tween_property(transition_rect, "modulate:a", 0.0, 1.0)
 		await t2.finished
 
@@ -276,3 +287,6 @@ func _consume_energy(amount: float) -> void:
 func restore_energy() -> void:
 	current_energy = max_energy
 	energy_updated.emit(current_energy, max_energy)
+
+func get_current_season_string() -> String:
+	return current_visual_season
