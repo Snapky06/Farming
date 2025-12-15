@@ -59,6 +59,7 @@ var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE: float = 50.0
 
 var stuck_timer: float = 0.0
+var axe_hit_damage: int = 1
 
 func _ready() -> void:
 	z_index = 1
@@ -402,7 +403,7 @@ func start_tool_loop(target_node: Node2D, tool_anim_name: String, impact_sfx: Au
 			impact_audio_player.play()
 		
 		if is_instance_valid(target_node) and target_node.has_method("hit"):
-			target_node.call("hit", 1)
+			target_node.call("hit", axe_hit_damage)
 			if "health" in target_node and target_node.health <= 0:
 				break
 
@@ -624,3 +625,6 @@ func add_item(item: Resource, amount: int) -> void:
 			drop.slot_data = new_slot
 			drop.global_position = global_position
 			get_parent().add_child(drop)
+
+func upgrade_axe_damage() -> void:
+	axe_hit_damage = 2
