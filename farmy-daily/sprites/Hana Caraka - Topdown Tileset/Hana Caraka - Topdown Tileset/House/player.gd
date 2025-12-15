@@ -43,6 +43,9 @@ var touch_start_time: float = 0.0
 var has_acted_this_touch: bool = false
 var tap_count: int = 0
 
+var click_timer: Timer
+var pending_click_position: Vector2 = Vector2.ZERO
+
 var is_holding: bool = false
 var equipped_item: Resource = null
 var equipped_slot_index: int = -1
@@ -55,10 +58,13 @@ var pending_impact_sound: AudioStream = null
 var is_moving_to_interact: bool = false
 const TOOL_REACH_DISTANCE: float = 50.0
 
+var stuck_timer: float = 0.0
+
 func _ready() -> void:
 	z_index = 1
 	agent.target_desired_distance = stop_distance
-	agent.path_desired_distance = 2.0
+	agent.path_desired_distance = 4.0
+	agent.path_max_distance = 20.0
 	
 	if cam:
 		cam.enabled = true
@@ -72,6 +78,11 @@ func _ready() -> void:
 	add_child(audio_player)
 	impact_audio_player = AudioStreamPlayer2D.new()
 	add_child(impact_audio_player)
+	
+	click_timer = Timer.new()
+	click_timer.one_shot = true
+	click_timer.timeout.connect(_on_click_timer_timeout)
+	add_child(click_timer)
 	
 	load_sounds()
 	emit_signal("money_updated", money)
@@ -91,11 +102,13 @@ func load_sounds() -> void:
 	if FileAccess.file_exists("res://sounds/water.mp3"): sfx_water = load("res://sounds/water.mp3")
 
 func reset_states() -> void:
+	if click_timer: click_timer.stop()
 	is_moving_to_interact = false
 	is_holding = false
 	is_touching = false
 	tap_count = 0
 	velocity = Vector2.ZERO
+	stuck_timer = 0.0
 	hold_timer.stop()
 	update_idle_animation(last_direction)
 
@@ -113,6 +126,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.pressed:
 			var current_time: int = Time.get_ticks_msec()
 			if current_time - last_tap_time < DOUBLE_TAP_DELAY_MS:
+				click_timer.stop()
 				reset_states()
 				toggle_inventory.emit()
 				tap_count = 0
@@ -134,8 +148,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			
 			if press_duration < LONG_PRESS_DURATION and not has_acted_this_touch:
 				if not is_movement_locked:
-					is_moving_to_interact = false
-					agent.target_position = get_global_mouse_position()
+					pending_click_position = get_global_mouse_position()
+					
+					var time_since_press = Time.get_ticks_msec() - last_tap_time
+					var remaining_wait_time = float(DOUBLE_TAP_DELAY_MS) - float(time_since_press)
+					
+					var wait_time = max(0.05, remaining_wait_time / 1000.0)
+					click_timer.start(wait_time)
+
+func _on_click_timer_timeout() -> void:
+	if not is_movement_locked:
+		is_moving_to_interact = false
+		stuck_timer = 0.0
+		agent.target_position = pending_click_position
 
 func _process(_delta: float) -> void:
 	if is_touching and not has_acted_this_touch and not is_movement_locked:
@@ -214,7 +239,7 @@ func check_reach_and_act(target_pos: Vector2, tool_name: String) -> void:
 	else:
 		start_move_interact(target_pos, tool_name)
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if is_movement_locked:
 		return
 
@@ -222,16 +247,24 @@ func _physics_process(_delta: float) -> void:
 		var next_pos: Vector2 = agent.get_next_path_position()
 		var direction: Vector2 = (next_pos - global_position).normalized()
 		velocity = direction * speed
+		
 		move_and_slide()
 		
-		if get_slide_collision_count() > 0:
+		if velocity.length() < 5.0:
+			stuck_timer += delta
+		else:
+			stuck_timer = 0.0
+			
+		if stuck_timer > 0.25:
 			agent.target_position = global_position
 			velocity = Vector2.ZERO
+			stuck_timer = 0.0
 		
 		update_walk_animation(direction)
 		last_direction = direction
 	else:
 		velocity = Vector2.ZERO
+		stuck_timer = 0.0
 		move_and_slide()
 		update_idle_animation(last_direction)
 		
@@ -288,6 +321,7 @@ func start_move_interact(pos: Vector2, tool_name: String, target: Node2D = null,
 		pending_tool_name = tool_name
 		pending_target_body = target
 		pending_impact_sound = impact_sound
+		stuck_timer = 0.0
 		agent.target_position = pos
 
 func execute_pending_action() -> void:
