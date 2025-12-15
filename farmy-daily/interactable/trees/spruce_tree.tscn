@@ -81,7 +81,7 @@ radius = 6.0
 [node name="SpruceTree" type="AnimatedSprite2D"]
 z_index = 4
 sprite_frames = SubResource("SpriteFrames_cf7w1")
-animation = &"little_cycle"
+animation = &"big_cycle"
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
 z_index = 3

@@ -1,4 +1,4 @@
-[gd_scene load_steps=59 format=4 uid="uid://cawg1tq3uaqq7"]
+[gd_scene load_steps=60 format=4 uid="uid://cawg1tq3uaqq7"]
 
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="1_7vv13"]
 [ext_resource type="Script" uid="uid://bthykutaq31ch" path="res://levels/game_level.gd" id="1_wwp2e"]
@@ -1234,6 +1234,9 @@ sources/0 = SubResource("TileSetAtlasSource_64y4d")
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_831bh"]
 size = Vector2(30, 31)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wwp2e"]
+size = Vector2(33, 26)
+
 [node name="Start" type="Node2D"]
 position = Vector2(176, 144)
 script = ExtResource("1_wwp2e")
@@ -1398,6 +1401,20 @@ shape = SubResource("RectangleShape2D_831bh")
 
 [node name="from_farm" type="Marker2D" parent="NavRegion/Changes"]
 position = Vector2(106, 281)
+
+[node name="ToBeach" type="Area2D" parent="NavRegion/Changes"]
+collision_layer = 4
+collision_mask = 4
+script = ExtResource("12_ipxjn")
+target_scene_path = "uid://bkye40nxsmsfb"
+target_spawn_tag = "to_beach"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="NavRegion/Changes/ToBeach"]
+position = Vector2(439.5, -133)
+shape = SubResource("RectangleShape2D_wwp2e")
+
+[node name="from_beach" type="Marker2D" parent="NavRegion/Changes"]
+position = Vector2(440, -134)
 
 [node name="ShippingBin" parent="NavRegion" instance=ExtResource("29_lhpcw")]
 position = Vector2(97, -23)
