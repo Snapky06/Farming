@@ -9,7 +9,7 @@ region = Rect2(64, 16, 16, 16)
 
 [resource]
 script = ExtResource("1_wrxes")
-name = "Axe"
+name = "Normal Axe"
 description = "Used To Destroy Trees "
 texture = SubResource("AtlasTexture_wrxes")
 is_sellable = false

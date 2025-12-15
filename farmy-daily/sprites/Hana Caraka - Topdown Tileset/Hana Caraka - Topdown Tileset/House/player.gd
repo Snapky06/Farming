@@ -191,7 +191,7 @@ func attempt_action_at(mouse_pos: Vector2) -> void:
 		if time_manager and time_manager.get("current_energy") <= 0: return
 		check_reach_and_act(mouse_pos, "scythe")
 	
-	elif item_name == "Axe" or item_name == "Pickaxe":
+	elif "Axe" in item_name or "axe" in item_name or item_name == "Pickaxe":
 		var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
 		var query: PhysicsPointQueryParameters2D = PhysicsPointQueryParameters2D.new()
 		query.position = mouse_pos
@@ -208,11 +208,28 @@ func attempt_action_at(mouse_pos: Vector2) -> void:
 					is_falling = true
 				
 				if not is_falling:
+					var is_rock: bool = collider.is_in_group("rock") or "Rock" in collider.name or "Stone" in collider.name
+					var is_stump: bool = false
+					if "is_stump" in collider: is_stump = collider.is_stump
+					
+					var can_use: bool = false
+					
+					if item_name == "Pickaxe":
+						if is_rock: can_use = true
+					elif item_name == "Magical Axe" or item_name == "magical_axe":
+						can_use = true
+					elif item_name == "Sharpened Axe" or item_name == "sharpened_axe":
+						if not is_rock: can_use = true
+					else:
+						if not is_rock and not is_stump: can_use = true
+					
+					if not can_use: return
+
 					if time_manager and time_manager.get("current_energy") <= 0: return
 					var tool_anim: String = "axe"
 					var tool_sound: AudioStream = sfx_hit_tree
 					
-					if collider.is_in_group("rock") or "Rock" in collider.name or "Stone" in collider.name:
+					if is_rock:
 						tool_anim = "pickaxe"
 						tool_sound = sfx_hit_rock
 					
