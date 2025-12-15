@@ -1,11 +1,7 @@
 extends Node2D
 
-@export var dialog_lines: Array[String] = []
+@export var quest_list: Array[QuestData] = []
 @export var text_speed: float = 0.03
-@export var offered_quest: QuestData
-@export var start_event_name: String = ""
-@export var finish_event_name: String = ""
-@export var finish_on_last_line: bool = false
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var type_timer: Timer = $Timer
@@ -14,6 +10,7 @@ extends Node2D
 var dialog_active: bool = false
 var is_typing: bool = false
 var current_line_index: int = 0
+var current_dialog_lines: Array[String] = []
 var current_text: String = ""
 var visible_characters: int = 0
 var player_ref: Node2D = null
@@ -28,27 +25,110 @@ var close_button: Button = null
 
 var dialog_font: Font = load("res://fonts/MineMouseRegular-BL3DB.ttf")
 
+var quest_pending_start: QuestData = null
+var ready_to_submit_quest_id: String = ""
+
 func _ready() -> void:
 	if not type_timer.timeout.is_connected(_on_type_timer_timeout):
 		type_timer.timeout.connect(_on_type_timer_timeout)
 
 func on_interact(player) -> void:
-	if dialog_lines.is_empty():
-		return
 	if dialog_active:
 		return
-	if quest_manager:
-		if offered_quest and not quest_manager.is_quest_active(offered_quest.id) and not quest_manager.is_quest_completed(offered_quest.id):
-			quest_manager.start_quest(offered_quest)
-		if start_event_name != "":
-			quest_manager.notify_event(start_event_name, 1, name)
-	_start_dialog(player)
-
-func _start_dialog(player) -> void:
+	
 	player_ref = player
+	var current_quest: QuestData = _get_current_priority_quest()
+	
+	if current_quest:
+		_handle_quest_interaction(current_quest)
+	else:
+		current_dialog_lines = ["I have nothing else for you right now."]
+		_start_dialog()
+
+func _get_current_priority_quest() -> QuestData:
+	if not quest_manager:
+		return null
+		
+	for quest in quest_list:
+		if not quest_manager.is_quest_completed(quest.id):
+			return quest
+		if quest.repeatable and not quest_manager.is_quest_active(quest.id):
+			return quest
+			
+	return null
+
+func _handle_quest_interaction(quest: QuestData) -> void:
+	if not quest_manager.is_quest_active(quest.id):
+		current_dialog_lines = quest.start_dialog
+		quest_pending_start = quest
+		_start_dialog()
+	else:
+		if quest_manager.is_quest_completed(quest.id):
+			current_dialog_lines = quest.complete_dialog
+			_give_rewards(quest)
+			_start_dialog()
+			return
+
+		var can_complete = _check_if_can_complete(quest)
+		
+		if can_complete:
+			if ready_to_submit_quest_id == quest.id:
+				_submit_quest_items(quest)
+				current_dialog_lines = quest.complete_dialog
+				_give_rewards(quest)
+				ready_to_submit_quest_id = "" 
+			else:
+				current_dialog_lines = quest.active_dialog
+				ready_to_submit_quest_id = quest.id
+		else:
+			current_dialog_lines = quest.active_dialog
+			ready_to_submit_quest_id = "" 
+		
+		_start_dialog()
+
+func _check_if_can_complete(quest: QuestData) -> bool:
+	if not player_ref or not "inventory_data" in player_ref:
+		return false
+
+	var step_progress = quest_manager.get_step_progress(quest.id)
+	if not step_progress.has("current_step_index"):
+		return false
+		
+	var step_index = step_progress["current_step_index"]
+	if step_index >= quest.steps.size():
+		return false
+		
+	var step_data = quest.steps[step_index]
+	
+	if step_data.target_id != "":
+		var needed = step_data.required_count - step_progress["current"]
+		if needed > 0:
+			if player_ref.inventory_data.get_item_count(step_data.target_id) >= needed:
+				return true
+	return false
+
+func _submit_quest_items(quest: QuestData) -> void:
+	var step_progress = quest_manager.get_step_progress(quest.id)
+	var step_index = step_progress["current_step_index"]
+	var step_data = quest.steps[step_index]
+	var needed = step_data.required_count - step_progress["current"]
+	
+	if player_ref.inventory_data.remove_item(step_data.target_id, needed):
+		quest_manager.notify_event(step_data.event_name, needed, step_data.target_id)
+
+func _give_rewards(quest: QuestData) -> void:
+	if player_ref and player_ref.has_method("add_item"):
+		for item in quest.reward_items:
+			player_ref.add_item(item, quest.reward_amount)
+
+func _start_dialog() -> void:
+	if current_dialog_lines.is_empty():
+		current_dialog_lines = ["..."]
+		
 	dialog_active = true
 	if "is_movement_locked" in player_ref:
 		player_ref.is_movement_locked = true
+		
 	_look_at_player()
 	_ensure_dialog_ui()
 	_update_portraits()
@@ -66,10 +146,6 @@ func _ensure_dialog_ui() -> void:
 	dialog_panel.anchor_right = 0.90
 	dialog_panel.anchor_top = 0.52
 	dialog_panel.anchor_bottom = 0.82
-	dialog_panel.offset_left = 0.0
-	dialog_panel.offset_right = 0.0
-	dialog_panel.offset_top = 0.0
-	dialog_panel.offset_bottom = 0.0
 	dialog_panel.custom_minimum_size = Vector2(0, 120)
 	dialog_panel.modulate = Color(0.912, 0.757, 0.459, 0.97)
 
@@ -78,34 +154,24 @@ func _ensure_dialog_ui() -> void:
 
 	var top := ColorRect.new()
 	top.color = border_color
-	top.anchor_left = 0.0
 	top.anchor_right = 1.0
-	top.anchor_top = 0.0
-	top.anchor_bottom = 0.0
 	top.offset_top = -border_size
-	top.offset_bottom = 0.0
 	top.offset_left = -border_size
 	top.offset_right = border_size
 
 	var bottom := ColorRect.new()
 	bottom.color = border_color
-	bottom.anchor_left = 0.0
-	bottom.anchor_right = 1.0
 	bottom.anchor_top = 1.0
+	bottom.anchor_right = 1.0
 	bottom.anchor_bottom = 1.0
-	bottom.offset_top = 0.0
 	bottom.offset_bottom = border_size
 	bottom.offset_left = -border_size
 	bottom.offset_right = border_size
 
 	var left := ColorRect.new()
 	left.color = border_color
-	left.anchor_left = 0.0
-	left.anchor_right = 0.0
-	left.anchor_top = 0.0
 	left.anchor_bottom = 1.0
 	left.offset_left = -border_size
-	left.offset_right = 0.0
 	left.offset_top = -border_size
 	left.offset_bottom = border_size
 
@@ -113,9 +179,7 @@ func _ensure_dialog_ui() -> void:
 	right.color = border_color
 	right.anchor_left = 1.0
 	right.anchor_right = 1.0
-	right.anchor_top = 0.0
 	right.anchor_bottom = 1.0
-	right.offset_left = 0.0
 	right.offset_right = border_size
 	right.offset_top = -border_size
 	right.offset_bottom = border_size
@@ -125,10 +189,6 @@ func _ensure_dialog_ui() -> void:
 	dialog_label.anchor_right = 0.82
 	dialog_label.anchor_top = 0.18
 	dialog_label.anchor_bottom = 0.60
-	dialog_label.offset_left = 8.0
-	dialog_label.offset_right = -8.0
-	dialog_label.offset_top = 0.0
-	dialog_label.offset_bottom = 0.0
 	dialog_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	dialog_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	dialog_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -143,10 +203,6 @@ func _ensure_dialog_ui() -> void:
 	next_button.anchor_right = 0.76
 	next_button.anchor_top = 0.65
 	next_button.anchor_bottom = 0.88
-	next_button.offset_left = 0.0
-	next_button.offset_right = 0.0
-	next_button.offset_top = 0.0
-	next_button.offset_bottom = 0.0
 	next_button.modulate = border_color
 	next_button.focus_mode = Control.FOCUS_NONE
 	next_button.set("theme_override_fonts/font", dialog_font)
@@ -159,10 +215,6 @@ func _ensure_dialog_ui() -> void:
 	close_button.anchor_right = 0.38
 	close_button.anchor_top = 0.65
 	close_button.anchor_bottom = 0.88
-	close_button.offset_left = 0.0
-	close_button.offset_right = 0.0
-	close_button.offset_top = 0.0
-	close_button.offset_bottom = 0.0
 	close_button.modulate = border_color
 	close_button.focus_mode = Control.FOCUS_NONE
 	close_button.set("theme_override_fonts/font", dialog_font)
@@ -216,7 +268,7 @@ func _update_portraits() -> void:
 
 func _show_line(index: int) -> void:
 	current_line_index = index
-	current_text = dialog_lines[index]
+	current_text = current_dialog_lines[index]
 	visible_characters = 0
 	is_typing = true
 	dialog_label.text = ""
@@ -242,11 +294,9 @@ func _on_close_button_pressed() -> void:
 
 func _advance_or_close() -> void:
 	var next_index := current_line_index + 1
-	if next_index < dialog_lines.size():
+	if next_index < current_dialog_lines.size():
 		_show_line(next_index)
 	else:
-		if quest_manager and finish_on_last_line and finish_event_name != "":
-			quest_manager.notify_event(finish_event_name, 1, name)
 		_end_dialog()
 
 func _end_dialog() -> void:
@@ -258,6 +308,10 @@ func _end_dialog() -> void:
 	if player_ref and "is_movement_locked" in player_ref:
 		player_ref.is_movement_locked = false
 	player_ref = null
+	
+	if quest_pending_start:
+		quest_manager.start_quest(quest_pending_start)
+		quest_pending_start = null
 
 func _on_type_timer_timeout() -> void:
 	if not is_typing:

@@ -136,3 +136,34 @@ func deserialize(data: Array) -> void:
 				new_slot.quantity = int(data[i]["quantity"])
 				slot_datas[i] = new_slot
 	inventory_updated.emit(self)
+
+func get_item_count(item_name: String) -> int:
+	var count: int = 0
+	for slot in slot_datas:
+		if slot and slot.item_data and slot.item_data.name == item_name:
+			count += slot.quantity
+	return count
+
+func remove_item(item_name: String, amount_to_remove: int) -> bool:
+	if get_item_count(item_name) < amount_to_remove:
+		return false
+		
+	var remaining: int = amount_to_remove
+	
+	for i in range(slot_datas.size()):
+		var slot = slot_datas[i]
+		if slot and slot.item_data and slot.item_data.name == item_name:
+			if slot.quantity > remaining:
+				slot.quantity -= remaining
+				remaining = 0
+				inventory_updated.emit(self)
+				break
+			else:
+				remaining -= slot.quantity
+				slot_datas[i] = null
+				inventory_updated.emit(self)
+				
+		if remaining <= 0:
+			break
+			
+	return true

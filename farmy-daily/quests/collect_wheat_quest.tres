@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=5 format=3 uid="uid://cm0ukfsy4o0en"]
+
+[ext_resource type="Resource" uid="uid://bbxj2ccnl0gen" path="res://Item/items/tools/axe.tres" id="1_6w8yt"]
+[ext_resource type="Script" uid="uid://g1x8er4svwyj" path="res://quests/quest_data.gd" id="1_xqaem"]
+[ext_resource type="Script" uid="uid://k0kmi5ep0tqv" path="res://quests/quest_step_data.gd" id="2_6w8yt"]
+
+[sub_resource type="Resource" id="Resource_xqaem"]
+script = ExtResource("2_6w8yt")
+event_name = "harvest"
+target_id = "Wheat"
+required_count = 5
+description = "Harvest 5 Wheat"
+metadata/_custom_type_script = "uid://k0kmi5ep0tqv"
+
+[resource]
+script = ExtResource("1_xqaem")
+id = "quest_collect_wheat"
+title = "Harvest Time"
+description = "Please gather some wheat for me."
+steps = Array[ExtResource("2_6w8yt")]([SubResource("Resource_xqaem")])
+start_dialog = Array[String](["Hey Kai, Haven't Seen You In A While"])
+active_dialog = Array[String](["They Told Me About Your Grandpa...", "Truly Sad But I Need You To Keep His Legacy Going", "But We're Starting With Something Simple", "Bring Me Some Wheat"])
+complete_dialog = Array[String](["Good Job Bringing Me The Mats", "Now You Get Yourself An Axe To Start The Legacy"])
+reward_items = Array[Resource]([ExtResource("1_6w8yt")])
+metadata/_custom_type_script = "uid://g1x8er4svwyj"

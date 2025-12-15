@@ -2231,7 +2231,6 @@ shape = SubResource("RectangleShape2D_b21an")
 
 [node name="Aunt" parent="NavRegion" instance=ExtResource("26_jv62w")]
 position = Vector2(95, -40)
-dialog_lines = Array[String](["Hey There Pal", "Are You Interested In Something ?"])
 
 [node name="spawn_to_town" type="Marker2D" parent="."]
 position = Vector2(534, -8)

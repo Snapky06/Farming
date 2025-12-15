@@ -554,3 +554,22 @@ func update_equipped_item(index: int) -> void:
 			equipped_item = null
 	else:
 		equipped_item = null
+
+func add_item(item: Resource, amount: int) -> void:
+	if not inventory_data:
+		return
+	
+	var new_slot = SlotData.new()
+	new_slot.item_data = item
+	new_slot.quantity = amount
+	
+	if not inventory_data.pick_up_slot_data(new_slot):
+		var drop_scene = load("res://Item/pick_up/pick_up.tscn")
+		if not drop_scene:
+			drop_scene = load("res://farmy-daily/Item/pick_up/pick_up.tscn")
+			
+		if drop_scene:
+			var drop = drop_scene.instantiate()
+			drop.slot_data = new_slot
+			drop.global_position = global_position
+			get_parent().add_child(drop)
