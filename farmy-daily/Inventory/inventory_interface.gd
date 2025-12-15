@@ -19,14 +19,14 @@ var bin_value_label: Label
 
 signal hide_inventory()
 
-const DOUBLE_TAP_DELAY = 0.3
-var tap_count = 0
-var double_tap_timer = 0.0
+var last_tap_time: int = 0
+const DOUBLE_TAP_THRESHOLD: int = 400
 
 func _ready() -> void:
 	add_to_group("inventory_interface")
 	
 	anchors_preset = Control.PRESET_FULL_RECT
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	visible = false
 	grabbed_slot.visible = false
@@ -37,6 +37,50 @@ func _ready() -> void:
 	visibility_changed.connect(_on_visibility_changed)
 	
 	find_player()
+
+func _process(delta: float) -> void:
+	if not player:
+		find_player()
+
+	if grabbed_slot.visible:
+		grabbed_slot.global_position = get_global_mouse_position() + Vector2(5, 5)
+		
+	if bin_value_label.visible and external_inventory.visible:
+		var panel_rect = external_inventory.get_global_rect()
+		bin_value_label.global_position = Vector2(panel_rect.end.x - bin_value_label.size.x, panel_rect.position.y - bin_value_label.size.y - 5)
+
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	
+	var is_tap = false
+	var pos = Vector2.ZERO
+
+	if event is InputEventScreenTouch:
+		if event.pressed and event.index == 0:
+			is_tap = true
+			pos = event.position
+	elif event is InputEventMouseButton:
+		if event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			is_tap = true
+			pos = event.position
+
+	if is_tap:
+		if player_inventory.visible and player_inventory.get_global_rect().has_point(pos):
+			return
+		if external_inventory.visible and external_inventory.get_global_rect().has_point(pos):
+			return
+			
+		var current_time = Time.get_ticks_msec()
+		if current_time - last_tap_time <= DOUBLE_TAP_THRESHOLD:
+			if can_close():
+				hide_inventory.emit()
+				clear_external_inventory()
+				close()
+				get_viewport().set_input_as_handled()
+			last_tap_time = 0
+		else:
+			last_tap_time = current_time
 
 func _on_visibility_changed() -> void:
 	if visible:
@@ -107,7 +151,7 @@ func setup_bin_value_display() -> void:
 	bin_value_label.add_theme_font_size_override("font_size", 28)
 	bin_value_label.text = "Value: 0"
 	
-	bin_value_label.add_theme_color_override("font_shadow_color", Color.BLACK)
+	bin_value_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 1))
 	bin_value_label.add_theme_constant_override("shadow_offset_x", 1)
 	bin_value_label.add_theme_constant_override("shadow_offset_y", 1)
 
@@ -133,33 +177,26 @@ func update_bin_value(inventory_data: InventoryData) -> void:
 	var total = 0
 	for slot in inventory_data.slot_datas:
 		if slot and slot.item_data and slot.item_data.is_sellable:
-			total += slot.item_data.price * slot.quantity
+			total += int(slot.item_data.price * 0.9) * slot.quantity
 	bin_value_label.text = "Value: " + str(total)
-
-func _process(delta: float) -> void:
-	if not player:
-		find_player()
-
-	if double_tap_timer > 0.0:
-		double_tap_timer -= delta
-		if double_tap_timer <= 0.0:
-			tap_count = 0
-
-	if grabbed_slot.visible:
-		grabbed_slot.global_position = get_global_mouse_position() + Vector2(5, 5)
-		
-	if bin_value_label.visible and external_inventory.visible:
-		var panel_rect = external_inventory.get_global_rect()
-		bin_value_label.global_position = Vector2(panel_rect.end.x - bin_value_label.size.x, panel_rect.position.y - bin_value_label.size.y - 5)
 
 func open() -> void:
 	visible = true
+	get_tree().call_group("hotbar", "hide")
+	
+	if player and "is_movement_locked" in player:
+		player.is_movement_locked = true
+		
 	if player:
 		update_money_text(player.money)
 
 func close() -> void:
 	visible = false
 	bin_value_label.visible = false
+	get_tree().call_group("hotbar", "show")
+	
+	if player and "is_movement_locked" in player:
+		player.is_movement_locked = false
 
 func set_external_inventory(external_inventory_data: InventoryData):
 	external_inventory_owner = external_inventory_data
@@ -213,12 +250,18 @@ func on_inventory_interact(inventory_data: InventoryData, index: int, button: in
 				player.update_money(-buy_price)
 				grabbed_slot_data = slot.duplicate()
 				grabbed_slot_data.quantity = 1
+				
+				slot.quantity -= 1
+				if slot.quantity <= 0:
+					inventory_data.slot_datas[index] = null
+				
+				inventory_data.inventory_updated.emit(inventory_data)
 				update_grabbed_slot()
 		return
 
 	if grabbed_slot_data and inventory_data.type == InventoryData.InventoryType.SHOP:
 		if grabbed_slot_data.item_data.is_sellable and player:
-			var sell_price = grabbed_slot_data.item_data.price * grabbed_slot_data.quantity
+			var sell_price = int(grabbed_slot_data.item_data.price * 0.6) * grabbed_slot_data.quantity
 			player.update_money(sell_price)
 			grabbed_slot_data = null
 			update_grabbed_slot()

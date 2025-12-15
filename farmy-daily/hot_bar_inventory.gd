@@ -3,10 +3,13 @@ extends PanelContainer
 signal hotbar_slot_selected(index: int)
 
 @onready var h_box_container: HBoxContainer = $MarginContainer/HBoxContainer
-@onready var Slot = preload("uid://bpfmoo7pgcvyl")
+const Slot = preload("res://Inventory/slot.tscn")
 
-var active_slot_index: int = -1 # Start with nothing selected
+var active_slot_index: int = -1 
 var inventory_data: InventoryData
+
+func _ready() -> void:
+	add_to_group("hotbar")
 
 func set_inventory_data(new_inventory_data: InventoryData) -> void:
 	inventory_data = new_inventory_data
@@ -35,7 +38,6 @@ func populate_hot_bar(inv_data: InventoryData) -> void:
 		if slot_data:
 			slot.set_slot_data(slot_data)
 		
-		# Highlight logic
 		if i == active_slot_index:
 			slot.modulate = Color(1, 1, 1, 1)
 		else:
@@ -44,7 +46,6 @@ func populate_hot_bar(inv_data: InventoryData) -> void:
 		slot.slot_clicked.connect(on_slot_clicked.bind(i))
 
 func on_slot_clicked(index_in_hotbar: int, _slot_index: int, _button: int) -> void:
-	# TOGGLE LOGIC: If clicking the same slot, unselect it
 	if active_slot_index == index_in_hotbar:
 		deselect_all()
 		return

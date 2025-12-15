@@ -1,7 +1,8 @@
-[gd_scene load_steps=19 format=3 uid="uid://44r1x0fhp8yl"]
+[gd_scene load_steps=20 format=3 uid="uid://44r1x0fhp8yl"]
 
-[ext_resource type="Script" uid="uid://d2gr834u208gh" path="res://interactable/npcs/npc.gd" id="1_je41u"]
+[ext_resource type="Script" uid="uid://b2st44o426d44" path="res://interactable/shop_npc.gd" id="1_je41u"]
 [ext_resource type="Texture2D" uid="uid://dgfxk12j5xa7u" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Premade Character/Merchant/merchant - idle.png" id="2_je41u"]
+[ext_resource type="Resource" uid="uid://cvvsawnwxu5ul" path="res://interactable/npcs/merchant_inv.tres" id="2_pl2bp"]
 [ext_resource type="Script" uid="uid://co41majoe4uq8" path="res://interactable/npcs/npc_interact_area.gd" id="3_3g256"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pl2bp"]
@@ -113,8 +114,9 @@ height = 16.0
 [sub_resource type="CircleShape2D" id="CircleShape2D_s4hjy"]
 radius = 17.029387
 
-[node name="Aunt" type="CharacterBody2D"]
+[node name="Aunt" type="CharacterBody2D" groups=["external_inventory"]]
 script = ExtResource("1_je41u")
+shop_inventory_data = ExtResource("2_pl2bp")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_mgshb")

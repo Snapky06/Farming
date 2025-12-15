@@ -68,7 +68,7 @@ func _on_new_day(_date_string):
 	for i in range(inventory_data.slot_datas.size()):
 		var slot = inventory_data.slot_datas[i]
 		if slot and slot.item_data and slot.item_data.is_sellable:
-			total_value += slot.item_data.price * slot.quantity
+			total_value += int(slot.item_data.price * 0.9) * slot.quantity
 	
 	if total_value > 0:
 		var player_node = null
@@ -82,6 +82,7 @@ func _on_new_day(_date_string):
 			player_node.update_money(total_value)
 		else:
 			print("CRITICAL: Shipping Bin could not find Player to give money!")
+			
 	for i in range(inventory_data.slot_datas.size()):
 		inventory_data.slot_datas[i] = null
 	

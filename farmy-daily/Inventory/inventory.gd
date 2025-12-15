@@ -29,3 +29,7 @@ func populate_item_grid(inventory_data: InventoryData) -> void:
 		
 		if slot_data:
 			slot.set_slot_data(slot_data)
+			
+			if inventory_data.type == InventoryData.InventoryType.SHOP:
+				var buy_price = int(slot_data.item_data.price * 1.25)
+				slot.tooltip_text = "%s\n%s\nPrice: %d" % [slot_data.item_data.name, slot_data.item_data.description, buy_price]
