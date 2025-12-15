@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=4 format=3 uid="uid://dgo6385uwu6hu"]
+
+[ext_resource type="Script" uid="uid://bvaw7yvcmsrup" path="res://Item/item_data.gd" id="1_uk5mi"]
+[ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="2_3jhgd"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wrxes"]
+atlas = ExtResource("2_3jhgd")
+region = Rect2(64, 16, 16, 16)
+
+[resource]
+script = ExtResource("1_uk5mi")
+name = "Sharpened Axe"
+description = "Used To Destroy Trees And Stumps"
+texture = SubResource("AtlasTexture_wrxes")
+is_sellable = false
+metadata/_custom_type_script = "uid://bvaw7yvcmsrup"
