@@ -114,13 +114,16 @@ func reset_states() -> void:
 	update_idle_animation(last_direction)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_movement_locked:
+		return
+
 	if Input.is_action_just_pressed("inventory"):
 		reset_states()
 		toggle_inventory.emit()
 		get_viewport().set_input_as_handled()
 		return
 	
-	if not is_movement_locked and Input.is_action_just_pressed("use"):
+	if Input.is_action_just_pressed("use"):
 		attempt_action_at(get_global_mouse_position())
 	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:

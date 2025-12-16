@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Farmy Daily"
-run/main_scene="uid://bt6yu66rx5g0l"
+run/main_scene="uid://car75lhc43x5l"
 config/features=PackedStringArray("4.5", "Mobile")
 config/icon="res://icon.svg"
 

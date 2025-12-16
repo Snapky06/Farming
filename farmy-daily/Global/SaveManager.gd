@@ -1,178 +1,240 @@
 extends Node
 
-const SAVE_PATH: String = "user://save_game.dat"
+const SAVE_DIR = "user://saves/"
+const SAVE_TEMPLATE = "save_slot_%d.json"
+const MAX_SLOTS = 3
 
-var world_state: Dictionary = {}
-var level_drops: Dictionary = {}
-var level_dynamic_data: Dictionary = {}
+var current_slot = 0
+var current_player_name = "Farmer"
+var slots_cache = {}
 
-var _current_scene_path: String = ""
+func _ready() -> void:
+	if not DirAccess.dir_exists_absolute(SAVE_DIR):
+		DirAccess.make_dir_absolute(SAVE_DIR)
+	_refresh_slots()
 
-func _process(_delta: float) -> void:
-	var scene: Node = get_tree().current_scene
-	if scene and scene.scene_file_path != _current_scene_path:
-		_current_scene_path = scene.scene_file_path
-		_spawn_drops_for_level(_current_scene_path)
+func get_save_path(index: int) -> String:
+	return SAVE_DIR + (SAVE_TEMPLATE % index)
+
+func _refresh_slots() -> void:
+	slots_cache.clear()
+	for i in range(MAX_SLOTS):
+		var path = get_save_path(i)
+		if FileAccess.file_exists(path):
+			var file = FileAccess.open(path, FileAccess.READ)
+			if file:
+				var text = file.get_as_text()
+				file.close()
+				var json = JSON.new()
+				if json.parse(text) == OK:
+					var data = json.data
+					if data.has("metadata"):
+						slots_cache[i] = data["metadata"]
 
 func save_game() -> void:
-	var root: Node = get_tree().current_scene
-	if root.has_method("save_level_state"):
-		root.call("save_level_state")
-
-	var save_data: Dictionary = {
-		"time": {},
-		"quests": {},
+	var data = {
+		"metadata": {
+			"player_name": current_player_name,
+			"day": 1,
+			"money": 0,
+			"date": Time.get_date_string_from_system()
+		},
 		"player": {},
 		"inventory": [],
-		"level": {},
-		"world_state": world_state,
-		"level_drops": level_drops,
-		"level_dynamic_data": level_dynamic_data
+		"time": {},
+		"world": []
 	}
-
-	if has_node("/root/TimeManager"):
-		save_data["time"] = get_node("/root/TimeManager").call("get_save_data")
 	
-	if has_node("/root/QuestManager"):
-		save_data["quests"] = get_node("/root/QuestManager").call("get_save_data")
-
-	var player: Node2D = root.find_child("Player", true, false)
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		var root = get_tree().current_scene
+		if root.name == "Player":
+			player = root
+		else:
+			player = root.find_child("Player", true, false)
+			
 	if player:
-		save_data["player"] = {
-			"position_x": player.global_position.x,
-			"position_y": player.global_position.y,
-			"scene_path": root.scene_file_path,
-			"money": player.get("money")
+		data["metadata"]["money"] = player.money
+		data["player"] = {
+			"pos_x": player.global_position.x,
+			"pos_y": player.global_position.y,
+			"money": player.money,
+			"axe_damage": player.get("axe_hit_damage"),
+			"health": player.get("health"),
+			"max_health": player.get("max_health")
 		}
 		
-		var inv_data = player.get("inventory_data")
-		if inv_data and inv_data.has_method("serialize"):
-			save_data["inventory"] = inv_data.call("serialize")
+		if player.inventory_data and player.inventory_data.slot_datas:
+			for slot in player.inventory_data.slot_datas:
+				if slot and slot.item_data:
+					data["inventory"].append({
+						"path": slot.item_data.resource_path,
+						"amount": slot.quantity
+					})
+				else:
+					data["inventory"].append(null)
 
-	if root.has_method("get_level_data"):
-		save_data["level"] = root.call("get_level_data")
+	var time_manager = get_node_or_null("/root/TimeManager")
+	if time_manager:
+		data["metadata"]["day"] = time_manager.day
+		data["time"] = {
+			"day": time_manager.day,
+			"minutes": time_manager.current_time_minutes
+		}
 
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	var root_node = get_tree().current_scene
+	var saveable_objects = root_node.get_children()
+	
+	for node in saveable_objects:
+		if node == player:
+			continue
+			
+		if node.scene_file_path.is_empty():
+			continue
+			
+		if "TileMap" in node.name:
+			continue
+
+		var should_save = false
+		var object_props = {}
+		
+		if "current_stage" in node:
+			should_save = true
+			object_props["current_stage"] = node.current_stage
+		
+		if "health" in node:
+			should_save = true
+			object_props["health"] = node.health
+			
+		if "is_watered" in node:
+			should_save = true
+			object_props["is_watered"] = node.is_watered
+			
+		if node.is_in_group("persist"):
+			should_save = true
+
+		if should_save:
+			data["world"].append({
+				"file": node.scene_file_path,
+				"x": node.global_position.x,
+				"y": node.global_position.y,
+				"z": node.z_index,
+				"props": object_props
+			})
+
+	var file = FileAccess.open(get_save_path(current_slot), FileAccess.WRITE)
 	if file:
-		file.store_var(save_data)
+		file.store_string(JSON.stringify(data, "\t"))
 		file.close()
+	
+	_refresh_slots()
 
-func load_game() -> void:
-	if not FileAccess.file_exists(SAVE_PATH):
+func load_game(slot_index: int) -> void:
+	var path = get_save_path(slot_index)
+	if not FileAccess.file_exists(path):
 		return
-
-	var file: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
-	var save_data: Variant = file.get_var()
+		
+	current_slot = slot_index
+	
+	var file = FileAccess.open(path, FileAccess.READ)
+	var text = file.get_as_text()
 	file.close()
 	
-	if not save_data is Dictionary:
-		return
+	var json = JSON.new()
+	if json.parse(text) == OK:
+		var data = json.data
+		_apply_save_data(data)
 
-	if save_data.has("world_state"): world_state = save_data["world_state"]
-	if save_data.has("level_drops"): level_drops = save_data["level_drops"]
-	if save_data.has("level_dynamic_data"): level_dynamic_data = save_data["level_dynamic_data"]
-
-	if save_data.has("time") and has_node("/root/TimeManager"):
-		get_node("/root/TimeManager").call("load_save_data", save_data["time"])
+func start_new_game(slot_index: int, player_name: String) -> void:
+	current_slot = slot_index
+	current_player_name = player_name
 	
-	if save_data.has("quests") and has_node("/root/QuestManager"):
-		get_node("/root/QuestManager").call("load_save_data", save_data["quests"])
+	var path = get_save_path(slot_index)
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(path)
+		
+	get_tree().change_scene_to_file("res://farmy-daily/levels/playerhouse.tscn")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		player = get_tree().current_scene.find_child("Player", true, false)
+		
+	if player:
+		player.money = 0
+		player.emit_signal("money_updated", 0)
+		if player.inventory_data:
+			for i in range(player.inventory_data.slot_datas.size()):
+				player.inventory_data.slot_datas[i] = null
+			player.inventory_data.emit_signal("inventory_updated", player.inventory_data)
 
-	if save_data.has("player"):
-		var player_data: Dictionary = save_data["player"]
-		var scene_path: String = player_data.get("scene_path", "")
+	var time_manager = get_node_or_null("/root/TimeManager")
+	if time_manager:
+		time_manager.day = 1
+		time_manager.current_time_minutes = 360
+
+	save_game()
+
+func _apply_save_data(data: Dictionary) -> void:
+	if data.has("metadata"):
+		current_player_name = data["metadata"]["player_name"]
 		
-		if scene_path != "" and scene_path != get_tree().current_scene.scene_file_path:
-			get_tree().change_scene_to_file(scene_path)
-			await get_tree().process_frame
+	get_tree().change_scene_to_file("res://farmy-daily/levels/playerhouse.tscn")
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	var player = get_tree().get_first_node_in_group("player")
+	if not player:
+		player = get_tree().current_scene.find_child("Player", true, false)
 		
-		var player: Node2D = get_tree().current_scene.find_child("Player", true, false)
-		if player:
-			player.global_position = Vector2(player_data["position_x"], player_data["position_y"])
-			if player_data.has("money"):
-				player.set("money", player_data["money"])
-				if player.has_signal("money_updated"):
-					player.emit_signal("money_updated", player_data["money"])
+	if player and data.has("player"):
+		var p = data["player"]
+		player.global_position = Vector2(p["pos_x"], p["pos_y"])
+		player.money = int(p["money"])
+		if p.has("axe_damage"): player.set("axe_hit_damage", int(p["axe_damage"]))
+		if p.has("health"): player.set("health", int(p["health"]))
+		player.emit_signal("money_updated", player.money)
+		
+	if player and player.inventory_data and data.has("inventory"):
+		var inv_list = data["inventory"]
+		for i in range(inv_list.size()):
+			if i < player.inventory_data.slot_datas.size():
+				var slot_info = inv_list[i]
+				if slot_info != null:
+					var res = load(slot_info["path"])
+					if res:
+						var new_slot = SlotData.new()
+						new_slot.item_data = res
+						new_slot.quantity = int(slot_info["amount"])
+						player.inventory_data.slot_datas[i] = new_slot
+				else:
+					player.inventory_data.slot_datas[i] = null
+		player.inventory_data.emit_signal("inventory_updated", player.inventory_data)
+
+	var time_manager = get_node_or_null("/root/TimeManager")
+	if time_manager and data.has("time"):
+		time_manager.day = int(data["time"]["day"])
+		time_manager.current_time_minutes = int(data["time"]["minutes"])
+
+	var root = get_tree().current_scene
+	for child in root.get_children():
+		if child == player: continue
+		if "TileMap" in child.name: continue
+		if "health" in child or "current_stage" in child or child.is_in_group("persist"):
+			child.queue_free()
 			
-			var inv_data = player.get("inventory_data")
-			if save_data.has("inventory") and inv_data and inv_data.has_method("deserialize"):
-				inv_data.call("deserialize", save_data["inventory"])
-
-	if save_data.has("level") and get_tree().current_scene.has_method("load_level_data"):
-		get_tree().current_scene.call("load_level_data", save_data["level"])
-		
-	var current_level: Node = get_tree().current_scene
-	if current_level.has_method("load_level_state"):
-		current_level.call("load_level_state")
+	await get_tree().process_frame
 	
-	_current_scene_path = get_tree().current_scene.scene_file_path
-	_spawn_drops_for_level(_current_scene_path)
-
-func get_object_state(node: Node2D) -> Dictionary:
-	var level_id: String = _get_level_id(node)
-	var object_id: String = _get_object_id(node)
-	if world_state.has(level_id) and world_state[level_id].has(object_id):
-		return world_state[level_id][object_id]
-	return {}
-
-func save_object_state(node: Node2D, data: Dictionary) -> void:
-	var level_id: String = _get_level_id(node)
-	var object_id: String = _get_object_id(node)
-	if not world_state.has(level_id): world_state[level_id] = {}
-	if not world_state[level_id].has(object_id): world_state[level_id][object_id] = {}
-	for key in data:
-		world_state[level_id][object_id][key] = data[key]
-
-func save_level_data(level_id: String, data: Dictionary) -> void:
-	if has_node("/root/TimeManager"):
-		var tm: Node = get_node("/root/TimeManager")
-		data["last_day_index"] = tm.get("current_day") + (tm.get("current_month") * 30) + (tm.get("current_year") * 365)
-	level_dynamic_data[level_id] = data
-
-func get_level_data_dynamic(level_id: String) -> Dictionary:
-	if not level_dynamic_data.has(level_id):
-		return {}
-	return level_dynamic_data[level_id]
-
-func _get_level_id(node: Node) -> String:
-	if node.owner and node.owner.scene_file_path: return node.owner.scene_file_path
-	if get_tree().current_scene: return get_tree().current_scene.scene_file_path
-	return "unknown_level"
-
-func _get_object_id(node: Node2D) -> String:
-	return str(Vector2i(node.global_position))
-
-func update_drop(level_id: String, uuid: String, data: Dictionary) -> void:
-	if not level_drops.has(level_id): level_drops[level_id] = {}
-	level_drops[level_id][uuid] = data
-
-func remove_drop(level_id: String, uuid: String) -> void:
-	if level_drops.has(level_id) and level_drops[level_id].has(uuid): level_drops[level_id].erase(uuid)
-
-func _spawn_drops_for_level(level_id: String) -> void:
-	if not level_drops.has(level_id): return
-	var drops_data: Dictionary = level_drops[level_id]
-	var current_time: int = int(Time.get_unix_time_from_system())
-	var pick_up_scene: PackedScene = load("res://Item/pick_up/pick_up.tscn")
-	var slot_script: Script = load("res://Inventory/slot_data.gd")
-	var to_remove: Array = []
-
-	for uuid in drops_data:
-		var data: Dictionary = drops_data[uuid]
-		if current_time - data.get("time", 0) > 1200:
-			to_remove.append(uuid)
-			continue
-		var instance: Node2D = pick_up_scene.instantiate()
-		instance.set("uuid", uuid)
-		instance.set("creation_time", data.get("time", current_time))
-		instance.position = Vector2(data["x"], data["y"])
-		var slot: Resource = slot_script.new()
-		if data.has("item_path") and ResourceLoader.exists(data["item_path"]):
-			slot.item_data = load(data["item_path"])
-			slot.quantity = data.get("quantity", 1)
-			instance.set("slot_data", slot)
-			get_tree().current_scene.add_child(instance)
-		else:
-			to_remove.append(uuid)
-	for uuid in to_remove:
-		level_drops[level_id].erase(uuid)
+	if data.has("world"):
+		for obj in data["world"]:
+			if ResourceLoader.exists(obj["file"]):
+				var scene = load(obj["file"])
+				var instance = scene.instantiate()
+				instance.global_position = Vector2(obj["x"], obj["y"])
+				instance.z_index = int(obj["z"])
+				if obj.has("props"):
+					for key in obj["props"]:
+						instance.set(key, obj["props"][key])
+				instance.add_to_group("persist")
+				root.add_child(instance)
