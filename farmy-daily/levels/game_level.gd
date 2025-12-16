@@ -112,13 +112,17 @@ func save_level_state() -> void:
 		"crops": crops_data
 	}
 	
-	save_manager.call("save_level_data", scene_file_path, level_data)
+	if save_manager.has_method("save_level_data"):
+		save_manager.save_level_data(scene_file_path, level_data)
 
 func load_level_state() -> void:
 	if not save_manager:
 		return
 	
-	var data: Dictionary = save_manager.call("get_level_data_dynamic", scene_file_path)
+	var data: Dictionary = {}
+	if save_manager.has_method("get_level_data_dynamic"):
+		data = save_manager.get_level_data_dynamic(scene_file_path)
+		
 	if data.is_empty():
 		return
 	

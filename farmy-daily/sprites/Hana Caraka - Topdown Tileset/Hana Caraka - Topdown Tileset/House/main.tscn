@@ -1,8 +1,9 @@
-[gd_scene load_steps=16 format=3 uid="uid://bt6yu66rx5g0l"]
+[gd_scene load_steps=17 format=3 uid="uid://bt6yu66rx5g0l"]
 
 [ext_resource type="Script" uid="uid://ddkni61nd80vt" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.gd" id="1_0ppkx"]
 [ext_resource type="Script" uid="uid://dhoxth4cdkxq8" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/day_night_cycle.gd" id="2_hy8hq"]
 [ext_resource type="PackedScene" uid="uid://buts4ehxirrur" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/player.tscn" id="3_c3bvi"]
+[ext_resource type="PackedScene" uid="uid://4dp808w623li" path="res://levels/playerhouse.tscn" id="4_r73uj"]
 [ext_resource type="Script" uid="uid://t0jin1h5k0f2" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/game_clock_ui.gd" id="11_6x66l"]
 [ext_resource type="Script" uid="uid://c1uydoq5x125w" path="res://Inventory/inventory_interface.gd" id="12_8fpue"]
 [ext_resource type="PackedScene" uid="uid://bugpfxrl8ucqo" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/PauseMenu.tscn" id="12_cjaoi"]
@@ -26,6 +27,8 @@ bg_color = Color(0.3764706, 0.26666668, 0, 0.47843137)
 [node name="Game" type="Node2D"]
 script = ExtResource("1_0ppkx")
 metadata/_edit_horizontal_guides_ = [-66.0]
+
+[node name="Start" parent="." instance=ExtResource("4_r73uj")]
 
 [node name="DayNightCycle" type="CanvasModulate" parent="."]
 script = ExtResource("2_hy8hq")
