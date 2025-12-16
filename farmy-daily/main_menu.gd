@@ -47,6 +47,18 @@ func setup_background() -> void:
 		if existing_ui: existing_ui.queue_free()
 		var player = background_scene.find_child("Player", true, false)
 		if player: player.queue_free()
+		var existing_cam = background_scene.find_child("Camera2D", true, false)
+		if existing_cam: existing_cam.queue_free()
+
+		var menu_cam = Camera2D.new()
+		menu_cam.zoom = Vector2(3.5, 3.5)
+		menu_cam.position = Vector2(250, 150)
+		background_scene.add_child(menu_cam)
+
+		var tween = create_tween().set_loops()
+		tween.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		tween.tween_property(menu_cam, "position", Vector2(350, 200), 20.0)
+		tween.tween_property(menu_cam, "position", Vector2(250, 150), 20.0)
 
 func create_ui() -> void:
 	var canvas = CanvasLayer.new()
