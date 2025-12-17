@@ -27,6 +27,9 @@ func _get_level_key() -> String:
 		return scene_file_path
 	return name
 
+func get_level_key() -> String:
+	return _get_level_key()
+
 func use_hoe(pos: Vector2) -> void:
 	if not ground_layer:
 		return
@@ -99,10 +102,16 @@ func _find_all_crop_roots_in_wrapper() -> Array:
 		return []
 	var nodes: Array = wrapper.find_children("*", "", true, false)
 	var out: Array = []
+	var lk := _get_level_key()
 	for n in nodes:
 		if n is Node2D and _is_crop_root(n):
+			if n.has_meta("level_key"):
+				var mk := str(n.get_meta("level_key"))
+				if mk != "" and mk != lk:
+					continue
 			out.append(n)
 	return out
+
 
 func _find_crop_root_at(tile_pos: Vector2i) -> Node2D:
 	var roots := _find_all_crop_roots_in_wrapper()

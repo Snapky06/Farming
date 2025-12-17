@@ -169,6 +169,10 @@ func _replace_level_under_start(scene_path: String) -> void:
 	if scene_path == "" or not ResourceLoader.exists(scene_path):
 		return
 
+	current_level_key = scene_path
+	if TimeManager.has_method("set_water_level_key"):
+		TimeManager.set_water_level_key(current_level_key)
+
 	for c in start.get_children():
 		c.queue_free()
 
@@ -180,6 +184,7 @@ func _replace_level_under_start(scene_path: String) -> void:
 
 	var inst: Node = packed.instantiate()
 	start.add_child(inst)
+	_update_current_level_key(inst)
 
 	await get_tree().process_frame
 

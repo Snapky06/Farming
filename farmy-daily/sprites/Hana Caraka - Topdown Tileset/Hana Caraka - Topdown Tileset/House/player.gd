@@ -623,6 +623,10 @@ func spawn_crop(pos: Vector2) -> void:
 			var crop: Node2D = crop_scene.instantiate()
 			crop.global_position = snap_pos
 			crop.set_meta("crop_scene_path", equipped_item.get("crop_scene_path"))
+			if get_parent().has_method("get_level_key"):
+				var lk := str(get_parent().call("get_level_key"))
+				if lk != "":
+					crop.set_meta("level_key", lk)
 			get_parent().add_child(crop)
 
 			var crop_script: Node = find_crop_script(crop)
@@ -633,6 +637,7 @@ func spawn_crop(pos: Vector2) -> void:
 				get_parent().call("save_level_state")
 
 			consume_equipped_item()
+
 
 
 func consume_equipped_item() -> void:
