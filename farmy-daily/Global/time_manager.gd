@@ -254,6 +254,10 @@ func _get_water_level_key() -> String:
 	if _water_level_key != "":
 		return _water_level_key
 	var cs = get_tree().current_scene
+	if cs != null and cs.has_method("get_active_level_path"):
+		var p = str(cs.call("get_active_level_path"))
+		if p != "":
+			return p
 	if cs != null and cs.scene_file_path != "":
 		return cs.scene_file_path
 	if cs != null:

@@ -10,6 +10,16 @@ extends Node2D
 
 var tree_sort_index: int = 10
 
+func _get_level_key() -> String:
+	var cs = get_tree().current_scene
+	if cs != null and cs.has_method("get_active_level_path"):
+		var p = str(cs.call("get_active_level_path"))
+		if p != "":
+			return p
+	if scene_file_path != "":
+		return scene_file_path
+	return name
+
 func _ready() -> void:
 	add_to_group("persist_level")
 	call_deferred("load_level_state")
@@ -120,7 +130,7 @@ func save_level_state() -> void:
 	}
 	
 	if save_manager.has_method("save_level_data"):
-		save_manager.save_level_data(scene_file_path, level_data)
+		save_manager.save_level_data(_get_level_key(), level_data)
 
 func load_level_state() -> void:
 	if not save_manager:
@@ -128,7 +138,7 @@ func load_level_state() -> void:
 	
 	var data: Dictionary = {}
 	if save_manager.has_method("get_level_data_dynamic"):
-		data = save_manager.get_level_data_dynamic(scene_file_path)
+		data = save_manager.get_level_data_dynamic(_get_level_key())
 		
 	if data.is_empty():
 		return
