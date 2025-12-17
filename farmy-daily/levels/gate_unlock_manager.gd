@@ -17,14 +17,17 @@ func apply_investor_gates() -> void:
 		var gate := get_node_or_null(gate_name)
 		if gate == null:
 			continue
+		if not gate.is_inside_tree():
+			continue
 
 		if gate.has_method("clear"):
 			gate.call("clear")
 
-		if gate.has_method("update_internals"):
-			gate.call("update_internals")
-		elif gate.has_method("notify_runtime_tile_data_update"):
-			gate.call("notify_runtime_tile_data_update")
+		if gate.is_inside_tree():
+			if gate.has_method("update_internals"):
+				gate.call("update_internals")
+			elif gate.has_method("notify_runtime_tile_data_update"):
+				gate.call("notify_runtime_tile_data_update")
 
-		gate.set_deferred("visible", false)
+		gate.visible = false
 		gate.call_deferred("queue_free")

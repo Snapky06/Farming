@@ -42,7 +42,15 @@ func on_interact(player) -> void:
 	if current_quest:
 		_handle_quest_interaction(current_quest)
 	else:
-		current_dialog_lines = ["I have nothing else for you right now."]
+		var last_completed: QuestData = null
+		if quest_manager and not quest_list.is_empty():
+			for q in quest_list:
+				if quest_manager.is_quest_completed(q.id) and not q.repeatable:
+					last_completed = q
+		if last_completed and not last_completed.complete_dialog.is_empty():
+			current_dialog_lines = last_completed.complete_dialog
+		else:
+			current_dialog_lines = ["I have nothing else for you right now."]
 		_start_dialog()
 
 func _get_current_priority_quest() -> QuestData:

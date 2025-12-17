@@ -1,7 +1,6 @@
-[gd_scene load_steps=24 format=3 uid="uid://d2r82qv7leyyl"]
+[gd_scene load_steps=19 format=3 uid="uid://d2r82qv7leyyl"]
 
 [ext_resource type="Script" uid="uid://d2gr834u208gh" path="res://interactable/npcs/npc.gd" id="1_adko2"]
-[ext_resource type="Texture2D" uid="uid://doeqxpst2fe5i" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Premade Character/Inn Keeper/inn keeper - idle.png" id="2_52gsv"]
 [ext_resource type="Texture2D" uid="uid://cdgogrweh4fnp" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Premade Character/Angler/angler - fishing idle.png" id="2_r40cf"]
 [ext_resource type="Script" uid="uid://co41majoe4uq8" path="res://interactable/npcs/npc_interact_area.gd" id="3_r40cf"]
 
@@ -20,22 +19,6 @@ region = Rect2(160, 80, 80, 80)
 [sub_resource type="AtlasTexture" id="AtlasTexture_6f4du"]
 atlas = ExtResource("2_r40cf")
 region = Rect2(240, 80, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_g16gb"]
-atlas = ExtResource("2_52gsv")
-region = Rect2(0, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_girfb"]
-atlas = ExtResource("2_52gsv")
-region = Rect2(80, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_btocl"]
-atlas = ExtResource("2_52gsv")
-region = Rect2(160, 0, 80, 80)
-
-[sub_resource type="AtlasTexture" id="AtlasTexture_iqnw2"]
-atlas = ExtResource("2_52gsv")
-region = Rect2(240, 0, 80, 80)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_fdth7"]
 atlas = ExtResource("2_r40cf")
@@ -90,18 +73,6 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_g16gb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_girfb")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_btocl")
-}, {
-"duration": 1.0,
-"texture": SubResource("AtlasTexture_iqnw2")
-}, {
-"duration": 1.0,
 "texture": SubResource("AtlasTexture_fdth7")
 }, {
 "duration": 1.0,
@@ -147,7 +118,7 @@ script = ExtResource("1_adko2")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_mgshb")
-animation = &"idle_up"
+animation = &"idle_right"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CapsuleShape2D_xfe3p")

@@ -12,14 +12,14 @@ var current_slot = 0
 var current_player_name = "Farmer"
 var slots_cache = {}
 
-# FIX: prevents old scene _exit_tree writes from corrupting the new slot
 var is_slot_transitioning: bool = false
 
 var persistence_data = {
 	"levels": {},
 	"objects": {},
 	"watered_tiles_by_level": {},
-	"drops_by_level": {}
+	"drops_by_level": {},
+	"quests": {}
 }
 
 var pending_level_path: String = ""
@@ -158,6 +158,12 @@ func save_game() -> void:
 
 	_flush_persistence()
 
+	var quest_manager = get_node_or_null("/root/QuestManager")
+	if quest_manager and quest_manager.has_method("get_save_data"):
+		persistence_data["quests"] = quest_manager.get_save_data()
+	elif not persistence_data.has("quests"):
+		persistence_data["quests"] = {}
+
 	var data = {
 		"metadata": {
 			"player_name": current_player_name,
@@ -228,7 +234,7 @@ func start_new_game(slot_index: int, player_name: String) -> void:
 
 	current_slot = slot_index
 	current_player_name = player_name
-	persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {}, "drops_by_level": {} }
+	persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {}, "drops_by_level": {}, "quests": {} }
 
 	var path = get_save_path(slot_index)
 	if FileAccess.file_exists(path):
@@ -279,7 +285,7 @@ func load_game(slot_index: int) -> void:
 	if data.has("persistence"):
 		persistence_data = data["persistence"]
 	else:
-		persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {}, "drops_by_level": {} }
+		persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {}, "drops_by_level": {}, "quests": {} }
 
 	if not persistence_data.has("levels"):
 		persistence_data["levels"] = {}
@@ -289,6 +295,12 @@ func load_game(slot_index: int) -> void:
 		persistence_data["watered_tiles_by_level"] = {}
 	if not persistence_data.has("drops_by_level"):
 		persistence_data["drops_by_level"] = {}
+	if not persistence_data.has("quests"):
+		persistence_data["quests"] = {}
+
+	var quest_manager = get_node_or_null("/root/QuestManager")
+	if quest_manager and quest_manager.has_method("load_save_data"):
+		quest_manager.load_save_data(persistence_data["quests"])
 
 	if data.has("metadata") and data["metadata"].has("player_name"):
 		current_player_name = str(data["metadata"]["player_name"])

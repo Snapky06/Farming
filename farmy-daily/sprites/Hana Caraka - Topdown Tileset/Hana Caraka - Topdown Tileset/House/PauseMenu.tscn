@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bugpfxrl8ucqo"]
+[gd_scene load_steps=8 format=3 uid="uid://bugpfxrl8ucqo"]
 
 [ext_resource type="Script" uid="uid://scmkuywj6wbi" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/PauseMenu.gd" id="1_yrhi2"]
 [ext_resource type="FontFile" uid="uid://bvn3wtsegknv" path="res://fonts/MineMouseRegular-BL3DB.ttf" id="2_fx88v"]
@@ -7,6 +7,9 @@
 bg_color = Color(0.3764706, 0.26666668, 0, 0.47843137)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2tarj"]
+bg_color = Color(0.3764706, 0.26666668, 0, 0.47843137)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g57nt"]
 bg_color = Color(0.3764706, 0.26666668, 0, 0.47843137)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ul640"]
@@ -68,8 +71,13 @@ theme_override_fonts/font = ExtResource("2_fx88v")
 theme_override_styles/normal = SubResource("StyleBoxFlat_2tarj")
 text = "Resume"
 
-[node name="Quests" type="Button" parent="MenuOverlay/VBoxContainer"]
+[node name="QuestsButton" type="Button" parent="MenuOverlay/VBoxContainer"]
+custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.9137255, 0.7529412, 0.45882353, 0.96862745)
+theme_override_fonts/font = ExtResource("2_fx88v")
+theme_override_styles/normal = SubResource("StyleBoxFlat_g57nt")
+text = "Quests"
 
 [node name="OptionsButton" type="Button" parent="MenuOverlay/VBoxContainer"]
 custom_minimum_size = Vector2(100, 100)

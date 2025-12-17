@@ -76,3 +76,50 @@ func get_step_progress(quest_id: String) -> Dictionary:
 
 func get_all_active_quests() -> Array:
 	return active_quests.values()
+
+func get_save_data() -> Dictionary:
+	var active_arr: Array = []
+	for quest_id in active_quests.keys():
+		var st: Dictionary = active_quests[quest_id]
+		var q = st.get("resource", null)
+		var rp := ""
+		if q != null and q.resource_path != null:
+			rp = str(q.resource_path)
+		active_arr.append({
+			"id": str(quest_id),
+			"path": rp,
+			"step": int(st.get("current_step_index", 0)),
+			"progress": int(st.get("current_step_progress", 0))
+		})
+	var completed_arr: Array = []
+	for quest_id in completed_quests.keys():
+		completed_arr.append(str(quest_id))
+	return {"active": active_arr, "completed": completed_arr}
+
+func load_save_data(data: Dictionary) -> void:
+	active_quests.clear()
+	completed_quests.clear()
+
+	if data.is_empty():
+		return
+
+	var completed_arr: Array = data.get("completed", [])
+	for qid in completed_arr:
+		completed_quests[str(qid)] = {"resource": null, "current_step_index": 0, "current_step_progress": 0}
+
+	var active_arr: Array = data.get("active", [])
+	for entry in active_arr:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		var qid := str(entry.get("id", ""))
+		var rp := str(entry.get("path", ""))
+		if qid == "" or rp == "" or not ResourceLoader.exists(rp):
+			continue
+		var res = load(rp)
+		if res == null:
+			continue
+		active_quests[qid] = {
+			"resource": res,
+			"current_step_index": int(entry.get("step", 0)),
+			"current_step_progress": int(entry.get("progress", 0))
+		}
