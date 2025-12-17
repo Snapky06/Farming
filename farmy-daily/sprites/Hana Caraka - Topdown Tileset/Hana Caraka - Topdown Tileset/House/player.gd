@@ -638,8 +638,6 @@ func spawn_crop(pos: Vector2) -> void:
 
 			consume_equipped_item()
 
-
-
 func consume_equipped_item() -> void:
 	if not inventory_data.slot_datas[equipped_slot_index]:
 		return

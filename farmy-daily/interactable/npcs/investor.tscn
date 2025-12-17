@@ -1,6 +1,6 @@
 [gd_scene load_steps=19 format=3 uid="uid://c2kbhutejafb3"]
 
-[ext_resource type="Script" uid="uid://fk4h5l32kqrs" path="res://interactable/npcs/blacksmith.gd" id="1_a4adh"]
+[ext_resource type="Script" uid="uid://drpsf3k4rbdhl" path="res://interactable/npcs/investor.gd" id="1_a4adh"]
 [ext_resource type="Texture2D" uid="uid://c64lpc18lxlqk" path="res://sprites/Hana Caraka - Base Character/Hana Caraka - Base Character/Premade Character/Farmer/farmer - idle.png" id="2_a4adh"]
 [ext_resource type="Script" uid="uid://co41majoe4uq8" path="res://interactable/npcs/npc_interact_area.gd" id="3_xycnc"]
 
