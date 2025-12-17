@@ -14,4 +14,5 @@ description = "Used To Grow Birch Trees"
 stackable = true
 texture = SubResource("AtlasTexture_qfwug")
 crop_scene_path = "uid://cif5p5pl4hrmw"
+price = 5
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

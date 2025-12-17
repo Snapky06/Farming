@@ -16,4 +16,5 @@ description = "They Could Be Used For Some Despicable Things"
 stackable = true
 texture = SubResource("AtlasTexture_cccat")
 crop_scene_path = "uid://byjsvx8fc60a0"
+price = 80
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"
