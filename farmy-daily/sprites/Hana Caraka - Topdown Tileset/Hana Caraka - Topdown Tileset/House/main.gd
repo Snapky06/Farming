@@ -132,8 +132,10 @@ func _ready() -> void:
 	await get_tree().process_frame
 	set_camera_limits()
 
-func _exit_tree() -> void:
+func save_level_state() -> void:
 	save_watered_tiles()
+	_save_current_level_state()
+
 
 func _get_level_root() -> Node:
 	if not is_instance_valid(start):

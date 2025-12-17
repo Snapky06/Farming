@@ -522,6 +522,15 @@ func find_tree_script(node: Node) -> Node:
 		if found: return found
 	return null
 
+func find_crop_script(node: Node) -> Node:
+	if node.has_method("_save_persistence") and node.has_method("water") and ("current_stage" in node):
+		return node
+	for child in node.get_children():
+		var found: Node = find_crop_script(child)
+		if found:
+			return found
+	return null
+
 func spawn_tree(pos: Vector2) -> void:
 	if equipped_slot_index == -1 or not inventory_data:
 		return

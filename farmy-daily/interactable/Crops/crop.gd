@@ -50,6 +50,7 @@ func _ready():
 		if not time_manager.date_updated.is_connected(_on_day_passed):
 			time_manager.date_updated.connect(_on_day_passed)
 	
+	_ensure_persist_id()
 	_load_persistence()
 	update_visuals()
 	check_ground_water_state()
@@ -249,6 +250,49 @@ func _play_harvest_tween_and_free():
 	t.tween_property(root, "scale", root.scale * 1.1, 0.1)
 	t.tween_property(root, "scale", Vector2.ZERO, 0.15)
 	t.finished.connect(root.queue_free)
+
+func _get_level_key_for_persist() -> String:
+	var cs = get_tree().current_scene
+	if cs and cs.has_method("get_active_level_path"):
+		var p = str(cs.call("get_active_level_path"))
+		if p != "":
+			return p
+	var main_node = cs
+	if main_node and main_node.has_method("get_level_root"):
+		var lr = main_node.call("get_level_root")
+		if lr and lr.scene_file_path != "":
+			return lr.scene_file_path
+	var parent_node = get_parent()
+	if parent_node:
+		var n = parent_node
+		while n and n.get_parent() and n.get_parent() != cs:
+			n = n.get_parent()
+		if n and n.scene_file_path != "":
+			return n.scene_file_path
+	return ""
+
+func _ensure_persist_id() -> void:
+	if has_meta("persist_id"):
+		return
+	var parent_node = get_parent()
+	if not parent_node:
+		return
+	var main_node = parent_node.get_parent()
+	if not main_node:
+		return
+	var ground = null
+	if main_node.has_node("Ground"):
+		ground = main_node.get_node("Ground")
+	elif main_node.has_method("find_child"):
+		ground = main_node.find_child("Ground")
+	if ground == null:
+		return
+	var local_pos = ground.to_local(global_position)
+	var cell_pos = ground.local_to_map(local_pos)
+	var level_key = _get_level_key_for_persist()
+	if level_key == "":
+		return
+	set_meta("persist_id", level_key + "|CROP|" + str(cell_pos.x) + "," + str(cell_pos.y))
 
 func _save_persistence():
 	if has_node("/root/SaveManager"):

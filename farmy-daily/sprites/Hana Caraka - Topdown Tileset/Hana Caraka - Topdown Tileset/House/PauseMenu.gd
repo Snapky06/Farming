@@ -38,4 +38,12 @@ func _on_options_pressed():
 
 func _on_save_exit_pressed():
 	SaveManager.save_game()
-	get_tree().quit()
+	get_tree().paused = false
+	menu_overlay.visible = false
+	open_settings_button.visible = true
+	if ResourceLoader.exists("res://levels/main_menu.tscn"):
+		get_tree().change_scene_to_file("res://levels/main_menu.tscn")
+	elif ResourceLoader.exists("res://levels/intro.tscn"):
+		get_tree().change_scene_to_file("res://levels/intro.tscn")
+	else:
+		get_tree().quit()
