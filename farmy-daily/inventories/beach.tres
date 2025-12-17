@@ -1,0 +1,38 @@
+[gd_resource type="Resource" script_class="InventoryData" load_steps=11 format=3 uid="uid://dy3il2qsuncbj"]
+
+[ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="1_wt6fh"]
+[ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="2_hofq7"]
+[ext_resource type="Resource" uid="uid://0c5e3n8j031k" path="res://Item/items/grows/seeds/watermelon_seeds.tres" id="3_61ic1"]
+[ext_resource type="Resource" uid="uid://dcnq7d6kwbl4" path="res://Item/items/grows/seeds/pumpkin_seeds.tres" id="4_d581n"]
+[ext_resource type="Resource" uid="uid://du6n0xx8qne15" path="res://Item/items/grows/seeds/corn_seeds.tres" id="5_3x2gy"]
+[ext_resource type="Resource" uid="uid://4u62feldumqm" path="res://Item/items/grows/seeds/turnip_seeds.tres" id="6_3hbeg"]
+
+[sub_resource type="Resource" id="Resource_bl6ub"]
+script = ExtResource("2_hofq7")
+item_data = ExtResource("3_61ic1")
+quantity = 10
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[sub_resource type="Resource" id="Resource_sgykb"]
+script = ExtResource("2_hofq7")
+item_data = ExtResource("4_d581n")
+quantity = 10
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[sub_resource type="Resource" id="Resource_jjujo"]
+script = ExtResource("2_hofq7")
+item_data = ExtResource("5_3x2gy")
+quantity = 10
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[sub_resource type="Resource" id="Resource_a3dnk"]
+script = ExtResource("2_hofq7")
+item_data = ExtResource("6_3hbeg")
+quantity = 10
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[resource]
+script = ExtResource("1_wt6fh")
+type = 1
+slot_datas = Array[ExtResource("2_hofq7")]([SubResource("Resource_bl6ub"), null, null, null, SubResource("Resource_sgykb"), null, null, null, null, SubResource("Resource_jjujo"), null, null, null, null, null, SubResource("Resource_a3dnk"), null, null])
+metadata/_custom_type_script = "uid://b3nysasbdcim0"

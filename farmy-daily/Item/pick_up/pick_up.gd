@@ -82,6 +82,8 @@ func _exit_tree():
 
 func _update_persistence():
 	var save_manager = get_node_or_null("/root/SaveManager")
+	if save_manager and save_manager.get("is_slot_transitioning") == true:
+		return
 	if save_manager and slot_data and slot_data.item_data:
 		var wrapper = get_tree().current_scene
 		var level_path := ""
@@ -101,6 +103,8 @@ func _update_persistence():
 
 func _remove_from_persistence():
 	var save_manager = get_node_or_null("/root/SaveManager")
+	if save_manager and save_manager.get("is_slot_transitioning") == true:
+		return
 	if save_manager:
 		var wrapper = get_tree().current_scene
 		var level_path := ""

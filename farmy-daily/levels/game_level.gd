@@ -74,6 +74,8 @@ func _get_crop_at(map_pos: Vector2i) -> Node2D:
 func save_level_state() -> void:
 	if not save_manager or not ground_layer:
 		return
+	if save_manager.get("is_slot_transitioning") == true:
+		return
 	
 	var tiles_data: Array = []
 	var used_cells: Array[Vector2i] = ground_layer.get_used_cells()
@@ -107,9 +109,14 @@ func save_level_state() -> void:
 					"y": child.global_position.y
 				})
 
+	var day_index: int = 0
+	if time_manager:
+		day_index = int(time_manager.current_day + (time_manager.current_month * 31) + (time_manager.current_year * 400))
+
 	var level_data: Dictionary = {
 		"tiles": tiles_data,
-		"crops": crops_data
+		"crops": crops_data,
+		"last_day_index": day_index
 	}
 	
 	if save_manager.has_method("save_level_data"):
@@ -130,7 +137,7 @@ func load_level_state() -> void:
 		for t in data["tiles"]:
 			ground_layer.set_cell(Vector2i(t["x"], t["y"]), int(t["s"]), Vector2i(t["ax"], t["ay"]))
 	
-	var last_save_day: int = data.get("last_day_index", 0)
+	var last_save_day: int = int(data.get("last_day_index", 0))
 	
 	for child in get_children():
 		var is_crop: bool = child.has_method("grow_next_stage")

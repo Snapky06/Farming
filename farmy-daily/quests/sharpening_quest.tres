@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=5 format=3 uid="uid://d35hc24jtnvcx"]
+
+[ext_resource type="Resource" uid="uid://dgo6385uwu6hu" path="res://Item/items/tools/sharpened_axe.tres" id="1_es1ik"]
+[ext_resource type="Script" uid="uid://g1x8er4svwyj" path="res://quests/quest_data.gd" id="2_ajuy0"]
+[ext_resource type="Script" uid="uid://k0kmi5ep0tqv" path="res://quests/quest_step_data.gd" id="3_urx1q"]
+
+[sub_resource type="Resource" id="Resource_rn0o1"]
+script = ExtResource("3_urx1q")
+event_name = "Sharpening"
+target_id = "Sharpened Axe"
+description = "We Need The Axe To Get Better"
+metadata/_custom_type_script = "uid://k0kmi5ep0tqv"
+
+[resource]
+script = ExtResource("2_ajuy0")
+id = "sharpening"
+title = "The Sharpening"
+description = "You Have To Sharpen The Axe"
+steps = Array[ExtResource("3_urx1q")]([SubResource("Resource_rn0o1")])
+start_dialog = Array[String](["Hi Kai, We Need To Start Working On The Farm Again", "But First You Need To Be Able To Clear The Path"])
+active_dialog = Array[String](["You Should Find The BlackSmith On The Town And...", "Pay For Him To Upgrade It"])
+complete_dialog = Array[String](["Great Job Kai", "Now Just Clear The Path And Get Your Tools"])
+reward_items = Array[Resource]([ExtResource("1_es1ik")])
+metadata/_custom_type_script = "uid://g1x8er4svwyj"

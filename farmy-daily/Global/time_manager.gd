@@ -264,6 +264,8 @@ func save_watered_tiles(data: Dictionary) -> void:
 	if not has_node("/root/SaveManager"):
 		return
 	var sm = get_node("/root/SaveManager")
+	if sm.get("is_slot_transitioning") == true:
+		return
 	if not sm.persistence_data.has("watered_tiles_by_level"):
 		sm.persistence_data["watered_tiles_by_level"] = {}
 	var key := _get_water_level_key()

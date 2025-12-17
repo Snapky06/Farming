@@ -12,6 +12,9 @@ var current_slot = 0
 var current_player_name = "Farmer"
 var slots_cache = {}
 
+# FIX: prevents old scene _exit_tree writes from corrupting the new slot
+var is_slot_transitioning: bool = false
+
 var persistence_data = {
 	"levels": {},
 	"objects": {},
@@ -221,6 +224,8 @@ func save_and_exit_to_menu() -> void:
 	get_tree().change_scene_to_file(MAIN_MENU_PATH)
 
 func start_new_game(slot_index: int, player_name: String) -> void:
+	is_slot_transitioning = true
+
 	current_slot = slot_index
 	current_player_name = player_name
 	persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {}, "drops_by_level": {} }
@@ -253,6 +258,8 @@ func start_new_game(slot_index: int, player_name: String) -> void:
 	get_tree().change_scene_to_file(GAME_WRAPPER_PATH)
 
 func load_game(slot_index: int) -> void:
+	is_slot_transitioning = true
+
 	var path = get_save_path(slot_index)
 	if not FileAccess.file_exists(path):
 		return
@@ -363,6 +370,9 @@ func load_game(slot_index: int) -> void:
 	if time_manager2:
 		time_manager2.is_gameplay_active = true
 
+func end_slot_transition() -> void:
+	is_slot_transitioning = false
+
 func delete_save(slot_index: int) -> void:
 	var path = get_save_path(slot_index)
 	if FileAccess.file_exists(path):
@@ -370,6 +380,8 @@ func delete_save(slot_index: int) -> void:
 	_refresh_slots()
 
 func save_level_data(level_path: String, data: Dictionary) -> void:
+	if is_slot_transitioning:
+		return
 	if not persistence_data.has("levels"):
 		persistence_data["levels"] = {}
 	persistence_data["levels"][level_path] = data
@@ -380,6 +392,9 @@ func get_level_data_dynamic(level_path: String) -> Dictionary:
 	return {}
 
 func save_object_state(obj: Node, data: Dictionary) -> void:
+	if is_slot_transitioning:
+		return
+
 	var level_path := _get_active_level_key()
 	if level_path == "":
 		level_path = get_tree().current_scene.scene_file_path
@@ -419,10 +434,14 @@ func _ensure_drops_level(level_path: String) -> void:
 		persistence_data["drops_by_level"][level_path] = {}
 
 func update_drop(level_path: String, uuid: String, data: Dictionary) -> void:
+	if is_slot_transitioning:
+		return
 	_ensure_drops_level(level_path)
 	persistence_data["drops_by_level"][level_path][uuid] = data
 
 func remove_drop(level_path: String, uuid: String) -> void:
+	if is_slot_transitioning:
+		return
 	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
 		persistence_data["drops_by_level"][level_path].erase(uuid)
 

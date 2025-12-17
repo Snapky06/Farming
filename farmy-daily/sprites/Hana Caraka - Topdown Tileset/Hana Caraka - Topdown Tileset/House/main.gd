@@ -29,6 +29,13 @@ var drop_scene = preload("res://Item/pick_up/pick_up.tscn")
 
 var current_level_key: String = ""
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		var sm = get_node_or_null("/root/SaveManager")
+		if sm and sm.has_method("save_game") and sm.get("is_slot_transitioning") != true:
+			sm.save_game()
+		get_tree().quit()
+
 func get_active_level_path() -> String:
 	if current_level_key != "" and current_level_key.begins_with("res://") and ResourceLoader.exists(current_level_key):
 		return current_level_key
@@ -115,6 +122,11 @@ func _ready() -> void:
 		TimeManager.time_updated.connect(_on_time_updated)
 
 	load_watered_tiles()
+	_restore_saved_drops()
+
+	var sm2 = get_node_or_null("/root/SaveManager")
+	if sm2 and sm2.has_method("end_slot_transition"):
+		sm2.end_slot_transition()
 
 	await get_tree().process_frame
 	set_camera_limits()
@@ -193,6 +205,7 @@ func _boot_change_level_to(target_scene_path: String) -> void:
 		_refresh_layer_references(lr if lr != null else get_tree().current_scene)
 		_update_current_level_key(lr)
 		load_watered_tiles()
+		_restore_saved_drops()
 		_connect_all_chests(lr if lr != null else get_tree().current_scene)
 		return
 
@@ -227,6 +240,7 @@ func _boot_change_level_to(target_scene_path: String) -> void:
 	_refresh_layer_references(get_tree().current_scene)
 	_update_current_level_key(new_level_root)
 	load_watered_tiles()
+	_restore_saved_drops()
 	_connect_all_chests(new_level_root)
 
 func _get_level_root_from_ground() -> Node:
@@ -758,6 +772,7 @@ func change_level_to(target_scene_path: String, spawn_tag: String = "") -> void:
 	_update_current_level_key(lr)
 
 	load_watered_tiles()
+	_restore_saved_drops()
 
 	_spawn_player_in_current_level(spawn_tag)
 
