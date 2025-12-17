@@ -129,10 +129,6 @@ func _ready() -> void:
 	if sm2 and sm2.has_method("end_slot_transition"):
 		sm2.end_slot_transition()
 
-	var time_manager2 = get_node_or_null("/root/TimeManager")
-	if time_manager2:
-		time_manager2.is_gameplay_active = true
-
 	await get_tree().process_frame
 	set_camera_limits()
 
@@ -173,10 +169,6 @@ func _replace_level_under_start(scene_path: String) -> void:
 	if scene_path == "" or not ResourceLoader.exists(scene_path):
 		return
 
-	current_level_key = scene_path
-	if TimeManager.has_method("set_water_level_key"):
-		TimeManager.set_water_level_key(current_level_key)
-
 	for c in start.get_children():
 		c.queue_free()
 
@@ -188,7 +180,6 @@ func _replace_level_under_start(scene_path: String) -> void:
 
 	var inst: Node = packed.instantiate()
 	start.add_child(inst)
-	_update_current_level_key(inst)
 
 	await get_tree().process_frame
 
@@ -539,6 +530,15 @@ func is_tile_occupied(center: Vector2) -> bool:
 		return true
 	return false
 
+func _tileset_has_custom_data_layer(ts: TileSet, layer_name: StringName) -> bool:
+	if ts == null:
+		return false
+	var count := ts.get_custom_data_layers_count()
+	for i in range(count):
+		if ts.get_custom_data_layer_name(i) == layer_name:
+			return true
+	return false
+
 func is_tile_farmable(global_pos: Vector2) -> bool:
 	if not is_instance_valid(ground_layer):
 		return false
@@ -557,8 +557,10 @@ func is_tile_farmable(global_pos: Vector2) -> bool:
 	var tile_data = ground_layer.get_cell_tile_data(tile_pos)
 	if not tile_data:
 		return false
-
-	var can_farm = tile_data.get_custom_data("can_farm")
+	var ts: TileSet = ground_layer.tile_set
+	if not _tileset_has_custom_data_layer(ts, &"can_farm"):
+		return false
+	var can_farm = tile_data.get_custom_data(&"can_farm")
 	if typeof(can_farm) == TYPE_BOOL and not can_farm:
 		return false
 

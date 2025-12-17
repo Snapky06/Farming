@@ -38,7 +38,11 @@ func _ready():
 		if animated_sprite.sprite_frames.has_animation(current_anim):
 			max_stage = animated_sprite.sprite_frames.get_frame_count(current_anim)
 	
-	z_index = 0
+	if animated_sprite and ("z_as_relative" in animated_sprite):
+		animated_sprite.z_as_relative = true
+	if animated_sprite and ("z_index" in animated_sprite):
+		animated_sprite.z_index = max(int(animated_sprite.z_index), 1)
+	z_index = max(int(z_index), 1)
 	z_as_relative = true
 	
 	hours_for_next_stage = hours_to_grow_per_stage

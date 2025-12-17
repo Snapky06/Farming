@@ -10,9 +10,12 @@ extends Node2D
 
 var tree_sort_index: int = 10
 var level_state_loaded: bool = false
+var _level_state_loading: bool = false
 
 func _ready() -> void:
 	add_to_group("persist_level")
+	level_state_loaded = false
+	_level_state_loading = true
 	call_deferred("load_level_state")
 
 func _exit_tree() -> void:
@@ -178,10 +181,13 @@ func save_level_state() -> void:
 		save_manager.save_level_data(_get_level_key(), level_data)
 
 func load_level_state() -> void:
-	level_state_loaded = false
+	if level_state_loaded:
+		_level_state_loading = false
+		return
 
 	if not save_manager:
 		level_state_loaded = true
+		_level_state_loading = false
 		return
 
 	var data: Dictionary = {}
@@ -190,6 +196,7 @@ func load_level_state() -> void:
 
 	if data.is_empty():
 		level_state_loaded = true
+		_level_state_loading = false
 		return
 
 	if ground_layer and data.has("tiles"):
@@ -202,6 +209,7 @@ func load_level_state() -> void:
 
 	if not data.has("crops"):
 		level_state_loaded = true
+		_level_state_loading = false
 		return
 
 	await get_tree().process_frame
@@ -239,3 +247,4 @@ func load_level_state() -> void:
 				comp.call_deferred("simulate_catch_up", last_save_day)
 
 	level_state_loaded = true
+	_level_state_loading = false
