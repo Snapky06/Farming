@@ -129,6 +129,9 @@ func _get_level_root() -> Node:
 		return null
 	return start.get_child(0)
 
+func get_level_root() -> Node:
+	return _get_level_root()
+
 func _ensure_level_loaded_before_refs() -> void:
 	if not is_instance_valid(start):
 		return

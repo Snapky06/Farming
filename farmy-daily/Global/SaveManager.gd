@@ -32,6 +32,31 @@ func _ready() -> void:
 func get_save_path(index: int) -> String:
 	return SAVE_DIR + (SAVE_TEMPLATE % index)
 
+func _get_active_level_root() -> Node:
+	var wrapper = get_tree().current_scene
+	if wrapper and wrapper.has_method("get_level_root"):
+		return wrapper.call("get_level_root")
+	return get_tree().current_scene
+
+func _get_level_key_for_obj(obj: Node) -> String:
+	if obj and obj.owner and obj.owner.scene_file_path != "":
+		return obj.owner.scene_file_path
+	var wrapper = get_tree().current_scene
+	if wrapper and wrapper.has_method("get_active_level_path"):
+		var p = str(wrapper.call("get_active_level_path"))
+		if p != "":
+			return p
+	if wrapper:
+		return wrapper.scene_file_path
+	return ""
+
+func _get_object_key(obj: Node) -> String:
+	var level_root = _get_active_level_root()
+	if obj and level_root and level_root.is_ancestor_of(obj):
+		return str(level_root.get_path_to(obj))
+	return str(obj.get_path())
+
+
 func _refresh_slots() -> void:
 	slots_cache.clear()
 	for i in range(MAX_SLOTS):
@@ -274,6 +299,16 @@ func load_game(slot_index: int) -> void:
 	if time_manager2:
 		time_manager2.is_gameplay_active = true
 
+func _get_active_level_key() -> String:
+	var wrapper = get_tree().current_scene
+	if wrapper and wrapper.has_method("get_active_level_path"):
+		var p = str(wrapper.call("get_active_level_path"))
+		if p != "":
+			return p
+	if wrapper:
+		return wrapper.scene_file_path
+	return ""
+
 func delete_save(slot_index: int) -> void:
 	var path = get_save_path(slot_index)
 	if FileAccess.file_exists(path):
@@ -291,11 +326,12 @@ func get_level_data_dynamic(level_path: String) -> Dictionary:
 	return {}
 
 func save_object_state(obj: Node, data: Dictionary) -> void:
-	var level_path = ""
-	if obj.owner:
-		level_path = obj.owner.scene_file_path
-	else:
-		level_path = get_tree().current_scene.scene_file_path
+	var level_path := _get_active_level_key()
+	if level_path == "":
+		if obj.owner and obj.owner.scene_file_path != "":
+			level_path = obj.owner.scene_file_path
+		else:
+			level_path = get_tree().current_scene.scene_file_path
 
 	var obj_path = String(obj.get_path())
 
@@ -306,20 +342,30 @@ func save_object_state(obj: Node, data: Dictionary) -> void:
 
 	persistence_data["objects"][level_path][obj_path] = data
 
+
 func get_object_state(obj: Node) -> Dictionary:
-	var level_path = ""
-	if obj.owner:
-		level_path = obj.owner.scene_file_path
-	else:
-		level_path = get_tree().current_scene.scene_file_path
+	var level_path := _get_active_level_key()
+	var fallback_level_path := ""
+	var wrapper = get_tree().current_scene
+	if wrapper:
+		fallback_level_path = wrapper.scene_file_path
+
+	if level_path == "":
+		if obj.owner and obj.owner.scene_file_path != "":
+			level_path = obj.owner.scene_file_path
+		else:
+			level_path = fallback_level_path
 
 	var obj_path = String(obj.get_path())
 
-	if persistence_data.has("objects") and \
-	   persistence_data["objects"].has(level_path) and \
-	   persistence_data["objects"][level_path].has(obj_path):
+	if persistence_data.has("objects") and persistence_data["objects"].has(level_path) and persistence_data["objects"][level_path].has(obj_path):
 		return persistence_data["objects"][level_path][obj_path]
+
+	if fallback_level_path != "" and persistence_data.has("objects") and persistence_data["objects"].has(fallback_level_path) and persistence_data["objects"][fallback_level_path].has(obj_path):
+		return persistence_data["objects"][fallback_level_path][obj_path]
+
 	return {}
+
 
 func _ensure_drops_level(level_path: String) -> void:
 	if not persistence_data.has("drops_by_level"):

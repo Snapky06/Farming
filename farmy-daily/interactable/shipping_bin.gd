@@ -18,18 +18,23 @@ func _ready():
 		inventory_data.slot_datas = []
 		for i in 10:
 			inventory_data.slot_datas.append(null)
-	
+
 	inventory_data.type = InventoryData.InventoryType.SELL_BIN
-	
+
+	_load_persistence()
+
 	audio_player = AudioStreamPlayer2D.new()
 	add_child(audio_player)
 	if FileAccess.file_exists("res://sounds/chest_opening.mp3"):
 		sfx_open = load("res://sounds/chest_opening.mp3")
-	
+
 	var time_manager = get_node_or_null("/root/TimeManager")
 	if time_manager:
 		if not time_manager.date_updated.is_connected(_on_new_day):
 			time_manager.date_updated.connect(_on_new_day)
+
+func _exit_tree():
+	_save_persistence()
 
 func interact(_player_body = null):
 	if is_open:
@@ -40,22 +45,22 @@ func interact(_player_body = null):
 func open_chest():
 	if is_open: return
 	is_open = true
-	
+
 	if sfx_open:
 		audio_player.stream = sfx_open
 		audio_player.play()
-	
+
 	sprite.play("opening")
 	chest_opened.emit(inventory_data)
 
 func close_chest():
 	if not is_open: return
 	is_open = false
-	
+
 	if sfx_open:
 		audio_player.stream = sfx_open
 		audio_player.play()
-	
+
 	sprite.play("closing")
 	chest_closed.emit()
 
@@ -64,12 +69,12 @@ func player_interact():
 
 func _on_new_day(_date_string):
 	var total_value = 0
-	
+
 	for i in range(inventory_data.slot_datas.size()):
 		var slot = inventory_data.slot_datas[i]
 		if slot and slot.item_data and slot.item_data.is_sellable:
 			total_value += int(slot.item_data.price * 0.9) * slot.quantity
-	
+
 	if total_value > 0:
 		var player_node = null
 		var players = get_tree().get_nodes_in_group("player")
@@ -77,14 +82,62 @@ func _on_new_day(_date_string):
 			player_node = players[0]
 		else:
 			player_node = get_tree().current_scene.find_child("Player", true, false)
-			
+
 		if player_node and player_node.has_method("update_money"):
 			player_node.update_money(total_value)
-		else:
-			print("CRITICAL: Shipping Bin could not find Player to give money!")
-			
+
 	for i in range(inventory_data.slot_datas.size()):
 		inventory_data.slot_datas[i] = null
-	
+
 	if inventory_data:
 		inventory_data.inventory_updated.emit(inventory_data)
+
+	_save_persistence()
+
+func _save_persistence() -> void:
+	if not has_node("/root/SaveManager"):
+		return
+
+	var slots: Array = []
+	for s in inventory_data.slot_datas:
+		if s and s.item_data:
+			slots.append({
+				"path": s.item_data.resource_path,
+				"amount": int(s.quantity)
+			})
+		else:
+			slots.append(null)
+
+	get_node("/root/SaveManager").save_object_state(self, {
+		"slots": slots
+	})
+
+func _load_persistence() -> void:
+	if not has_node("/root/SaveManager"):
+		return
+
+	var data: Dictionary = get_node("/root/SaveManager").get_object_state(self)
+	if data.is_empty():
+		return
+
+	if data.has("slots") and typeof(data["slots"]) == TYPE_ARRAY:
+		var arr: Array = data["slots"]
+		for i in range(min(arr.size(), inventory_data.slot_datas.size())):
+			var e = arr[i]
+			if e == null:
+				inventory_data.slot_datas[i] = null
+			else:
+				var rp = str(e.get("path", ""))
+				if rp != "" and ResourceLoader.exists(rp):
+					var res = load(rp)
+					if res:
+						var sd := SlotData.new()
+						sd.item_data = res
+						sd.quantity = int(e.get("amount", 1))
+						inventory_data.slot_datas[i] = sd
+					else:
+						inventory_data.slot_datas[i] = null
+				else:
+					inventory_data.slot_datas[i] = null
+
+	inventory_data.inventory_updated.emit(inventory_data)
