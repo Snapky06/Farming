@@ -4,6 +4,9 @@ extends Node2D
 @onready var inventory_interface: Control = $UI/InventoryInterface
 @onready var hot_bar_inventory: PanelContainer = $UI/HotBarInventory
 @onready var tile_selector: Node2D = $TileSelector
+@onready var start: Node = $Start
+
+const DEFAULT_LEVEL_SCENE_PATH: String = "res://levels/playerhouse.tscn"
 
 var ground_layer: TileMapLayer = null
 var obstruction_layers: Array[TileMapLayer] = []
@@ -25,29 +28,67 @@ var pause_menu_scene = preload("res://sprites/Hana Caraka - Topdown Tileset/Hana
 
 var current_level_key: String = ""
 
-func _ready() -> void:
-	_refresh_layer_references(get_tree().current_scene)
-	_setup_transition_layer()
-	_connect_all_chests(get_tree().current_scene)
+func get_active_level_path() -> String:
+	if current_level_key != "" and current_level_key.begins_with("res://") and ResourceLoader.exists(current_level_key):
+		return current_level_key
+	var lr := _get_level_root()
+	if lr and lr.scene_file_path != "" and ResourceLoader.exists(lr.scene_file_path):
+		return lr.scene_file_path
+	var lr2 := _get_level_root_from_ground()
+	if lr2 and lr2.scene_file_path != "" and ResourceLoader.exists(lr2.scene_file_path):
+		return lr2.scene_file_path
+	return ""
 
-	_update_current_level_key_from_ground()
+func _ready() -> void:
+	_setup_transition_layer()
+
+	await _ensure_level_loaded_before_refs()
+
+	var lvl_root0 := _get_level_root()
+	_refresh_layer_references(lvl_root0 if lvl_root0 != null else get_tree().current_scene)
+	_connect_all_chests(lvl_root0 if lvl_root0 != null else get_tree().current_scene)
+	_update_current_level_key(lvl_root0)
+
+	await _boot_apply_pending_level_if_needed()
+
+	var lvl_root := _get_level_root()
+	_refresh_layer_references(lvl_root if lvl_root != null else get_tree().current_scene)
+	_connect_all_chests(lvl_root if lvl_root != null else get_tree().current_scene)
+	_update_current_level_key(lvl_root)
 
 	var menu = pause_menu_scene.instantiate()
 	add_child(menu)
 
-	var spawn_node: Node2D = null
-	if TimeManager.player_spawn_tag != "":
-		spawn_node = get_tree().current_scene.find_child(TimeManager.player_spawn_tag, true, false) as Node2D
-	if spawn_node == null:
-		spawn_node = get_tree().current_scene.find_child("SpawnPoint", true, false) as Node2D
-	if spawn_node == null:
-		var all_markers: Array = get_tree().current_scene.find_children("*", "Marker2D", true, false)
-		if all_markers.size() > 0:
-			spawn_node = all_markers[0] as Node2D
+	var save_manager = get_node_or_null("/root/SaveManager")
 
-	if spawn_node and is_instance_valid(player):
-		player.global_position = spawn_node.global_position
-		player.agent.target_position = spawn_node.global_position
+	if save_manager and ("pending_has_player_pos" in save_manager) and bool(save_manager.pending_has_player_pos):
+		var ppos = save_manager.pending_player_pos
+		if typeof(ppos) == TYPE_VECTOR2:
+			player.global_position = ppos
+			player.agent.target_position = ppos
+		save_manager.pending_has_player_pos = false
+		save_manager.pending_level_path = ""
+		save_manager.pending_spawn_tag = ""
+	else:
+		var spawn_search_root: Node = _get_level_root_from_ground()
+		if spawn_search_root == null:
+			spawn_search_root = _get_level_root()
+		if spawn_search_root == null:
+			spawn_search_root = get_tree().current_scene
+
+		var spawn_node: Node2D = null
+		if TimeManager.player_spawn_tag != "":
+			spawn_node = spawn_search_root.find_child(TimeManager.player_spawn_tag, true, false) as Node2D
+		if spawn_node == null:
+			spawn_node = spawn_search_root.find_child("SpawnPoint", true, false) as Node2D
+		if spawn_node == null:
+			var all_markers: Array = spawn_search_root.find_children("*", "Marker2D", true, false)
+			if all_markers.size() > 0:
+				spawn_node = all_markers[0] as Node2D
+
+		if spawn_node and is_instance_valid(player):
+			player.global_position = spawn_node.global_position
+			player.agent.target_position = spawn_node.global_position
 
 	TimeManager.player_spawn_tag = ""
 
@@ -80,11 +121,118 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	save_watered_tiles()
 
+func _get_level_root() -> Node:
+	if not is_instance_valid(start):
+		return null
+	if start.get_child_count() <= 0:
+		return null
+	return start.get_child(0)
+
+func _ensure_level_loaded_before_refs() -> void:
+	if not is_instance_valid(start):
+		return
+	if start.get_child_count() > 0:
+		return
+
+	var save_manager = get_node_or_null("/root/SaveManager")
+	var path := ""
+	if save_manager and ("pending_level_path" in save_manager):
+		path = str(save_manager.pending_level_path)
+
+	if path == "" or not ResourceLoader.exists(path):
+		path = DEFAULT_LEVEL_SCENE_PATH
+
+	await _replace_level_under_start(path)
+
+func _replace_level_under_start(scene_path: String) -> void:
+	if not is_instance_valid(start):
+		return
+	if scene_path == "" or not ResourceLoader.exists(scene_path):
+		return
+
+	for c in start.get_children():
+		c.queue_free()
+
+	await get_tree().process_frame
+
+	var packed: PackedScene = load(scene_path)
+	if packed == null:
+		return
+
+	var inst: Node = packed.instantiate()
+	start.add_child(inst)
+
+	await get_tree().process_frame
+
+func _boot_apply_pending_level_if_needed() -> void:
+	var save_manager = get_node_or_null("/root/SaveManager")
+	if save_manager == null:
+		return
+
+	var pending_level: String = ""
+	if "pending_level_path" in save_manager:
+		pending_level = str(save_manager.pending_level_path)
+
+	if pending_level == "" or not ResourceLoader.exists(pending_level):
+		return
+
+	var current_path := get_active_level_path()
+	if current_path != "" and current_path == pending_level:
+		return
+
+	await _boot_change_level_to(pending_level)
+
+func _boot_change_level_to(target_scene_path: String) -> void:
+	if is_instance_valid(start):
+		await _replace_level_under_start(target_scene_path)
+		var lr := _get_level_root()
+		_refresh_layer_references(lr if lr != null else get_tree().current_scene)
+		_update_current_level_key(lr)
+		load_watered_tiles()
+		_connect_all_chests(lr if lr != null else get_tree().current_scene)
+		return
+
+	var packed_scene: PackedScene = load(target_scene_path)
+	if packed_scene == null:
+		return
+
+	if not is_instance_valid(ground_layer):
+		_refresh_layer_references(get_tree().current_scene)
+		if not is_instance_valid(ground_layer):
+			return
+
+	var old_level_root: Node = ground_layer
+	while old_level_root.get_parent() != self and old_level_root.get_parent() != null:
+		old_level_root = old_level_root.get_parent()
+
+	var parent: Node = old_level_root.get_parent()
+	if parent == null:
+		return
+
+	var index: int = old_level_root.get_index()
+	var old_name: String = old_level_root.name
+
+	old_level_root.queue_free()
+	var new_level_root: Node = packed_scene.instantiate()
+	new_level_root.name = old_name
+	parent.add_child(new_level_root)
+	parent.move_child(new_level_root, index)
+
+	await get_tree().process_frame
+
+	_refresh_layer_references(get_tree().current_scene)
+	_update_current_level_key(new_level_root)
+	load_watered_tiles()
+	_connect_all_chests(new_level_root)
+
 func _get_level_root_from_ground() -> Node:
 	if not is_instance_valid(ground_layer):
 		return null
 	var n: Node = ground_layer
-	while n != null and n.get_parent() != self and n.get_parent() != null:
+	var stop_node: Node = self
+	if is_instance_valid(start):
+		stop_node = start
+	while n != null and n.get_parent() != stop_node and n.get_parent() != null:
 		n = n.get_parent()
 	return n
 
@@ -107,25 +255,43 @@ func _refresh_layer_references(root: Node) -> void:
 	ground_layer = null
 	obstruction_layers.clear()
 
-	var scene_root: Node = get_tree().current_scene
-	if scene_root == null:
-		scene_root = root
+	var search_root: Node = root
+	if search_root == null:
+		search_root = get_tree().current_scene
+	if search_root == null:
+		return
 
-	var direct_ground = scene_root.find_child("Ground", true, false)
+	var direct_ground = search_root.find_child("Ground", true, false)
 	if direct_ground and direct_ground is TileMapLayer:
 		ground_layer = direct_ground
 	else:
-		var all_layers: Array[Node] = scene_root.find_children("*", "TileMapLayer", true, false)
+		var all_layers: Array[Node] = search_root.find_children("*", "TileMapLayer", true, false)
 		for layer in all_layers:
 			if layer.name == "Ground":
 				ground_layer = layer
 				break
 
+	if ground_layer == null and get_tree().current_scene != null and get_tree().current_scene != search_root:
+		var scene_root: Node = get_tree().current_scene
+		var dg2 = scene_root.find_child("Ground", true, false)
+		if dg2 and dg2 is TileMapLayer:
+			ground_layer = dg2
+		else:
+			var all_layers2a: Array[Node] = scene_root.find_children("*", "TileMapLayer", true, false)
+			for layera in all_layers2a:
+				if layera.name == "Ground":
+					ground_layer = layera
+					break
+
 	if ground_layer == null:
 		push_error("CRITICAL: No TileMapLayer named 'Ground' found in this level!")
 		return
 
-	var all_layers2: Array[Node] = scene_root.find_children("*", "TileMapLayer", true, false)
+	var scene_for_obs: Node = get_tree().current_scene
+	if scene_for_obs == null:
+		scene_for_obs = search_root
+
+	var all_layers2: Array[Node] = scene_for_obs.find_children("*", "TileMapLayer", true, false)
 	for layer2 in all_layers2:
 		if layer2 == ground_layer:
 			continue
@@ -212,8 +378,7 @@ func update_watered_tiles(current_day: int, current_month: int, current_time: fl
 		dry_tile(tile_pos)
 
 func dry_tile(tile_pos: Vector2i) -> void:
-	if not is_instance_valid(ground_layer):
-		return
+	if not is_instance_valid(ground_layer): return
 	if ground_layer.get_cell_atlas_coords(tile_pos) == WATERED_ATLAS_COORDS:
 		ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)
 	watered_tiles.erase(tile_pos)
@@ -224,8 +389,7 @@ func _on_hotbar_slot_selected(_index: int) -> void:
 	refresh_tile_selector()
 
 func refresh_tile_selector() -> void:
-	if not is_instance_valid(tile_selector):
-		return
+	if not is_instance_valid(tile_selector): return
 
 	if inventory_interface.visible:
 		tile_selector.visible = false
@@ -251,9 +415,11 @@ func refresh_tile_selector() -> void:
 	if item_name == "Hoe":
 		show_selector = true
 		is_valid = is_tile_farmable(mouse_pos)
+
 	elif item_name == "Watering Can":
 		show_selector = true
 		is_valid = is_tile_waterable(mouse_pos)
+
 	elif "Seed" in item_name or "Seeds" in item_name:
 		show_selector = true
 		is_valid = can_plant_seed(mouse_pos)
@@ -546,69 +712,43 @@ func save_watered_tiles() -> void:
 		var key = str(tile_pos.x) + "," + str(tile_pos.y)
 		save_data[key] = data
 	TimeManager.save_watered_tiles(save_data)
+	
 
-func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
-	var packed_scene: PackedScene = load(target_scene_path)
-	if packed_scene == null:
+func change_level_to(target_scene_path: String, spawn_tag: String = "") -> void:
+	if target_scene_path == "" or not ResourceLoader.exists(target_scene_path):
 		push_warning("Could not load level: " + target_scene_path)
-		return
-	if not is_instance_valid(ground_layer):
-		push_warning("ground_layer is null; cannot determine current level root.")
 		return
 
 	save_watered_tiles()
 
 	if is_instance_valid(player):
 		player.is_movement_locked = true
-		player.velocity = Vector2.ZERO
+		if "velocity" in player:
+			player.velocity = Vector2.ZERO
+		if "agent" in player and player.agent:
+			player.agent.target_position = player.global_position
 
 	if is_instance_valid(transition_rect):
 		var t = create_tween()
 		t.tween_property(transition_rect, "modulate:a", 1.0, 0.5)
 		await t.finished
 
-	var old_level_root: Node = ground_layer
-	while old_level_root.get_parent() != self and old_level_root.get_parent() != null:
-		old_level_root = old_level_root.get_parent()
-
 	TimeManager.player_spawn_tag = spawn_tag
-	var parent: Node = old_level_root.get_parent()
-	var index: int = old_level_root.get_index()
-	var old_name: String = old_level_root.name
 
-	old_level_root.queue_free()
-	var new_level_root: Node = packed_scene.instantiate()
-	new_level_root.name = old_name
-	parent.add_child(new_level_root)
-	parent.move_child(new_level_root, index)
+	await _replace_level_under_start(target_scene_path)
 
-	await get_tree().process_frame
+	var lr := _get_level_root()
+	_refresh_layer_references(lr if lr != null else get_tree().current_scene)
+	_connect_all_chests(lr if lr != null else get_tree().current_scene)
+	_update_current_level_key(lr)
 
-	_refresh_layer_references(new_level_root)
-	_update_current_level_key(new_level_root)
 	load_watered_tiles()
 
-	var spawn_node: Node2D = null
-	if TimeManager.player_spawn_tag != "":
-		spawn_node = find_child(TimeManager.player_spawn_tag, true, false) as Node2D
-	if spawn_node == null:
-		spawn_node = find_child("SpawnPoint", true, false) as Node2D
-	if spawn_node == null:
-		var all_markers: Array = find_children("*", "Marker2D", true, false)
-		if all_markers.size() > 0:
-			spawn_node = all_markers[0] as Node2D
+	_spawn_player_in_current_level(spawn_tag)
 
-	if spawn_node and is_instance_valid(player):
-		player.global_position = spawn_node.global_position
-		player.agent.target_position = spawn_node.global_position
-
-	TimeManager.player_spawn_tag = ""
+	await get_tree().process_frame
 	set_camera_limits()
 	refresh_tile_selector()
-
-	_connect_all_chests(new_level_root)
-
-	await get_tree().create_timer(0.5).timeout
 
 	if is_instance_valid(transition_rect):
 		var t2 = create_tween()
@@ -618,30 +758,35 @@ func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
 	if is_instance_valid(player):
 		player.is_movement_locked = false
 
-func get_level_data() -> Dictionary:
-	return {
-		"watered_tiles": watered_tiles,
-		"ground_modifications": _get_ground_modifications()
-	}
 
-func load_level_data(data: Dictionary) -> void:
-	watered_tiles = data.get("watered_tiles", {})
+func _spawn_player_in_current_level(spawn_tag: String) -> void:
+	var level_root: Node = _get_level_root()
+	if level_root == null:
+		level_root = _get_level_root_from_ground()
+	if level_root == null:
+		level_root = get_tree().current_scene
 
-	var mods = data.get("ground_modifications", {})
-	if is_instance_valid(ground_layer):
-		for key in mods:
-			var coords = str_to_var("Vector2i" + key)
-			var tile_info = mods[key]
-			ground_layer.set_cell(coords, tile_info["source_id"], str_to_var("Vector2i" + tile_info["atlas_coords"]))
+	var tag := spawn_tag
+	if tag == "":
+		tag = TimeManager.player_spawn_tag
 
-func _get_ground_modifications() -> Dictionary:
-	var mods = {}
-	if is_instance_valid(ground_layer):
-		for tile_pos in ground_layer.get_used_cells():
-			var atlas = ground_layer.get_cell_atlas_coords(tile_pos)
-			if atlas == HOED_ATLAS_COORDS or atlas == WATERED_ATLAS_COORDS:
-				mods[str(tile_pos)] = {
-					"source_id": ground_layer.get_cell_source_id(tile_pos),
-					"atlas_coords": str(atlas)
-				}
-	return mods
+	var spawn_node: Node2D = null
+	if tag != "":
+		spawn_node = level_root.find_child(tag, true, false) as Node2D
+	if spawn_node == null:
+		spawn_node = level_root.find_child("SpawnPoint", true, false) as Node2D
+	if spawn_node == null:
+		var all_markers: Array = level_root.find_children("*", "Marker2D", true, false)
+		if all_markers.size() > 0:
+			spawn_node = all_markers[0] as Node2D
+
+	if spawn_node and is_instance_valid(player):
+		player.global_position = spawn_node.global_position
+		if "agent" in player and player.agent:
+			player.agent.target_position = spawn_node.global_position
+
+	TimeManager.player_spawn_tag = ""
+
+
+func transition_to_level(target_scene_path: String, spawn_tag: String = "") -> void:
+	await change_level_to(target_scene_path, spawn_tag)
