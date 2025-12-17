@@ -15,4 +15,5 @@ name = "Spinach"
 description = "What Made Popeye Strong"
 stackable = true
 texture = SubResource("AtlasTexture_yyluo")
+price = 100
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

@@ -15,4 +15,5 @@ name = "Potato"
 description = "You Could Make Fries With This"
 stackable = true
 texture = SubResource("AtlasTexture_sw41x")
+price = 50
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

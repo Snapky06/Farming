@@ -16,4 +16,5 @@ description = "Grows To Something Beautiful"
 stackable = true
 texture = SubResource("AtlasTexture_t07b7")
 crop_scene_path = "uid://eo3t2mhgiwu4"
+price = 150
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

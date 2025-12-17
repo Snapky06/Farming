@@ -16,4 +16,5 @@ description = "Kind Of Exotic"
 stackable = true
 texture = SubResource("AtlasTexture_2sn1h")
 crop_scene_path = "uid://bs3d8u5jewm"
+price = 60
 metadata/_custom_type_script = "uid://bvaw7yvcmsrup"

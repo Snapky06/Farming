@@ -32,9 +32,10 @@ var current_level_key: String = ""
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:
 		var sm = get_node_or_null("/root/SaveManager")
-		if sm and sm.has_method("save_game") and sm.get("is_slot_transitioning") != true:
+		if sm and sm.has_method("save_game"):
 			sm.save_game()
-		get_tree().quit()
+		if not sm or not sm.has_method("is_returning_to_menu") or not sm.is_returning_to_menu:
+			get_tree().quit()
 
 func get_active_level_path() -> String:
 	if current_level_key != "" and current_level_key.begins_with("res://") and ResourceLoader.exists(current_level_key):
