@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="InventoryData" load_steps=11 format=3 uid="uid://df1d0kw086jsq"]
+
+[ext_resource type="Script" uid="uid://b3nysasbdcim0" path="res://Inventory/inventory_data.gd" id="1_bl5pg"]
+[ext_resource type="Script" uid="uid://cn3th1d7ure5w" path="res://Inventory/slot_data.gd" id="2_4115m"]
+[ext_resource type="Resource" uid="uid://bsk7du6nma7c" path="res://Item/items/tools/hoe.tres" id="3_8y6ll"]
+[ext_resource type="Resource" uid="uid://cf8km4rbggga7" path="res://Item/items/tools/scythe.tres" id="4_qjpn5"]
+[ext_resource type="Resource" uid="uid://btj6s70bg5d4x" path="res://Item/items/tools/watering_can.tres" id="5_5u5t6"]
+[ext_resource type="Resource" uid="uid://ujg4cdg8l2lj" path="res://Item/items/grows/seeds/carrot_seeds.tres" id="6_6vi5o"]
+
+[sub_resource type="Resource" id="Resource_8y6ll"]
+script = ExtResource("2_4115m")
+item_data = ExtResource("3_8y6ll")
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[sub_resource type="Resource" id="Resource_qjpn5"]
+script = ExtResource("2_4115m")
+item_data = ExtResource("4_qjpn5")
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[sub_resource type="Resource" id="Resource_5u5t6"]
+script = ExtResource("2_4115m")
+item_data = ExtResource("5_5u5t6")
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[sub_resource type="Resource" id="Resource_6vi5o"]
+script = ExtResource("2_4115m")
+item_data = ExtResource("6_6vi5o")
+quantity = 10
+metadata/_custom_type_script = "uid://cn3th1d7ure5w"
+
+[resource]
+script = ExtResource("1_bl5pg")
+type = 1
+slot_datas = Array[ExtResource("2_4115m")]([SubResource("Resource_8y6ll"), SubResource("Resource_qjpn5"), SubResource("Resource_5u5t6"), SubResource("Resource_6vi5o"), null, null, null, null, null, null, null, null, null, null, null, null, null, null])
+metadata/_custom_type_script = "uid://b3nysasbdcim0"
