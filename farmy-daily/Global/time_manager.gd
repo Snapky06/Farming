@@ -9,7 +9,7 @@ signal energy_updated(current, max)
 
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
-const REAL_SECONDS_PER_GAME_DAY: float = 80.0
+const REAL_SECONDS_PER_GAME_DAY: float = 480.0
 const GAME_SECONDS_PER_DAY: float = 86400.0
 const TIME_SCALE: float = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY
 
@@ -19,6 +19,9 @@ const MONTH_NAMES: Array[String] = [
 	"July", "August", "September", "October", "November", "December"
 ]
 
+var start_hour: int = 6
+var start_minute: int = 0
+var _loaded_from_save: bool = false
 var current_time_seconds: float = 0.0
 var current_day: int = 20
 var current_month: int = 6
@@ -38,30 +41,49 @@ var last_half_hour_check: int = -1
 var _water_level_key: String = ""
 
 func _ready() -> void:
-	current_time_seconds = 8.0 * 3600.0
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	if not _loaded_from_save and current_time_seconds <= 0.0:
+		current_time_seconds = float(start_hour) * 3600.0 + float(start_minute) * 60.0
 	last_hour = int(current_time_seconds / 3600.0) % 24
 	last_half_hour_check = int(current_time_seconds / 1800.0)
 	recalculate_season()
 
+
 func _process(delta: float) -> void:
+	if get_tree().paused:
+		return
+
+	var prev_serial: int = _day_serial()
+	var prev_total_seconds: float = float(prev_serial) * GAME_SECONDS_PER_DAY + current_time_seconds
+	var prev_half_index: int = int(floor(prev_total_seconds / 1800.0))
+	var prev_hour_index: int = int(floor(prev_total_seconds / 3600.0))
+
 	current_time_seconds += delta * TIME_SCALE
 
-	if current_time_seconds >= GAME_SECONDS_PER_DAY:
+	while current_time_seconds >= GAME_SECONDS_PER_DAY:
 		current_time_seconds -= GAME_SECONDS_PER_DAY
 		advance_date()
 
-	var current_hour: int = int(current_time_seconds / 3600.0) % 24
-	if current_hour != last_hour:
-		last_hour = current_hour
-		hour_passed.emit()
-		if is_gameplay_active:
-			_check_auto_sleep_penalty()
+	var cur_serial: int = _day_serial()
+	var cur_total_seconds: float = float(cur_serial) * GAME_SECONDS_PER_DAY + current_time_seconds
+	var cur_half_index: int = int(floor(cur_total_seconds / 1800.0))
+	var cur_hour_index: int = int(floor(cur_total_seconds / 3600.0))
 
-	var current_half_hour: int = int(current_time_seconds / 1800.0)
-	if current_half_hour != last_half_hour_check:
-		last_half_hour_check = current_half_hour
-		if is_gameplay_active:
+	if cur_hour_index != prev_hour_index:
+		for h in range(prev_hour_index + 1, cur_hour_index + 1):
+			last_hour = h % 24
+			hour_passed.emit()
+			if is_gameplay_active:
+				_check_auto_sleep_penalty()
+				if auto_sleep_penalty_applied:
+					break
+
+	if is_gameplay_active and not auto_sleep_penalty_applied and cur_half_index != prev_half_index:
+		for hh in range(prev_half_index + 1, cur_half_index + 1):
+			last_half_hour_check = hh
 			_consume_energy(5.0)
+			if auto_sleep_penalty_applied:
+				break
 
 	emit_time_signal()
 
@@ -111,6 +133,9 @@ func recalculate_season() -> void:
 	if current_visual_season != prev_visual:
 		season_visual_changed.emit(current_visual_season)
 
+func get_current_season_string() -> String:
+	return current_visual_season
+
 func emit_all_signals() -> void:
 	emit_time_signal()
 	emit_date_signal()
@@ -139,12 +164,16 @@ func emit_date_signal() -> void:
 
 func _check_auto_sleep_penalty() -> void:
 	var current_hour: int = int(current_time_seconds / 3600.0) % 24
-	if current_hour < 2:
+
+	if current_hour < 2 and current_energy > 0:
 		auto_sleep_penalty_applied = false
 		return
-	if (current_hour == 2 or current_energy <= 0) and not auto_sleep_penalty_applied:
+
+	if not auto_sleep_penalty_applied and (current_hour >= 2 or current_energy <= 0):
 		auto_sleep_penalty_applied = true
 		_do_auto_sleep_penalty()
+
+
 
 func _do_auto_sleep_penalty() -> void:
 	var root: Node = get_tree().current_scene
@@ -228,13 +257,16 @@ func get_save_data() -> Dictionary:
 	}
 
 func load_save_data(data: Dictionary) -> void:
-	current_time_seconds = data.get("time_seconds", 8.0 * 3600.0)
-	current_day = data.get("day", 1)
-	current_month = data.get("month", 1)
-	current_year = data.get("year", 2025)
+	_loaded_from_save = true
+	current_time_seconds = float(data.get("time_seconds", 8.0 * 3600.0))
+	current_day = int(data.get("day", current_day))
+	current_month = int(data.get("month", current_month))
+	current_year = int(data.get("year", current_year))
 	current_season = data.get("season", Seasons.SPRING)
 	auto_sleep_penalty_applied = data.get("penalty", false)
 	current_energy = data.get("energy", 100.0)
+	last_hour = int(current_time_seconds / 3600.0) % 24
+	last_half_hour_check = int(current_time_seconds / 1800.0)
 	recalculate_season()
 	emit_all_signals()
 
@@ -305,3 +337,15 @@ func request_faint() -> void:
 		return
 	auto_sleep_penalty_applied = true
 	_do_auto_sleep_penalty()
+
+func _day_serial() -> int:
+	return int(current_year) * 500 + int(current_month) * 40 + int(current_day)
+
+func reset_to_start() -> void:
+	auto_sleep_penalty_applied = false
+	current_time_seconds = 6.0 * 3600.0
+	current_energy = max_energy
+	last_hour = int(current_time_seconds / 3600.0) % 24
+	last_half_hour_check = int(current_time_seconds / 1800.0)
+	recalculate_season()
+	emit_all_signals()

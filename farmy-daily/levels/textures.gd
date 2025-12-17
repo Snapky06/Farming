@@ -47,24 +47,13 @@ func _update_visuals(force_update = false):
 			set_cell(cell, source, new_atlas, alt)
 
 func get_target_season_state() -> String:
-	if not time_manager: return "spring"
+	if not time_manager:
+		return "spring"
 
-	var m = time_manager.current_month
-	var d = time_manager.current_day
-	
-	if m == 6 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW:
-		return "spring_summer"
-	elif m == 9 and abs(d - 22) <= VISUAL_TRANSITION_WINDOW:
-		return "summer_autumn"
-	elif m == 12 and abs(d - 21) <= VISUAL_TRANSITION_WINDOW:
-		return "autumn_winter"
-	elif m == 3 and abs(d - 20) <= VISUAL_TRANSITION_WINDOW:
-		return "winter_spring"
+	if time_manager.has_method("get_current_season_string"):
+		return str(time_manager.call("get_current_season_string"))
 
-	match time_manager.current_season:
-		0: return "spring"
-		1: return "summer"
-		2: return "autumn"
-		3: return "winter"
-	
+	if "current_visual_season" in time_manager:
+		return str(time_manager.current_visual_season)
+
 	return "spring"

@@ -93,28 +93,16 @@ func _crop_tile_pos(world_pos: Vector2) -> Vector2i:
 		return Vector2i.ZERO
 	return ground_layer.local_to_map(ground_layer.to_local(world_pos))
 
-func _get_wrapper() -> Node:
-	return get_tree().current_scene
-
-func _find_all_crop_roots_in_wrapper() -> Array:
-	var wrapper := _get_wrapper()
-	if not wrapper:
-		return []
-	var nodes: Array = wrapper.find_children("*", "", true, false)
+func _find_all_crop_roots_in_this_level() -> Array:
+	var nodes: Array = find_children("*", "", true, false)
 	var out: Array = []
-	var lk := _get_level_key()
 	for n in nodes:
 		if n is Node2D and _is_crop_root(n):
-			if n.has_meta("level_key"):
-				var mk := str(n.get_meta("level_key"))
-				if mk != "" and mk != lk:
-					continue
 			out.append(n)
 	return out
 
-
 func _find_crop_root_at(tile_pos: Vector2i) -> Node2D:
-	var roots := _find_all_crop_roots_in_wrapper()
+	var roots := _find_all_crop_roots_in_this_level()
 	for n in roots:
 		var tp := _crop_tile_pos((n as Node2D).global_position)
 		if tp == tile_pos:
@@ -127,8 +115,8 @@ func _find_crop_component_at(tile_pos: Vector2i) -> Node:
 		return null
 	return _find_crop_component_in(root)
 
-func _free_all_runtime_crops_in_wrapper() -> void:
-	var roots := _find_all_crop_roots_in_wrapper()
+func _free_all_runtime_crops_in_this_level() -> void:
+	var roots := _find_all_crop_roots_in_this_level()
 	for r in roots:
 		(r as Node2D).queue_free()
 
@@ -147,7 +135,7 @@ func save_level_state() -> void:
 			tiles_data.append({"x": cell.x, "y": cell.y, "s": source, "ax": atlas.x, "ay": atlas.y})
 
 	var crops_data: Array = []
-	var roots := _find_all_crop_roots_in_wrapper()
+	var roots := _find_all_crop_roots_in_this_level()
 	for n in roots:
 		var root2d := n as Node2D
 		var comp := _find_crop_component_in(root2d)
@@ -161,6 +149,9 @@ func save_level_state() -> void:
 			sp = str(root2d.get_meta("crop_scene_path"))
 		if sp == "":
 			continue
+
+		if not root2d.has_meta("level_key"):
+			root2d.set_meta("level_key", _get_level_key())
 
 		var tp := _crop_tile_pos(root2d.global_position)
 		if comp.has_method("_save_persistence"):
@@ -201,16 +192,12 @@ func load_level_state() -> void:
 
 	var last_save_day: int = int(data.get("last_day_index", 0))
 
-	_free_all_runtime_crops_in_wrapper()
+	_free_all_runtime_crops_in_this_level()
 
 	if not data.has("crops"):
 		return
 
 	await get_tree().process_frame
-
-	var wrapper := _get_wrapper()
-	if not wrapper:
-		return
 
 	for c in data["crops"]:
 		var sp := str(c.get("scene_path", ""))
@@ -227,7 +214,8 @@ func load_level_state() -> void:
 
 		var inst: Node2D = scene.instantiate()
 		inst.set_meta("crop_scene_path", sp)
-		wrapper.add_child(inst)
+		inst.set_meta("level_key", _get_level_key())
+		add_child(inst)
 
 		var local_center := ground_layer.map_to_local(tp)
 		inst.global_position = ground_layer.to_global(local_center)

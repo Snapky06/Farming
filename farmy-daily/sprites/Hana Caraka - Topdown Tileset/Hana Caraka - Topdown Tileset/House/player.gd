@@ -627,7 +627,10 @@ func spawn_crop(pos: Vector2) -> void:
 				var lk := str(get_parent().call("get_level_key"))
 				if lk != "":
 					crop.set_meta("level_key", lk)
-			get_parent().add_child(crop)
+			var level_root := _get_level_root_for_runtime_objects()
+			if level_root == null:
+				level_root = get_parent()
+			level_root.add_child(crop)
 
 			var crop_script: Node = find_crop_script(crop)
 			if crop_script and crop_script.has_method("_save_persistence"):

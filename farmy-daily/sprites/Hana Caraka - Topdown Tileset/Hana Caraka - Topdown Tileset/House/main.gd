@@ -129,6 +129,10 @@ func _ready() -> void:
 	if sm2 and sm2.has_method("end_slot_transition"):
 		sm2.end_slot_transition()
 
+	var time_manager2 = get_node_or_null("/root/TimeManager")
+	if time_manager2:
+		time_manager2.is_gameplay_active = true
+
 	await get_tree().process_frame
 	set_camera_limits()
 

@@ -240,21 +240,30 @@ func start_new_game(slot_index: int, player_name: String) -> void:
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
 
+	var quest_manager = get_node_or_null("/root/QuestManager")
+	if quest_manager:
+		if quest_manager.has_method("reset"):
+			quest_manager.reset()
+		elif quest_manager.has_method("load_save_data"):
+			quest_manager.load_save_data({})
+
 	var time_manager = get_node_or_null("/root/TimeManager")
 	if time_manager:
 		time_manager.is_gameplay_active = false
 		time_manager.auto_sleep_penalty_applied = false
 		time_manager.player_spawn_tag = "sleep"
-		if time_manager.has_method("load_save_data"):
-			time_manager.load_save_data({
-				"time_seconds": 21600.0,
-				"day": 1,
-				"month": 4,
-				"year": 2025,
-				"season": 0,
-				"penalty": false,
-				"energy": 100.0
-			})
+
+		if time_manager.has_method("reset_to_start"):
+			time_manager.reset_to_start()
+		else:
+			if "current_time_seconds" in time_manager:
+				time_manager.current_time_seconds = 6.0 * 3600.0
+			if "current_energy" in time_manager and "max_energy" in time_manager:
+				time_manager.current_energy = time_manager.max_energy
+			elif "current_energy" in time_manager:
+				time_manager.current_energy = 100.0
+			if time_manager.has_method("emit_all_signals"):
+				time_manager.emit_all_signals()
 
 	pending_level_path = DEFAULT_LEVEL_SCENE_PATH
 	pending_spawn_tag = "sleep"
