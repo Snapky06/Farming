@@ -25,7 +25,7 @@ func interact(user = null) -> void:
 		return
 
 	var target_hour := 6
-	var is_next_day := current_hour >= 19 or current_hour < 6
+	var is_next_day := current_hour >= 19
 
 	_start_sleep(player, target_hour, is_next_day)
 

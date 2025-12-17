@@ -178,9 +178,14 @@ func _do_auto_sleep_penalty() -> void:
 		t.tween_property(transition_rect, "modulate:a", 1.0, 0.5)
 		await t.finished
 
-	var target_hour: int = 6
+	var target_hour: int = 15
 	var current_hour: int = int(current_time_seconds / 3600.0) % 24
-	var hours_to_advance = (24 - current_hour) + target_hour
+	var hours_to_advance: int = 0
+	if current_hour < target_hour:
+		hours_to_advance = target_hour - current_hour
+	else:
+		hours_to_advance = (24 - current_hour) + target_hour
+
 	for i in range(hours_to_advance):
 		current_hour = (current_hour + 1) % 24
 		if current_hour == 0:
@@ -193,21 +198,23 @@ func _do_auto_sleep_penalty() -> void:
 	auto_sleep_penalty_applied = false
 	emit_all_signals()
 
-	var target_pos = player.global_position
-	var sleep_marker = root.find_child("sleep", true, false)
-	if sleep_marker:
-		target_pos = sleep_marker.global_position
-
-	player.global_position = target_pos
-	if player.has_method("update_idle_animation"):
-		player.call("update_idle_animation", Vector2.DOWN)
-
-	if transition_rect:
-		var t2 = create_tween()
-		t2.tween_property(transition_rect, "modulate:a", 0.0, 1.0)
-		await t2.finished
-
 	player.set("is_movement_locked", false)
+
+	TimeManager.player_spawn_tag = "sleep"
+	if root.has_method("change_level_to"):
+		await root.call("change_level_to", "res://levels/playerhouse.tscn", "sleep")
+	else:
+		var target_pos = player.global_position
+		var sleep_marker = root.find_child("sleep", true, false)
+		if sleep_marker:
+			target_pos = sleep_marker.global_position
+		player.global_position = target_pos
+		if player.has_method("update_idle_animation"):
+			player.call("update_idle_animation", Vector2.DOWN)
+		if transition_rect:
+			var t2 = create_tween()
+			t2.tween_property(transition_rect, "modulate:a", 0.0, 1.0)
+			await t2.finished
 
 func get_save_data() -> Dictionary:
 	return {
@@ -292,3 +299,9 @@ func load_watered_tiles() -> Dictionary:
 	for ks in src.keys():
 		out[str(ks)] = src[ks]
 	return out
+
+func request_faint() -> void:
+	if auto_sleep_penalty_applied:
+		return
+	auto_sleep_penalty_applied = true
+	_do_auto_sleep_penalty()

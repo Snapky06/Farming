@@ -359,19 +359,24 @@ func execute_pending_action() -> void:
 			perform_tool_action(pending_tool_action_pos, pending_tool_name)
 
 func start_tool_loop(target_node: Node2D, tool_anim_name: String, impact_sfx: AudioStream = null) -> void:
-	if is_movement_locked: return
-	if "is_falling" in target_node and target_node.is_falling: return
-	
+	if is_movement_locked:
+		return
+	if "is_falling" in target_node and target_node.is_falling:
+		return
+
 	is_movement_locked = true
 	velocity = Vector2.ZERO
 	last_direction = (target_node.global_position - global_position).normalized()
-	
+
 	while is_touching and is_instance_valid(target_node):
 		if time_manager and time_manager.get("current_energy") <= 0:
-			return 
+			if time_manager.has_method("request_faint"):
+				time_manager.call_deferred("request_faint")
+			break
 
-		if "is_falling" in target_node and target_node.is_falling: break
-		
+		if "is_falling" in target_node and target_node.is_falling:
+			break
+
 		sprite.flip_h = false
 		var anim: String = tool_anim_name + "_"
 		if abs(last_direction.x) > abs(last_direction.y):
@@ -382,29 +387,34 @@ func start_tool_loop(target_node: Node2D, tool_anim_name: String, impact_sfx: Au
 				anim += "right"
 		else:
 			anim += "down" if last_direction.y > 0 else "up"
-		
+
 		if sfx_swing and audio_player:
 			audio_player.stream = sfx_swing
 			audio_player.play()
-		
+
 		if sprite.sprite_frames.has_animation(anim):
 			sprite.play(anim)
 			await sprite.animation_finished
 		else:
 			await get_tree().create_timer(0.25).timeout
-		
+
 		if time_manager and time_manager.has_method("use_tool_energy"):
 			time_manager.call("use_tool_energy")
-			if time_manager.get("current_energy") <= 0:
-				return 
 
-		if not is_instance_valid(target_node): break
-		if "is_falling" in target_node and target_node.is_falling: break
-		
+		if time_manager and time_manager.get("current_energy") <= 0:
+			if time_manager.has_method("request_faint"):
+				time_manager.call_deferred("request_faint")
+			break
+
+		if not is_instance_valid(target_node):
+			break
+		if "is_falling" in target_node and target_node.is_falling:
+			break
+
 		if impact_sfx and impact_audio_player:
 			impact_audio_player.stream = impact_sfx
 			impact_audio_player.play()
-		
+
 		if is_instance_valid(target_node) and target_node.has_method("hit"):
 			target_node.call("hit", axe_hit_damage)
 			if "health" in target_node and target_node.health <= 0:
@@ -413,22 +423,31 @@ func start_tool_loop(target_node: Node2D, tool_anim_name: String, impact_sfx: Au
 	is_movement_locked = false
 	update_idle_animation(last_direction)
 
+
 func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 	if global_position.distance_to(target_pos) > TOOL_REACH_DISTANCE + 20.0:
 		is_movement_locked = false
 		is_moving_to_interact = false
 		return
 
+	if tool_name in ["hoe", "watering", "scythe"]:
+		if time_manager and time_manager.get("current_energy") <= 0:
+			if time_manager.has_method("request_faint"):
+				time_manager.call_deferred("request_faint")
+			is_movement_locked = false
+			is_moving_to_interact = false
+			return
+
 	is_movement_locked = true
 	pending_tool_action_pos = target_pos
 	velocity = Vector2.ZERO
 	last_direction = (target_pos - global_position).normalized()
 	sprite.flip_h = false
-	
+
 	var anim_base: String = tool_name
 	if tool_name == "planting_crop":
 		anim_base = "planting"
-		
+
 	var anim_name: String = anim_base + "_"
 	if abs(last_direction.x) > abs(last_direction.y):
 		if last_direction.x > 0:
@@ -438,30 +457,35 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 			anim_name += "right"
 	else:
 		anim_name += "down" if last_direction.y > 0 else "up"
-	
+
 	if sprite.sprite_frames.has_animation(anim_name):
 		sprite.play(anim_name)
 		await sprite.animation_finished
 	else:
 		await get_tree().create_timer(0.25).timeout
-	
+
 	if tool_name in ["hoe", "watering", "scythe"]:
 		if time_manager and time_manager.has_method("use_tool_energy"):
 			time_manager.call("use_tool_energy")
-			if time_manager.get("current_energy") <= 0:
-				return 
-	
+		if time_manager and time_manager.get("current_energy") <= 0:
+			if time_manager.has_method("request_faint"):
+				time_manager.call_deferred("request_faint")
+			sprite.flip_h = false
+			is_movement_locked = false
+			update_idle_animation(last_direction)
+			return
+
 	if tool_name == "hoe" and get_parent().has_method("use_hoe"):
 		if sfx_hoe and impact_audio_player:
 			impact_audio_player.stream = sfx_hoe
 			impact_audio_player.play()
 		get_parent().call("use_hoe", target_pos)
-		
+
 	elif tool_name == "watering":
 		if sfx_water and audio_player:
 			audio_player.stream = sfx_water
 			audio_player.play()
-			
+
 		var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
 		var query: PhysicsPointQueryParameters2D = PhysicsPointQueryParameters2D.new()
 		query.position = target_pos
@@ -474,12 +498,12 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 
 		if get_parent().has_method("use_water"):
 			get_parent().call("use_water", target_pos)
-	
+
 	elif tool_name == "scythe":
 		if sfx_swing and audio_player:
 			audio_player.stream = sfx_swing
 			audio_player.play()
-			
+
 		var space_state: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
 		var query: PhysicsPointQueryParameters2D = PhysicsPointQueryParameters2D.new()
 		query.position = target_pos
@@ -491,18 +515,18 @@ func perform_tool_action(target_pos: Vector2, tool_name: String) -> void:
 				if "current_stage" in result.collider and "max_stage" in result.collider:
 					if result.collider.current_stage >= result.collider.max_stage:
 						result.collider.call("harvest")
-		
+
 	elif tool_name == "planting":
 		spawn_tree(target_pos)
 		play_seed_sound()
-		
+
 	elif tool_name == "planting_crop":
 		spawn_crop(target_pos)
 		play_seed_sound()
-	
+
 	if tool_name == "watering" and audio_player:
 		await get_tree().create_timer(0.1).timeout
-		if audio_player.stream == sfx_water: 
+		if audio_player.stream == sfx_water:
 			audio_player.stop()
 
 	sprite.flip_h = false
