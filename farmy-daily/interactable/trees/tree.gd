@@ -346,6 +346,11 @@ func play_sound(stream: AudioStream) -> void:
 		p.finished.connect(p.queue_free)
 
 func _save_persistence() -> void:
+	if not is_inside_tree():
+		return
+	var sm: Node = get_node_or_null("/root/SaveManager")
+	if sm == null:
+		return
 	var data: Dictionary = {
 		"destroyed": is_destroyed,
 		"health": health,
@@ -353,20 +358,27 @@ func _save_persistence() -> void:
 		"stump": is_stump,
 		"days": days_until_next_stage
 	}
-	if has_node("/root/SaveManager"):
-		get_node("/root/SaveManager").save_object_state(self, data)
+	if sm.has_method("save_object_state"):
+		sm.save_object_state(self, data)
 
 func _load_persistence() -> void:
-	if has_node("/root/SaveManager"):
-		var data: Dictionary = get_node("/root/SaveManager").get_object_state(self)
-		if data.is_empty(): return
-		
-		is_destroyed = data.get("destroyed", false)
-		if is_destroyed:
-			queue_free()
-			return
-			
-		health = data.get("health", 3)
-		current_stage = data.get("stage", GrowthStage.MATURE)
-		is_stump = data.get("stump", false)
-		days_until_next_stage = data.get("days", 0)
+	if not is_inside_tree():
+		return
+	var sm: Node = get_node_or_null("/root/SaveManager")
+	if sm == null:
+		return
+	if not sm.has_method("get_object_state"):
+		return
+	var data: Dictionary = sm.get_object_state(self)
+	if data.is_empty():
+		return
+
+	is_destroyed = data.get("destroyed", false)
+	if is_destroyed:
+		queue_free()
+		return
+
+	health = data.get("health", 3)
+	current_stage = data.get("stage", GrowthStage.MATURE)
+	is_stump = data.get("stump", false)
+	days_until_next_stage = data.get("days", 0)

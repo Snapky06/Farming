@@ -32,31 +32,6 @@ func _ready() -> void:
 func get_save_path(index: int) -> String:
 	return SAVE_DIR + (SAVE_TEMPLATE % index)
 
-func _get_active_level_root() -> Node:
-	var wrapper = get_tree().current_scene
-	if wrapper and wrapper.has_method("get_level_root"):
-		return wrapper.call("get_level_root")
-	return get_tree().current_scene
-
-func _get_level_key_for_obj(obj: Node) -> String:
-	if obj and obj.owner and obj.owner.scene_file_path != "":
-		return obj.owner.scene_file_path
-	var wrapper = get_tree().current_scene
-	if wrapper and wrapper.has_method("get_active_level_path"):
-		var p = str(wrapper.call("get_active_level_path"))
-		if p != "":
-			return p
-	if wrapper:
-		return wrapper.scene_file_path
-	return ""
-
-func _get_object_key(obj: Node) -> String:
-	var level_root = _get_active_level_root()
-	if obj and level_root and level_root.is_ancestor_of(obj):
-		return str(level_root.get_path_to(obj))
-	return str(obj.get_path())
-
-
 func _refresh_slots() -> void:
 	slots_cache.clear()
 	for i in range(MAX_SLOTS):
@@ -81,6 +56,86 @@ func _find_player() -> Node:
 		return cs.find_child("Player", true, false)
 	return null
 
+func _get_active_level_key() -> String:
+	var wrapper = get_tree().current_scene
+	if wrapper and wrapper.has_method("get_active_level_path"):
+		var p = str(wrapper.call("get_active_level_path"))
+		if p != "":
+			return p
+	if wrapper:
+		return wrapper.scene_file_path
+	return ""
+
+func _get_level_key_for_node(n: Node) -> String:
+	if n and n.owner and n.owner.scene_file_path != "":
+		return n.owner.scene_file_path
+	var k := _get_active_level_key()
+	if k != "":
+		return k
+	if get_tree().current_scene:
+		return get_tree().current_scene.scene_file_path
+	return "unknown_level"
+
+func _stable_object_id(n: Node) -> String:
+	if n == null:
+		return "null"
+	if n.has_meta("persist_id"):
+		return "META:" + str(n.get_meta("persist_id"))
+	if n is Node2D:
+		var p: Vector2 = (n as Node2D).global_position
+		return str(Vector2i(int(round(p.x)), int(round(p.y))))
+	return str(n.get_path())
+
+func save_object_state(obj: Node, data: Dictionary) -> void:
+	var level_path := _get_level_key_for_node(obj)
+	var object_id := _stable_object_id(obj)
+
+	if not persistence_data.has("objects"):
+		persistence_data["objects"] = {}
+	if not persistence_data["objects"].has(level_path):
+		persistence_data["objects"][level_path] = {}
+
+	persistence_data["objects"][level_path][object_id] = data
+
+func get_object_state(obj: Node) -> Dictionary:
+	var level_path := _get_level_key_for_node(obj)
+	var object_id := _stable_object_id(obj)
+
+	if persistence_data.has("objects") and persistence_data["objects"].has(level_path):
+		var d: Dictionary = persistence_data["objects"][level_path]
+		if d.has(object_id):
+			return d[object_id]
+	return {}
+
+func save_level_data(level_path: String, data: Dictionary) -> void:
+	if not persistence_data.has("levels"):
+		persistence_data["levels"] = {}
+	persistence_data["levels"][level_path] = data
+
+func get_level_data_dynamic(level_path: String) -> Dictionary:
+	if persistence_data.has("levels") and persistence_data["levels"].has(level_path):
+		return persistence_data["levels"][level_path]
+	return {}
+
+func _ensure_drops_level(level_path: String) -> void:
+	if not persistence_data.has("drops_by_level"):
+		persistence_data["drops_by_level"] = {}
+	if not persistence_data["drops_by_level"].has(level_path):
+		persistence_data["drops_by_level"][level_path] = {}
+
+func update_drop(level_path: String, uuid: String, data: Dictionary) -> void:
+	_ensure_drops_level(level_path)
+	persistence_data["drops_by_level"][level_path][uuid] = data
+
+func remove_drop(level_path: String, uuid: String) -> void:
+	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
+		persistence_data["drops_by_level"][level_path].erase(uuid)
+
+func get_drops(level_path: String) -> Dictionary:
+	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
+		return persistence_data["drops_by_level"][level_path]
+	return {}
+
 func save_game() -> void:
 	var wrapper = get_tree().current_scene
 	var wrapper_path := ""
@@ -93,7 +148,7 @@ func save_game() -> void:
 	var data = {
 		"metadata": {
 			"player_name": current_player_name,
-			"money": 150,
+			"money": 0,
 			"date": Time.get_date_string_from_system(),
 			"wrapper_path": wrapper_path,
 			"active_level_path": active_level_path
@@ -129,12 +184,7 @@ func save_game() -> void:
 
 	var time_manager = get_node_or_null("/root/TimeManager")
 	if time_manager and time_manager.has_method("get_save_data"):
-		var t_data = time_manager.get_save_data()
-		data["time"] = t_data
-		if t_data.has("month") and t_data.has("day"):
-			var month_idx = int(t_data["month"])
-			var day_num = int(t_data["day"])
-			data["metadata"]["date"] = "Month " + str(month_idx) + ", Day " + str(day_num)
+		data["time"] = time_manager.get_save_data()
 
 	if wrapper and wrapper.has_method("save_level_state"):
 		wrapper.call("save_level_state")
@@ -255,7 +305,6 @@ func load_game(slot_index: int) -> void:
 
 	if player and data.has("player"):
 		var pd = data["player"]
-
 		var money_val = pd.get("money", 0)
 		if money_val == null:
 			money_val = 0
@@ -269,6 +318,9 @@ func load_game(slot_index: int) -> void:
 		var hp = pd.get("health")
 		if hp != null:
 			player.set("health", int(hp))
+
+		if pending_has_player_pos:
+			player.global_position = pending_player_pos
 
 		if player.has_signal("money_updated"):
 			player.emit_signal("money_updated", player.money)
@@ -299,89 +351,8 @@ func load_game(slot_index: int) -> void:
 	if time_manager2:
 		time_manager2.is_gameplay_active = true
 
-func _get_active_level_key() -> String:
-	var wrapper = get_tree().current_scene
-	if wrapper and wrapper.has_method("get_active_level_path"):
-		var p = str(wrapper.call("get_active_level_path"))
-		if p != "":
-			return p
-	if wrapper:
-		return wrapper.scene_file_path
-	return ""
-
 func delete_save(slot_index: int) -> void:
 	var path = get_save_path(slot_index)
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
 	_refresh_slots()
-
-func save_level_data(level_path: String, data: Dictionary) -> void:
-	if not persistence_data.has("levels"):
-		persistence_data["levels"] = {}
-	persistence_data["levels"][level_path] = data
-
-func get_level_data_dynamic(level_path: String) -> Dictionary:
-	if persistence_data.has("levels") and persistence_data["levels"].has(level_path):
-		return persistence_data["levels"][level_path]
-	return {}
-
-func save_object_state(obj: Node, data: Dictionary) -> void:
-	var level_path := _get_active_level_key()
-	if level_path == "":
-		if obj.owner and obj.owner.scene_file_path != "":
-			level_path = obj.owner.scene_file_path
-		else:
-			level_path = get_tree().current_scene.scene_file_path
-
-	var obj_path = String(obj.get_path())
-
-	if not persistence_data.has("objects"):
-		persistence_data["objects"] = {}
-	if not persistence_data["objects"].has(level_path):
-		persistence_data["objects"][level_path] = {}
-
-	persistence_data["objects"][level_path][obj_path] = data
-
-
-func get_object_state(obj: Node) -> Dictionary:
-	var level_path := _get_active_level_key()
-	var fallback_level_path := ""
-	var wrapper = get_tree().current_scene
-	if wrapper:
-		fallback_level_path = wrapper.scene_file_path
-
-	if level_path == "":
-		if obj.owner and obj.owner.scene_file_path != "":
-			level_path = obj.owner.scene_file_path
-		else:
-			level_path = fallback_level_path
-
-	var obj_path = String(obj.get_path())
-
-	if persistence_data.has("objects") and persistence_data["objects"].has(level_path) and persistence_data["objects"][level_path].has(obj_path):
-		return persistence_data["objects"][level_path][obj_path]
-
-	if fallback_level_path != "" and persistence_data.has("objects") and persistence_data["objects"].has(fallback_level_path) and persistence_data["objects"][fallback_level_path].has(obj_path):
-		return persistence_data["objects"][fallback_level_path][obj_path]
-
-	return {}
-
-
-func _ensure_drops_level(level_path: String) -> void:
-	if not persistence_data.has("drops_by_level"):
-		persistence_data["drops_by_level"] = {}
-	if not persistence_data["drops_by_level"].has(level_path):
-		persistence_data["drops_by_level"][level_path] = {}
-
-func update_drop(level_path: String, uuid: String, data: Dictionary) -> void:
-	_ensure_drops_level(level_path)
-	persistence_data["drops_by_level"][level_path][uuid] = data
-
-func remove_drop(level_path: String, uuid: String) -> void:
-	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
-		persistence_data["drops_by_level"][level_path].erase(uuid)
-
-func get_drops(level_path: String) -> Dictionary:
-	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
-		return persistence_data["drops_by_level"][level_path]
-	return {}

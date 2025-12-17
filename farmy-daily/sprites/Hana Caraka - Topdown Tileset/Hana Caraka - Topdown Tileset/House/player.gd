@@ -528,30 +528,30 @@ func spawn_tree(pos: Vector2) -> void:
 
 	if get_parent().has_method("get_tile_center_position"):
 		var snap_pos: Vector2 = get_parent().call("get_tile_center_position", pos)
-		
+
 		var tree_scene: PackedScene = null
 		if equipped_item.get("crop_scene_path") != "":
 			tree_scene = load(equipped_item.get("crop_scene_path"))
-		
+
 		if not tree_scene:
 			tree_scene = TREE_SCENES.pick_random()
-			
+
 		if tree_scene:
 			var tree: Node2D = tree_scene.instantiate()
 			tree.global_position = snap_pos
-			
+
 			if "tree_sort_index" in get_parent():
 				tree.z_index = get_parent().tree_sort_index
 				get_parent().tree_sort_index += 1
 			else:
 				tree.z_index = 10
 
+			get_parent().add_child(tree)
+
 			var script_node: Node = find_tree_script(tree)
 			if script_node:
 				script_node.call("setup_as_seed")
-			
-			get_parent().add_child(tree)
-			
+
 			tree.modulate.a = 0.0
 			var t: Tween = get_tree().create_tween()
 			t.tween_property(tree, "modulate:a", 1.0, 4.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -561,19 +561,23 @@ func spawn_tree(pos: Vector2) -> void:
 func spawn_crop(pos: Vector2) -> void:
 	if equipped_slot_index == -1 or not inventory_data:
 		return
-	
+
 	if equipped_item.get("crop_scene_path") == "":
 		print("No crop scene path assigned to this item!")
 		return
-	
+
 	if get_parent().has_method("get_tile_center_position"):
 		var snap_pos: Vector2 = get_parent().call("get_tile_center_position", pos)
-		
+
 		var crop_scene: PackedScene = load(equipped_item.get("crop_scene_path"))
 		if crop_scene:
 			var crop: Node2D = crop_scene.instantiate()
 			crop.global_position = snap_pos
 			get_parent().add_child(crop)
+
+			if crop.has_method("_save_persistence"):
+				crop.call("_save_persistence")
+
 			consume_equipped_item()
 
 func consume_equipped_item() -> void:

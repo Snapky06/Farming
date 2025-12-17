@@ -718,12 +718,23 @@ func save_watered_tiles() -> void:
 	TimeManager.save_watered_tiles(save_data)
 	
 
+func _save_current_level_state() -> void:
+	var lr := _get_level_root()
+	if lr == null:
+		lr = _get_level_root_from_ground()
+	if lr == null:
+		return
+	if lr.has_method("save_level_state"):
+		lr.call("save_level_state")
+	return
+
 func change_level_to(target_scene_path: String, spawn_tag: String = "") -> void:
 	if target_scene_path == "" or not ResourceLoader.exists(target_scene_path):
 		push_warning("Could not load level: " + target_scene_path)
 		return
 
 	save_watered_tiles()
+	_save_current_level_state()
 
 	if is_instance_valid(player):
 		player.is_movement_locked = true
