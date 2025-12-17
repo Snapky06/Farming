@@ -25,6 +25,7 @@ var transition_layer: CanvasLayer = null
 var transition_rect: ColorRect = null
 
 var pause_menu_scene = preload("res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/PauseMenu.tscn")
+var drop_scene = preload("res://Item/pick_up/pick_up.tscn")
 
 var current_level_key: String = ""
 
@@ -757,6 +758,65 @@ func change_level_to(target_scene_path: String, spawn_tag: String = "") -> void:
 
 	if is_instance_valid(player):
 		player.is_movement_locked = false
+
+func _clear_existing_drops() -> void:
+	var nodes = get_tree().get_nodes_in_group("drops")
+	for n in nodes:
+		if is_instance_valid(n):
+			n.queue_free()
+
+func _restore_saved_drops() -> void:
+	var save_manager = get_node_or_null("/root/SaveManager")
+	if save_manager == null or not save_manager.has_method("get_drops"):
+		return
+
+	var level_path := get_active_level_path()
+	if level_path == "":
+		return
+
+	_clear_existing_drops()
+
+	var drops: Dictionary = save_manager.get_drops(level_path)
+	if typeof(drops) != TYPE_DICTIONARY or drops.is_empty():
+		return
+
+	var now = Time.get_unix_time_from_system()
+
+	for id in drops.keys():
+		var d = drops[id]
+		if typeof(d) != TYPE_DICTIONARY:
+			continue
+
+		var t = float(d.get("time", now))
+		if now - t > 1200.0:
+			save_manager.remove_drop(level_path, str(id))
+			continue
+
+		var item_path = str(d.get("item_path", ""))
+		if item_path == "" or not ResourceLoader.exists(item_path):
+			save_manager.remove_drop(level_path, str(id))
+			continue
+
+		var res = load(item_path)
+		if res == null:
+			save_manager.remove_drop(level_path, str(id))
+			continue
+
+		var slot := SlotData.new()
+		slot.item_data = res
+		slot.quantity = int(d.get("quantity", 1))
+
+		var inst = drop_scene.instantiate()
+		inst.global_position = Vector2(float(d.get("x", 0.0)), float(d.get("y", 0.0)))
+
+		if "slot_data" in inst:
+			inst.slot_data = slot
+		if "uuid" in inst:
+			inst.uuid = str(id)
+		if "creation_time" in inst:
+			inst.creation_time = t
+
+		get_tree().current_scene.add_child(inst)
 
 
 func _spawn_player_in_current_level(spawn_tag: String) -> void:

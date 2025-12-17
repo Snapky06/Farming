@@ -83,8 +83,13 @@ func _exit_tree():
 func _update_persistence():
 	var save_manager = get_node_or_null("/root/SaveManager")
 	if save_manager and slot_data and slot_data.item_data:
-		var scene = get_tree().current_scene
-		if scene:
+		var wrapper = get_tree().current_scene
+		var level_path := ""
+		if wrapper and wrapper.has_method("get_active_level_path"):
+			level_path = str(wrapper.call("get_active_level_path"))
+		if level_path == "":
+			level_path = wrapper.scene_file_path if wrapper else ""
+		if level_path != "":
 			var data = {
 				"x": global_position.x,
 				"y": global_position.y,
@@ -92,11 +97,16 @@ func _update_persistence():
 				"quantity": slot_data.quantity,
 				"time": creation_time
 			}
-			save_manager.update_drop(scene.scene_file_path, uuid, data)
+			save_manager.update_drop(level_path, uuid, data)
 
 func _remove_from_persistence():
 	var save_manager = get_node_or_null("/root/SaveManager")
 	if save_manager:
-		var scene = get_tree().current_scene
-		if scene:
-			save_manager.remove_drop(scene.scene_file_path, uuid)
+		var wrapper = get_tree().current_scene
+		var level_path := ""
+		if wrapper and wrapper.has_method("get_active_level_path"):
+			level_path = str(wrapper.call("get_active_level_path"))
+		if level_path == "":
+			level_path = wrapper.scene_file_path if wrapper else ""
+		if level_path != "":
+			save_manager.remove_drop(level_path, uuid)

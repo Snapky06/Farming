@@ -68,6 +68,9 @@ theme_override_fonts/font = ExtResource("2_fx88v")
 theme_override_styles/normal = SubResource("StyleBoxFlat_2tarj")
 text = "Resume"
 
+[node name="Quests" type="Button" parent="MenuOverlay/VBoxContainer"]
+layout_mode = 2
+
 [node name="OptionsButton" type="Button" parent="MenuOverlay/VBoxContainer"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2

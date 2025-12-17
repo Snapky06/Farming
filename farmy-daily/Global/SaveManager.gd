@@ -15,7 +15,8 @@ var slots_cache = {}
 var persistence_data = {
 	"levels": {},
 	"objects": {},
-	"watered_tiles_by_level": {}
+	"watered_tiles_by_level": {},
+	"drops_by_level": {}
 }
 
 var pending_level_path: String = ""
@@ -67,7 +68,7 @@ func save_game() -> void:
 	var data = {
 		"metadata": {
 			"player_name": current_player_name,
-			"money": 0,
+			"money": 150,
 			"date": Time.get_date_string_from_system(),
 			"wrapper_path": wrapper_path,
 			"active_level_path": active_level_path
@@ -132,7 +133,7 @@ func save_and_exit_to_menu() -> void:
 func start_new_game(slot_index: int, player_name: String) -> void:
 	current_slot = slot_index
 	current_player_name = player_name
-	persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {} }
+	persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {}, "drops_by_level": {} }
 
 	var path = get_save_path(slot_index)
 	if FileAccess.file_exists(path):
@@ -181,7 +182,7 @@ func load_game(slot_index: int) -> void:
 	if data.has("persistence"):
 		persistence_data = data["persistence"]
 	else:
-		persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {} }
+		persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {}, "drops_by_level": {} }
 
 	if not persistence_data.has("levels"):
 		persistence_data["levels"] = {}
@@ -189,6 +190,8 @@ func load_game(slot_index: int) -> void:
 		persistence_data["objects"] = {}
 	if not persistence_data.has("watered_tiles_by_level"):
 		persistence_data["watered_tiles_by_level"] = {}
+	if not persistence_data.has("drops_by_level"):
+		persistence_data["drops_by_level"] = {}
 
 	if data.has("metadata") and data["metadata"].has("player_name"):
 		current_player_name = str(data["metadata"]["player_name"])
@@ -316,4 +319,23 @@ func get_object_state(obj: Node) -> Dictionary:
 	   persistence_data["objects"].has(level_path) and \
 	   persistence_data["objects"][level_path].has(obj_path):
 		return persistence_data["objects"][level_path][obj_path]
+	return {}
+
+func _ensure_drops_level(level_path: String) -> void:
+	if not persistence_data.has("drops_by_level"):
+		persistence_data["drops_by_level"] = {}
+	if not persistence_data["drops_by_level"].has(level_path):
+		persistence_data["drops_by_level"][level_path] = {}
+
+func update_drop(level_path: String, uuid: String, data: Dictionary) -> void:
+	_ensure_drops_level(level_path)
+	persistence_data["drops_by_level"][level_path][uuid] = data
+
+func remove_drop(level_path: String, uuid: String) -> void:
+	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
+		persistence_data["drops_by_level"][level_path].erase(uuid)
+
+func get_drops(level_path: String) -> Dictionary:
+	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
+		return persistence_data["drops_by_level"][level_path]
 	return {}
