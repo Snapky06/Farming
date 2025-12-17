@@ -56,6 +56,12 @@ func _find_player() -> Node:
 		return cs.find_child("Player", true, false)
 	return null
 
+func _get_active_level_root() -> Node:
+	var wrapper = get_tree().current_scene
+	if wrapper and wrapper.has_method("get_level_root"):
+		return wrapper.call("get_level_root")
+	return get_tree().current_scene
+
 func _get_active_level_key() -> String:
 	var wrapper = get_tree().current_scene
 	if wrapper and wrapper.has_method("get_active_level_path"):
@@ -66,75 +72,77 @@ func _get_active_level_key() -> String:
 		return wrapper.scene_file_path
 	return ""
 
-func _get_level_key_for_node(n: Node) -> String:
-	if n and n.owner and n.owner.scene_file_path != "":
-		return n.owner.scene_file_path
-	var k := _get_active_level_key()
-	if k != "":
-		return k
-	if get_tree().current_scene:
-		return get_tree().current_scene.scene_file_path
-	return "unknown_level"
+func _get_scene_tile_key(obj: Node) -> String:
+	if not (obj is Node2D):
+		return ""
 
-func _stable_object_id(n: Node) -> String:
-	if n == null:
-		return "null"
-	if n.has_meta("persist_id"):
-		return "META:" + str(n.get_meta("persist_id"))
-	if n is Node2D:
-		var p: Vector2 = (n as Node2D).global_position
-		return str(Vector2i(int(round(p.x)), int(round(p.y))))
-	return str(n.get_path())
+	var level_root := _get_active_level_root()
+	if level_root == null:
+		return ""
 
-func save_object_state(obj: Node, data: Dictionary) -> void:
-	var level_path := _get_level_key_for_node(obj)
-	var object_id := _stable_object_id(obj)
+	var layers: Array = level_root.find_children("*", "TileMapLayer", true, false)
+	if layers.is_empty():
+		return ""
 
-	if not persistence_data.has("objects"):
-		persistence_data["objects"] = {}
-	if not persistence_data["objects"].has(level_path):
-		persistence_data["objects"][level_path] = {}
+	var gp: Vector2 = (obj as Node2D).global_position
 
-	persistence_data["objects"][level_path][object_id] = data
+	for l in layers:
+		var layer := l as TileMapLayer
+		if layer == null or layer.tile_set == null:
+			continue
 
-func get_object_state(obj: Node) -> Dictionary:
-	var level_path := _get_level_key_for_node(obj)
-	var object_id := _stable_object_id(obj)
+		var cell: Vector2i = layer.local_to_map(layer.to_local(gp))
+		var sid: int = layer.get_cell_source_id(cell)
+		if sid < 0:
+			continue
 
-	if persistence_data.has("objects") and persistence_data["objects"].has(level_path):
-		var d: Dictionary = persistence_data["objects"][level_path]
-		if d.has(object_id):
-			return d[object_id]
-	return {}
+		var src = layer.tile_set.get_source(sid)
+		if src == null:
+			continue
 
-func save_level_data(level_path: String, data: Dictionary) -> void:
-	if not persistence_data.has("levels"):
-		persistence_data["levels"] = {}
-	persistence_data["levels"][level_path] = data
+		if src is TileSetScenesCollectionSource:
+			var alt: int = layer.get_cell_alternative_tile(cell)
+			var layer_rel := ""
+			if level_root.is_ancestor_of(layer):
+				layer_rel = str(level_root.get_path_to(layer))
+			else:
+				layer_rel = str(layer.get_path())
+			return "SCENETILE|" + _get_active_level_key() + "|" + layer_rel + "|" + str(cell.x) + "," + str(cell.y) + "|" + str(sid) + "|" + str(alt)
 
-func get_level_data_dynamic(level_path: String) -> Dictionary:
-	if persistence_data.has("levels") and persistence_data["levels"].has(level_path):
-		return persistence_data["levels"][level_path]
-	return {}
+	return ""
 
-func _ensure_drops_level(level_path: String) -> void:
-	if not persistence_data.has("drops_by_level"):
-		persistence_data["drops_by_level"] = {}
-	if not persistence_data["drops_by_level"].has(level_path):
-		persistence_data["drops_by_level"][level_path] = {}
+func _get_node_rel_key(obj: Node) -> String:
+	var level_root := _get_active_level_root()
+	if obj and level_root and is_instance_valid(level_root) and level_root.is_ancestor_of(obj):
+		return "NODE|" + _get_active_level_key() + "|" + str(level_root.get_path_to(obj))
+	return "NODE|" + _get_active_level_key() + "|" + str(obj.get_path())
 
-func update_drop(level_path: String, uuid: String, data: Dictionary) -> void:
-	_ensure_drops_level(level_path)
-	persistence_data["drops_by_level"][level_path][uuid] = data
+func _get_object_key(obj: Node) -> String:
+	if obj == null:
+		return ""
+	if obj.has_meta("persist_id"):
+		return "META|" + _get_active_level_key() + "|" + str(obj.get_meta("persist_id"))
 
-func remove_drop(level_path: String, uuid: String) -> void:
-	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
-		persistence_data["drops_by_level"][level_path].erase(uuid)
+	var scene_tile_key := _get_scene_tile_key(obj)
+	if scene_tile_key != "":
+		return scene_tile_key
 
-func get_drops(level_path: String) -> Dictionary:
-	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
-		return persistence_data["drops_by_level"][level_path]
-	return {}
+	return _get_node_rel_key(obj)
+
+func _flush_persistence() -> void:
+	var root := _get_active_level_root()
+	if root == null:
+		root = get_tree().current_scene
+	if root == null:
+		return
+
+	if root.has_method("_save_persistence"):
+		root.call("_save_persistence")
+
+	var nodes: Array = root.find_children("*", "", true, false)
+	for n in nodes:
+		if n and n.has_method("_save_persistence"):
+			n.call("_save_persistence")
 
 func save_game() -> void:
 	var wrapper = get_tree().current_scene
@@ -145,10 +153,12 @@ func save_game() -> void:
 		if wrapper.has_method("get_active_level_path"):
 			active_level_path = str(wrapper.call("get_active_level_path"))
 
+	_flush_persistence()
+
 	var data = {
 		"metadata": {
 			"player_name": current_player_name,
-			"money": 0,
+			"money": 150,
 			"date": Time.get_date_string_from_system(),
 			"wrapper_path": wrapper_path,
 			"active_level_path": active_level_path
@@ -184,7 +194,12 @@ func save_game() -> void:
 
 	var time_manager = get_node_or_null("/root/TimeManager")
 	if time_manager and time_manager.has_method("get_save_data"):
-		data["time"] = time_manager.get_save_data()
+		var t_data = time_manager.get_save_data()
+		data["time"] = t_data
+		if t_data.has("month") and t_data.has("day"):
+			var month_idx = int(t_data["month"])
+			var day_num = int(t_data["day"])
+			data["metadata"]["date"] = "Month " + str(month_idx) + ", Day " + str(day_num)
 
 	if wrapper and wrapper.has_method("save_level_state"):
 		wrapper.call("save_level_state")
@@ -319,9 +334,6 @@ func load_game(slot_index: int) -> void:
 		if hp != null:
 			player.set("health", int(hp))
 
-		if pending_has_player_pos:
-			player.global_position = pending_player_pos
-
 		if player.has_signal("money_updated"):
 			player.emit_signal("money_updated", player.money)
 
@@ -356,3 +368,65 @@ func delete_save(slot_index: int) -> void:
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
 	_refresh_slots()
+
+func save_level_data(level_path: String, data: Dictionary) -> void:
+	if not persistence_data.has("levels"):
+		persistence_data["levels"] = {}
+	persistence_data["levels"][level_path] = data
+
+func get_level_data_dynamic(level_path: String) -> Dictionary:
+	if persistence_data.has("levels") and persistence_data["levels"].has(level_path):
+		return persistence_data["levels"][level_path]
+	return {}
+
+func save_object_state(obj: Node, data: Dictionary) -> void:
+	var level_path := _get_active_level_key()
+	if level_path == "":
+		level_path = get_tree().current_scene.scene_file_path
+
+	var key := _get_object_key(obj)
+	var legacy_abs := String(obj.get_path())
+
+	if not persistence_data.has("objects"):
+		persistence_data["objects"] = {}
+	if not persistence_data["objects"].has(level_path):
+		persistence_data["objects"][level_path] = {}
+
+	persistence_data["objects"][level_path][key] = data
+	persistence_data["objects"][level_path][legacy_abs] = data
+
+func get_object_state(obj: Node) -> Dictionary:
+	var level_path := _get_active_level_key()
+	if level_path == "":
+		level_path = get_tree().current_scene.scene_file_path
+
+	var key := _get_object_key(obj)
+	var legacy_abs := String(obj.get_path())
+
+	if persistence_data.has("objects") and persistence_data["objects"].has(level_path):
+		var d: Dictionary = persistence_data["objects"][level_path]
+		if d.has(key):
+			return d[key]
+		if d.has(legacy_abs):
+			return d[legacy_abs]
+
+	return {}
+
+func _ensure_drops_level(level_path: String) -> void:
+	if not persistence_data.has("drops_by_level"):
+		persistence_data["drops_by_level"] = {}
+	if not persistence_data["drops_by_level"].has(level_path):
+		persistence_data["drops_by_level"][level_path] = {}
+
+func update_drop(level_path: String, uuid: String, data: Dictionary) -> void:
+	_ensure_drops_level(level_path)
+	persistence_data["drops_by_level"][level_path][uuid] = data
+
+func remove_drop(level_path: String, uuid: String) -> void:
+	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
+		persistence_data["drops_by_level"][level_path].erase(uuid)
+
+func get_drops(level_path: String) -> Dictionary:
+	if persistence_data.has("drops_by_level") and persistence_data["drops_by_level"].has(level_path):
+		return persistence_data["drops_by_level"][level_path]
+	return {}
