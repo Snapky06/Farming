@@ -3,7 +3,7 @@ extends Node2D
 @onready var player: CharacterBody2D = $Player
 @onready var inventory_interface: Control = $UI/InventoryInterface
 @onready var hot_bar_inventory: PanelContainer = $UI/HotBarInventory
-@onready var tile_selector: Node2D = $TileSelector 
+@onready var tile_selector: Node2D = $TileSelector
 
 var ground_layer: TileMapLayer = null
 var obstruction_layers: Array[TileMapLayer] = []
@@ -23,28 +23,32 @@ var transition_rect: ColorRect = null
 
 var pause_menu_scene = preload("res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/PauseMenu.tscn")
 
+var current_level_key: String = ""
+
 func _ready() -> void:
-	_refresh_layer_references(self)
+	_refresh_layer_references(get_tree().current_scene)
 	_setup_transition_layer()
-	_connect_all_chests(self)
-	
+	_connect_all_chests(get_tree().current_scene)
+
+	_update_current_level_key_from_ground()
+
 	var menu = pause_menu_scene.instantiate()
 	add_child(menu)
 
 	var spawn_node: Node2D = null
 	if TimeManager.player_spawn_tag != "":
-		spawn_node = find_child(TimeManager.player_spawn_tag, true, false) as Node2D
+		spawn_node = get_tree().current_scene.find_child(TimeManager.player_spawn_tag, true, false) as Node2D
 	if spawn_node == null:
-		spawn_node = find_child("SpawnPoint", true, false) as Node2D
+		spawn_node = get_tree().current_scene.find_child("SpawnPoint", true, false) as Node2D
 	if spawn_node == null:
-		var all_markers: Array = find_children("*", "Marker2D", true, false)
+		var all_markers: Array = get_tree().current_scene.find_children("*", "Marker2D", true, false)
 		if all_markers.size() > 0:
 			spawn_node = all_markers[0] as Node2D
-	
+
 	if spawn_node and is_instance_valid(player):
 		player.global_position = spawn_node.global_position
 		player.agent.target_position = spawn_node.global_position
-	
+
 	TimeManager.player_spawn_tag = ""
 
 	if is_instance_valid(player) and is_instance_valid(inventory_interface):
@@ -62,7 +66,7 @@ func _ready() -> void:
 
 	if is_instance_valid(tile_selector):
 		tile_selector.visible = false
-	
+
 	hot_bar_inventory.deselect_all()
 
 	if TimeManager.has_signal("time_updated"):
@@ -73,22 +77,62 @@ func _ready() -> void:
 	await get_tree().process_frame
 	set_camera_limits()
 
+func _exit_tree() -> void:
+	save_watered_tiles()
+
+func _get_level_root_from_ground() -> Node:
+	if not is_instance_valid(ground_layer):
+		return null
+	var n: Node = ground_layer
+	while n != null and n.get_parent() != self and n.get_parent() != null:
+		n = n.get_parent()
+	return n
+
+func _update_current_level_key(level_root: Node) -> void:
+	if level_root == null:
+		current_level_key = "unknown_level"
+	else:
+		if level_root.scene_file_path != "":
+			current_level_key = level_root.scene_file_path
+		else:
+			current_level_key = level_root.name
+	if TimeManager.has_method("set_water_level_key"):
+		TimeManager.set_water_level_key(current_level_key)
+
+func _update_current_level_key_from_ground() -> void:
+	var level_root := _get_level_root_from_ground()
+	_update_current_level_key(level_root)
+
 func _refresh_layer_references(root: Node) -> void:
 	ground_layer = null
 	obstruction_layers.clear()
-	
-	var all_layers: Array[Node] = root.find_children("*", "TileMapLayer", true, false)
-	
-	for layer in all_layers:
-		if layer.name == "Ground":
-			ground_layer = layer
-			if is_instance_valid(tile_selector) and tile_selector.has_method("set_tile_size"):
-				tile_selector.set_tile_size(ground_layer.tile_set.tile_size)
-		else:
-			obstruction_layers.append(layer)
-			
+
+	var scene_root: Node = get_tree().current_scene
+	if scene_root == null:
+		scene_root = root
+
+	var direct_ground = scene_root.find_child("Ground", true, false)
+	if direct_ground and direct_ground is TileMapLayer:
+		ground_layer = direct_ground
+	else:
+		var all_layers: Array[Node] = scene_root.find_children("*", "TileMapLayer", true, false)
+		for layer in all_layers:
+			if layer.name == "Ground":
+				ground_layer = layer
+				break
+
 	if ground_layer == null:
 		push_error("CRITICAL: No TileMapLayer named 'Ground' found in this level!")
+		return
+
+	var all_layers2: Array[Node] = scene_root.find_children("*", "TileMapLayer", true, false)
+	for layer2 in all_layers2:
+		if layer2 == ground_layer:
+			continue
+		obstruction_layers.append(layer2)
+
+	if is_instance_valid(tile_selector) and tile_selector.has_method("set_tile_size"):
+		tile_selector.set_tile_size(ground_layer.tile_set.tile_size)
 
 func _connect_all_chests(node: Node) -> void:
 	if node.has_signal("chest_opened"):
@@ -96,15 +140,15 @@ func _connect_all_chests(node: Node) -> void:
 			node.chest_opened.connect(on_chest_opened.bind(node))
 		if not node.chest_closed.is_connected(on_chest_closed):
 			node.chest_closed.connect(on_chest_closed)
-	
+
 	for child in node.get_children():
 		_connect_all_chests(child)
 
 func _setup_transition_layer() -> void:
 	transition_layer = CanvasLayer.new()
-	transition_layer.layer = 100 
+	transition_layer.layer = 100
 	add_child(transition_layer)
-	
+
 	transition_rect = ColorRect.new()
 	transition_rect.color = Color.BLACK
 	transition_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -115,15 +159,15 @@ func _setup_transition_layer() -> void:
 func set_camera_limits() -> void:
 	if not is_instance_valid(ground_layer) or not is_instance_valid(player):
 		return
-		
+
 	var map_rect = ground_layer.get_used_rect()
 	if map_rect.size == Vector2i.ZERO:
 		return
-	
+
 	var tile_size = ground_layer.tile_set.tile_size
 	var render_scale = ground_layer.global_scale
 	var pos = ground_layer.global_position
-	
+
 	player.cam.limit_left = int(pos.x + map_rect.position.x * tile_size.x * render_scale.x)
 	player.cam.limit_top = int(pos.y + map_rect.position.y * tile_size.y * render_scale.y)
 	player.cam.limit_right = int(pos.x + map_rect.end.x * tile_size.x * render_scale.x)
@@ -145,7 +189,7 @@ func update_watered_tiles(current_day: int, current_month: int, current_time: fl
 		var w_day = int(data.get("day", current_day))
 		var w_time = float(data.get("time", current_time))
 		var w_month = int(data.get("month", current_month))
-		
+
 		var time_passed := 0.0
 		if w_day == current_day and w_month == current_month:
 			time_passed = current_time - w_time
@@ -154,21 +198,22 @@ func update_watered_tiles(current_day: int, current_month: int, current_time: fl
 			if w_month != current_month:
 				var days_in_prev_month = TimeManager.DAYS_IN_MONTH[w_month]
 				day_diff = (days_in_prev_month - w_day) + current_day
-			
+
 			if day_diff < 0:
 				tiles_to_dry.append(tile_pos)
 				continue
-				
+
 			time_passed = day_diff * 86400.0 + (current_time - w_time)
-		
+
 		if time_passed >= 43200.0:
 			tiles_to_dry.append(tile_pos)
-			
+
 	for tile_pos in tiles_to_dry:
 		dry_tile(tile_pos)
 
 func dry_tile(tile_pos: Vector2i) -> void:
-	if not is_instance_valid(ground_layer): return
+	if not is_instance_valid(ground_layer):
+		return
 	if ground_layer.get_cell_atlas_coords(tile_pos) == WATERED_ATLAS_COORDS:
 		ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)
 	watered_tiles.erase(tile_pos)
@@ -179,41 +224,40 @@ func _on_hotbar_slot_selected(_index: int) -> void:
 	refresh_tile_selector()
 
 func refresh_tile_selector() -> void:
-	if not is_instance_valid(tile_selector): return
-	
+	if not is_instance_valid(tile_selector):
+		return
+
 	if inventory_interface.visible:
 		tile_selector.visible = false
 		return
-		
+
 	if not is_instance_valid(player) or not player.equipped_item:
 		tile_selector.visible = false
 		return
 
 	var item_name = str(player.equipped_item.name)
 	var mouse_pos = get_global_mouse_position()
-	
+
 	var center_pos = get_tile_center_position(mouse_pos)
-	if center_pos == Vector2.ZERO: 
+	if center_pos == Vector2.ZERO:
 		tile_selector.visible = false
 		return
 
 	tile_selector.global_position = center_pos
-	
+
 	var is_valid = false
 	var show_selector = false
 
 	if item_name == "Hoe":
 		show_selector = true
 		is_valid = is_tile_farmable(mouse_pos)
-
 	elif item_name == "Watering Can":
 		show_selector = true
 		is_valid = is_tile_waterable(mouse_pos)
-
 	elif "Seed" in item_name or "Seeds" in item_name:
 		show_selector = true
 		is_valid = can_plant_seed(mouse_pos)
-	
+
 	if show_selector:
 		tile_selector.visible = true
 		if tile_selector.has_method("set_status"):
@@ -252,12 +296,12 @@ func on_chest_opened(inventory_data, chest_instance) -> void:
 	hot_bar_inventory.hide()
 	tile_selector.visible = false
 	hot_bar_inventory.deselect_all()
-	
+
 	if is_instance_valid(player):
 		player.is_movement_locked = true
 		if player.agent:
 			player.agent.target_position = player.global_position
-	
+
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func on_chest_closed() -> void:
@@ -265,14 +309,15 @@ func on_chest_closed() -> void:
 	inventory_interface.clear_external_inventory()
 	inventory_interface.visible = false
 	hot_bar_inventory.show()
-	
+
 	if is_instance_valid(player):
 		player.is_movement_locked = false
-	
+
 	refresh_tile_selector()
 
 func get_tile_center_position(global_pos: Vector2) -> Vector2:
-	if not is_instance_valid(ground_layer): return Vector2.ZERO
+	if not is_instance_valid(ground_layer):
+		return Vector2.ZERO
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	return ground_layer.to_global(ground_layer.map_to_local(tile_pos))
@@ -282,75 +327,73 @@ func is_tile_occupied(center: Vector2) -> bool:
 	var query = PhysicsPointQueryParameters2D.new()
 	query.position = center
 	query.collide_with_bodies = true
-	query.collide_with_areas = false 
-	query.collision_mask = 1 | 4 
-	
+	query.collide_with_areas = false
+	query.collision_mask = 1 | 4
+
 	var results = space_state.intersect_point(query)
-	
+
 	for result in results:
 		var collider = result.collider
 		if collider == player or (player and player.is_ancestor_of(collider)):
 			continue
-		
-		# CRITICAL FIX: Check for 'is_destroyed' property safely using .get()
-		# This ensures that if the object is in the process of being destroyed/picked up,
-		# we treat the tile as empty immediately.
+
 		if collider.get("is_destroyed"):
 			continue
-			
+
 		return true
 	return false
 
 func is_tile_farmable(global_pos: Vector2) -> bool:
-	if not is_instance_valid(ground_layer): 
+	if not is_instance_valid(ground_layer):
 		return false
-	
+
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
-	
+
 	if ground_layer.get_cell_source_id(tile_pos) == -1:
 		return false
-		
+
 	for layer in obstruction_layers:
 		if is_instance_valid(layer):
 			if layer.get_cell_source_id(tile_pos) != -1:
 				return false
-	
+
 	var tile_data = ground_layer.get_cell_tile_data(tile_pos)
 	if not tile_data:
 		return false
-		
+
 	var can_farm = tile_data.get_custom_data("can_farm")
 	if typeof(can_farm) == TYPE_BOOL and not can_farm:
 		return false
-		
+
 	var atlas_coords = ground_layer.get_cell_atlas_coords(tile_pos)
 	if atlas_coords == HOED_ATLAS_COORDS or atlas_coords == WATERED_ATLAS_COORDS:
 		return false
-		
+
 	if is_tile_occupied(get_tile_center_position(global_pos)):
 		return false
-		
+
 	return true
 
 func is_tile_waterable(global_pos: Vector2) -> bool:
-	if not is_instance_valid(ground_layer): 
+	if not is_instance_valid(ground_layer):
 		return false
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	var atlas_coords = ground_layer.get_cell_atlas_coords(tile_pos)
-	
+
 	if atlas_coords == HOED_ATLAS_COORDS:
 		return true
 	return false
 
 func can_plant_seed(global_pos: Vector2) -> bool:
-	if not is_instance_valid(ground_layer) or not is_instance_valid(player): 
+	if not is_instance_valid(ground_layer) or not is_instance_valid(player):
 		return false
-	
+
 	var item = player.equipped_item
-	if not item: return false
-	
+	if not item:
+		return false
+
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	var target_center = get_tile_center_position(global_pos)
@@ -363,48 +406,49 @@ func can_plant_seed(global_pos: Vector2) -> bool:
 				if is_tile_occupied(neighbor_center):
 					return false
 		var source_id = ground_layer.get_cell_source_id(tile_pos)
-		if source_id == -1: return false
+		if source_id == -1:
+			return false
 		return true
-	
+
 	if is_tile_occupied(target_center):
 		return false
-		
+
 	var atlas_coords = ground_layer.get_cell_atlas_coords(tile_pos)
 	if atlas_coords == HOED_ATLAS_COORDS or atlas_coords == WATERED_ATLAS_COORDS:
 		return true
-		
+
 	return false
 
 func use_hoe(global_pos: Vector2) -> void:
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
-	
+
 	spawn_till_effect(get_tile_center_position(global_pos))
-	
+
 	if is_instance_valid(ground_layer):
 		ground_layer.set_cell(tile_pos, HOED_SOURCE_ID, HOED_ATLAS_COORDS)
-	
+
 	refresh_tile_selector()
 
 func use_water(global_pos: Vector2) -> void:
 	var local_pos = ground_layer.to_local(global_pos)
 	var tile_pos = ground_layer.local_to_map(local_pos)
 	var tile_center = ground_layer.to_global(ground_layer.map_to_local(tile_pos))
-	
+
 	spawn_water_effect(tile_center)
-	
+
 	await get_tree().create_timer(0.25).timeout
 
 	if is_instance_valid(ground_layer):
 		ground_layer.set_cell(tile_pos, WATERED_SOURCE_ID, WATERED_ATLAS_COORDS)
-		
+
 		watered_tiles[tile_pos] = {
 			"day": TimeManager.current_day,
 			"month": TimeManager.current_month,
 			"time": TimeManager.current_time_seconds
 		}
 		save_watered_tiles()
-	
+
 	refresh_tile_selector()
 
 func spawn_till_effect(pos: Vector2) -> void:
@@ -423,11 +467,11 @@ func spawn_till_effect(pos: Vector2) -> void:
 	particles.color = Color(0.4, 0.3, 0.2)
 	particles.position = pos
 	particles.z_index = 5
-	
+
 	get_tree().current_scene.add_child(particles)
 	await get_tree().process_frame
 	particles.emitting = true
-	
+
 	await get_tree().create_timer(1.0).timeout
 	if is_instance_valid(particles):
 		particles.queue_free()
@@ -438,29 +482,30 @@ func spawn_water_effect(pos: Vector2) -> void:
 	particles.lifetime = 0.3
 	particles.one_shot = true
 	particles.explosiveness = 1.0
-	
-	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_POINT 
-	particles.direction = Vector2(0, -1) 
-	particles.spread = 25.0 
-	particles.initial_velocity_min = 50.0 
-	particles.initial_velocity_max = 70.0 
-	particles.gravity = Vector2(0, 800) 
-	
+
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_POINT
+	particles.direction = Vector2(0, -1)
+	particles.spread = 25.0
+	particles.initial_velocity_min = 50.0
+	particles.initial_velocity_max = 70.0
+	particles.gravity = Vector2(0, 800)
+
 	particles.scale_amount_min = 1.5
 	particles.scale_amount_max = 2.5
 	particles.color = Color(0.2, 0.6, 1.0, 1.0)
 	particles.position = pos
 	particles.z_index = 20
-	
+
 	get_tree().current_scene.add_child(particles)
 	await get_tree().process_frame
 	particles.emitting = true
-	
+
 	await get_tree().create_timer(0.5).timeout
 	if is_instance_valid(particles):
 		particles.queue_free()
 
 func load_watered_tiles() -> void:
+	_update_current_level_key_from_ground()
 	watered_tiles.clear()
 	if not TimeManager.has_method("load_watered_tiles"):
 		return
@@ -478,11 +523,11 @@ func load_watered_tiles() -> void:
 		var data = saved_data[key]
 		if typeof(data) != TYPE_DICTIONARY:
 			continue
-		
+
 		var day = int(data.get("day", TimeManager.current_day))
 		var month = int(data.get("month", TimeManager.current_month))
 		var time_val = float(data.get("time", TimeManager.current_time_seconds))
-		
+
 		watered_tiles[tile_pos] = {
 			"day": day,
 			"month": month,
@@ -492,6 +537,7 @@ func load_watered_tiles() -> void:
 			ground_layer.set_cell(tile_pos, WATERED_SOURCE_ID, WATERED_ATLAS_COORDS)
 
 func save_watered_tiles() -> void:
+	_update_current_level_key_from_ground()
 	if not TimeManager.has_method("save_watered_tiles"):
 		return
 	var save_data: Dictionary = {}
@@ -509,35 +555,39 @@ func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
 	if not is_instance_valid(ground_layer):
 		push_warning("ground_layer is null; cannot determine current level root.")
 		return
-		
+
+	save_watered_tiles()
+
 	if is_instance_valid(player):
 		player.is_movement_locked = true
 		player.velocity = Vector2.ZERO
-		
+
 	if is_instance_valid(transition_rect):
 		var t = create_tween()
 		t.tween_property(transition_rect, "modulate:a", 1.0, 0.5)
 		await t.finished
-		
+
 	var old_level_root: Node = ground_layer
 	while old_level_root.get_parent() != self and old_level_root.get_parent() != null:
 		old_level_root = old_level_root.get_parent()
-		
+
 	TimeManager.player_spawn_tag = spawn_tag
 	var parent: Node = old_level_root.get_parent()
 	var index: int = old_level_root.get_index()
 	var old_name: String = old_level_root.name
-	
+
 	old_level_root.queue_free()
 	var new_level_root: Node = packed_scene.instantiate()
 	new_level_root.name = old_name
 	parent.add_child(new_level_root)
 	parent.move_child(new_level_root, index)
-	
+
 	await get_tree().process_frame
-	
+
 	_refresh_layer_references(new_level_root)
-				
+	_update_current_level_key(new_level_root)
+	load_watered_tiles()
+
 	var spawn_node: Node2D = null
 	if TimeManager.player_spawn_tag != "":
 		spawn_node = find_child(TimeManager.player_spawn_tag, true, false) as Node2D
@@ -547,24 +597,24 @@ func change_level_to(target_scene_path: String, spawn_tag: String) -> void:
 		var all_markers: Array = find_children("*", "Marker2D", true, false)
 		if all_markers.size() > 0:
 			spawn_node = all_markers[0] as Node2D
-	
+
 	if spawn_node and is_instance_valid(player):
 		player.global_position = spawn_node.global_position
 		player.agent.target_position = spawn_node.global_position
-		
+
 	TimeManager.player_spawn_tag = ""
 	set_camera_limits()
 	refresh_tile_selector()
-	
+
 	_connect_all_chests(new_level_root)
-	
+
 	await get_tree().create_timer(0.5).timeout
-	
+
 	if is_instance_valid(transition_rect):
 		var t2 = create_tween()
 		t2.tween_property(transition_rect, "modulate:a", 0.0, 0.5)
 		await t2.finished
-		
+
 	if is_instance_valid(player):
 		player.is_movement_locked = false
 
@@ -576,7 +626,7 @@ func get_level_data() -> Dictionary:
 
 func load_level_data(data: Dictionary) -> void:
 	watered_tiles = data.get("watered_tiles", {})
-	
+
 	var mods = data.get("ground_modifications", {})
 	if is_instance_valid(ground_layer):
 		for key in mods:

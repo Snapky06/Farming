@@ -3,16 +3,24 @@ extends Node
 const SAVE_DIR = "user://saves/"
 const SAVE_TEMPLATE = "save_slot_%d.json"
 const MAX_SLOTS = 3
-const DEFAULT_LEVEL_PATH = "res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.tscn"
+const GAME_WRAPPER_PATH = "res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.tscn"
+const DEFAULT_LEVEL_SCENE_PATH = "res://levels/playerhouse.tscn"
 const MAIN_MENU_PATH = "res://levels/main_menu.tscn"
 
 var current_slot = 0
 var current_player_name = "Farmer"
 var slots_cache = {}
+
 var persistence_data = {
 	"levels": {},
-	"objects": {}
+	"objects": {},
+	"watered_tiles_by_level": {}
 }
+
+var pending_level_path: String = ""
+var pending_player_pos: Vector2 = Vector2.ZERO
+var pending_has_player_pos: bool = false
+var pending_spawn_tag: String = ""
 
 func _ready() -> void:
 	if not DirAccess.dir_exists_absolute(SAVE_DIR):
@@ -37,18 +45,32 @@ func _refresh_slots() -> void:
 					if data.has("metadata"):
 						slots_cache[i] = data["metadata"]
 
+func _find_player() -> Node:
+	var p = get_tree().get_first_node_in_group("player")
+	if p:
+		return p
+	var cs = get_tree().current_scene
+	if cs:
+		return cs.find_child("Player", true, false)
+	return null
+
 func save_game() -> void:
 	var current_scene = get_tree().current_scene
-	var level_path = ""
+	var wrapper_path = ""
 	if current_scene:
-		level_path = current_scene.scene_file_path
-		
+		wrapper_path = current_scene.scene_file_path
+
+	var active_level_path := ""
+	if current_scene and current_scene.has_method("get_active_level_path"):
+		active_level_path = str(current_scene.call("get_active_level_path"))
+
 	var data = {
 		"metadata": {
 			"player_name": current_player_name,
 			"money": 0,
 			"date": Time.get_date_string_from_system(),
-			"level_path": level_path 
+			"level_path": wrapper_path,
+			"active_level_path": active_level_path
 		},
 		"player": {},
 		"inventory": [],
@@ -56,11 +78,8 @@ func save_game() -> void:
 		"persistence": persistence_data,
 		"world": []
 	}
-	
-	var player = get_tree().get_first_node_in_group("player")
-	if not player:
-		player = get_tree().current_scene.find_child("Player", true, false)
-			
+
+	var player = _find_player()
 	if player:
 		data["metadata"]["money"] = player.money
 		data["player"] = {
@@ -71,7 +90,7 @@ func save_game() -> void:
 			"health": player.get("health") if player.get("health") != null else 100,
 			"max_health": player.get("max_health") if player.get("max_health") != null else 100
 		}
-		
+
 		if player.inventory_data and player.inventory_data.slot_datas:
 			for slot in player.inventory_data.slot_datas:
 				if slot and slot.item_data:
@@ -98,33 +117,112 @@ func save_game() -> void:
 	if file:
 		file.store_string(JSON.stringify(data, "\t"))
 		file.close()
-	
+
 	_refresh_slots()
 
 func save_and_exit_to_menu() -> void:
 	save_game()
-	
 	var time_manager = get_node_or_null("/root/TimeManager")
 	if time_manager:
 		time_manager.is_gameplay_active = false
-		
 	get_tree().change_scene_to_file(MAIN_MENU_PATH)
 
 func load_game(slot_index: int) -> void:
 	var path = get_save_path(slot_index)
 	if not FileAccess.file_exists(path):
 		return
-		
+
 	current_slot = slot_index
-	
+
 	var file = FileAccess.open(path, FileAccess.READ)
 	var text = file.get_as_text()
 	file.close()
-	
+
 	var json = JSON.new()
-	if json.parse(text) == OK:
-		var data = json.data
-		_apply_save_data(data)
+	if json.parse(text) != OK:
+		return
+
+	var data: Dictionary = json.data
+
+	if data.has("persistence"):
+		persistence_data = data["persistence"]
+	else:
+		persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {} }
+
+	if data.has("metadata") and data["metadata"].has("player_name"):
+		current_player_name = data["metadata"]["player_name"]
+
+	pending_level_path = DEFAULT_LEVEL_SCENE_PATH
+	if data.has("metadata") and data["metadata"].has("active_level_path"):
+		var ap = str(data["metadata"]["active_level_path"])
+		if ap != "" and ResourceLoader.exists(ap):
+			pending_level_path = ap
+
+	pending_has_player_pos = false
+	if data.has("player"):
+		var p = data["player"]
+		pending_player_pos = Vector2(float(p.get("pos_x", 0.0)), float(p.get("pos_y", 0.0)))
+		pending_has_player_pos = true
+
+	var time_manager = get_node_or_null("/root/TimeManager")
+	if time_manager:
+		time_manager.is_gameplay_active = false
+		time_manager.player_spawn_tag = ""
+		if data.has("time") and time_manager.has_method("load_save_data"):
+			time_manager.load_save_data(data["time"])
+
+	pending_spawn_tag = ""
+
+	get_tree().change_scene_to_file(GAME_WRAPPER_PATH)
+
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+
+	var player = _find_player()
+	if player and data.has("player"):
+		var pd = data["player"]
+		var money_val = pd.get("money", 0)
+		if money_val == null:
+			money_val = 0
+		if "money" in player:
+			player.money = int(money_val)
+
+		var axe_dmg = pd.get("axe_damage")
+		if axe_dmg != null:
+			player.set("axe_hit_damage", int(axe_dmg))
+
+		var hp = pd.get("health")
+		if hp != null:
+			player.set("health", int(hp))
+
+		if player.has_signal("money_updated"):
+			player.emit_signal("money_updated", player.money)
+
+	if player and "inventory_data" in player and player.inventory_data and data.has("inventory"):
+		var inv_list = data["inventory"]
+		for i in range(inv_list.size()):
+			if i < player.inventory_data.slot_datas.size():
+				var slot_info = inv_list[i]
+				if slot_info != null and slot_info.has("path"):
+					var rp = str(slot_info["path"])
+					if rp != "" and ResourceLoader.exists(rp):
+						var res = load(rp)
+						if res:
+							var new_slot = SlotData.new()
+							new_slot.item_data = res
+							new_slot.quantity = int(slot_info.get("amount", 1))
+							player.inventory_data.slot_datas[i] = new_slot
+						else:
+							player.inventory_data.slot_datas[i] = null
+					else:
+						player.inventory_data.slot_datas[i] = null
+				else:
+					player.inventory_data.slot_datas[i] = null
+		player.inventory_data.emit_signal("inventory_updated", player.inventory_data)
+
+	if time_manager:
+		time_manager.is_gameplay_active = true
 
 func delete_save(slot_index: int) -> void:
 	var path = get_save_path(slot_index)
@@ -135,8 +233,8 @@ func delete_save(slot_index: int) -> void:
 func start_new_game(slot_index: int, player_name: String) -> void:
 	current_slot = slot_index
 	current_player_name = player_name
-	persistence_data = { "levels": {}, "objects": {} }
-	
+	persistence_data = { "levels": {}, "objects": {}, "watered_tiles_by_level": {} }
+
 	var path = get_save_path(slot_index)
 	if FileAccess.file_exists(path):
 		DirAccess.remove_absolute(path)
@@ -144,9 +242,10 @@ func start_new_game(slot_index: int, player_name: String) -> void:
 	var time_manager = get_node_or_null("/root/TimeManager")
 	if time_manager:
 		time_manager.is_gameplay_active = false
-		time_manager.player_spawn_tag = "sleep" 
+		time_manager.auto_sleep_penalty_applied = false
+		time_manager.player_spawn_tag = "sleep"
 		if time_manager.has_method("load_save_data"):
-			var default_data = {
+			time_manager.load_save_data({
 				"time_seconds": 21600.0,
 				"day": 1,
 				"month": 4,
@@ -154,42 +253,26 @@ func start_new_game(slot_index: int, player_name: String) -> void:
 				"season": 0,
 				"penalty": false,
 				"energy": 100.0
-			}
-			time_manager.load_save_data(default_data)
-		
-	if ResourceLoader.exists(DEFAULT_LEVEL_PATH):
-		get_tree().change_scene_to_file(DEFAULT_LEVEL_PATH)
-	else:
-		get_tree().change_scene_to_file("res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/House/main.tscn")
-		
+			})
+
+	pending_level_path = DEFAULT_LEVEL_SCENE_PATH
+	pending_player_pos = Vector2.ZERO
+	pending_has_player_pos = false
+	pending_spawn_tag = "sleep"
+
+	get_tree().change_scene_to_file(GAME_WRAPPER_PATH)
+
 	await get_tree().process_frame
 	await get_tree().process_frame
-	
-	var player = get_tree().get_first_node_in_group("player")
-	if not player:
-		player = get_tree().current_scene.find_child("Player", true, false)
-		
+	await get_tree().process_frame
+
+	var player = _find_player()
 	if player:
-		var sleep_marker = get_tree().current_scene.find_child("sleep", true, false)
-		if sleep_marker:
-			player.global_position = sleep_marker.global_position
-			
-			player.set("is_movement_locked", true)
-			var sprite = player.get_node_or_null("AnimatedSprite2D")
-			if sprite and sprite.sprite_frames.has_animation("sleep_down"):
-				sprite.play_backwards("sleep_down")
-				await sprite.animation_finished
-			else:
-				await get_tree().create_timer(1.0).timeout
-			
-			if sprite:
-				sprite.play("idle_down")
-				
-			player.set("is_movement_locked", false)
-		
-		player.money = 0
-		player.emit_signal("money_updated", 0)
-		if player.inventory_data:
+		if "money" in player:
+			player.money = 0
+		if player.has_signal("money_updated"):
+			player.emit_signal("money_updated", 0)
+		if "inventory_data" in player and player.inventory_data:
 			for i in range(player.inventory_data.slot_datas.size()):
 				player.inventory_data.slot_datas[i] = null
 			player.inventory_data.emit_signal("inventory_updated", player.inventory_data)
@@ -198,74 +281,6 @@ func start_new_game(slot_index: int, player_name: String) -> void:
 		time_manager.is_gameplay_active = true
 
 	save_game()
-
-func _apply_save_data(data: Dictionary) -> void:
-	if data.has("persistence"):
-		persistence_data = data["persistence"]
-	else:
-		persistence_data = { "levels": {}, "objects": {} }
-
-	if data.has("metadata"):
-		if data["metadata"].has("player_name"):
-			current_player_name = data["metadata"]["player_name"]
-	
-	var time_manager = get_node_or_null("/root/TimeManager")
-	if time_manager:
-		time_manager.is_gameplay_active = false
-		
-	var target_level = DEFAULT_LEVEL_PATH
-	if data.has("metadata") and data["metadata"].has("level_path"):
-		var saved_path = data["metadata"]["level_path"]
-		if saved_path != "" and ResourceLoader.exists(saved_path):
-			target_level = saved_path
-			
-	get_tree().change_scene_to_file(target_level)
-		
-	await get_tree().process_frame
-	await get_tree().process_frame
-	
-	var player = get_tree().get_first_node_in_group("player")
-	if not player:
-		player = get_tree().current_scene.find_child("Player", true, false)
-	
-	if player and data.has("player"):
-		var p = data["player"]
-		player.global_position = Vector2(p.get("pos_x", 0), p.get("pos_y", 0))
-		
-		var money_val = p.get("money", 0)
-		if money_val == null: money_val = 0
-		player.money = int(money_val)
-		
-		var axe_dmg = p.get("axe_damage")
-		if axe_dmg != null: 
-			player.set("axe_hit_damage", int(axe_dmg))
-			
-		var hp = p.get("health")
-		if hp != null: 
-			player.set("health", int(hp))
-			
-		player.emit_signal("money_updated", player.money)
-		
-	if player and player.inventory_data and data.has("inventory"):
-		var inv_list = data["inventory"]
-		for i in range(inv_list.size()):
-			if i < player.inventory_data.slot_datas.size():
-				var slot_info = inv_list[i]
-				if slot_info != null:
-					if ResourceLoader.exists(slot_info["path"]):
-						var res = load(slot_info["path"])
-						if res:
-							var new_slot = SlotData.new()
-							new_slot.item_data = res
-							new_slot.quantity = int(slot_info["amount"])
-							player.inventory_data.slot_datas[i] = new_slot
-				else:
-					player.inventory_data.slot_datas[i] = null
-		player.inventory_data.emit_signal("inventory_updated", player.inventory_data)
-
-	if time_manager and data.has("time") and time_manager.has_method("load_save_data"):
-		time_manager.load_save_data(data["time"])
-		time_manager.is_gameplay_active = true
 
 func save_level_data(level_path: String, data: Dictionary) -> void:
 	if not persistence_data.has("levels"):
@@ -283,14 +298,14 @@ func save_object_state(obj: Node, data: Dictionary) -> void:
 		level_path = obj.owner.scene_file_path
 	else:
 		level_path = get_tree().current_scene.scene_file_path
-		
+
 	var obj_path = String(obj.get_path())
-	
+
 	if not persistence_data.has("objects"):
 		persistence_data["objects"] = {}
 	if not persistence_data["objects"].has(level_path):
 		persistence_data["objects"][level_path] = {}
-		
+
 	persistence_data["objects"][level_path][obj_path] = data
 
 func get_object_state(obj: Node) -> Dictionary:
@@ -299,9 +314,9 @@ func get_object_state(obj: Node) -> Dictionary:
 		level_path = obj.owner.scene_file_path
 	else:
 		level_path = get_tree().current_scene.scene_file_path
-		
+
 	var obj_path = String(obj.get_path())
-	
+
 	if persistence_data.has("objects") and \
 	   persistence_data["objects"].has(level_path) and \
 	   persistence_data["objects"][level_path].has(obj_path):
