@@ -24,15 +24,22 @@ func _ready() -> void:
 	create_ui()
 
 func _process(delta: float) -> void:
-	if time_manager:
-		time_manager.current_time_seconds += delta * 15000.0
-		
-		if time_manager.current_time_seconds >= time_manager.GAME_SECONDS_PER_DAY:
-			time_manager.current_time_seconds -= time_manager.GAME_SECONDS_PER_DAY
-			time_manager.advance_date()
-		
-		time_manager.recalculate_season()
-		time_manager.emit_time_signal() 
+	if not time_manager:
+		return
+
+	var sm = get_node_or_null("/root/SaveManager")
+	if sm and ("is_slot_transitioning" in sm) and bool(sm.is_slot_transitioning):
+		return
+
+	time_manager.current_time_seconds += delta * 15000.0
+
+	if time_manager.current_time_seconds >= time_manager.GAME_SECONDS_PER_DAY:
+		time_manager.current_time_seconds -= time_manager.GAME_SECONDS_PER_DAY
+		time_manager.advance_date()
+
+	time_manager.recalculate_season()
+	time_manager.emit_time_signal()
+
 
 func setup_background() -> void:
 	if ResourceLoader.exists("res://levels/first.tscn"):
@@ -242,3 +249,6 @@ func _on_confirm_name() -> void:
 	var pname = name_input.text.strip_edges()
 	if pname == "": pname = "Farmer"
 	save_manager.start_new_game(selected_slot_index, pname)
+
+func _exit_tree() -> void:
+	set_process(false)

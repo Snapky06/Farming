@@ -24,10 +24,7 @@ func interact(user = null) -> void:
 	if current_hour >= 2 and current_hour < 19 and time_manager.current_energy > 20.0:
 		return
 
-	var target_hour := 6
-	var is_next_day := current_hour >= 19
-
-	_start_sleep(player, target_hour, is_next_day)
+	_start_sleep(player)
 
 func _find_player():
 	var scene := get_tree().current_scene
@@ -35,7 +32,7 @@ func _find_player():
 		return null
 	return scene.find_child("Player", true, false)
 
-func _start_sleep(player, target_hour: int, is_next_day: bool) -> void:
+func _start_sleep(player) -> void:
 	if is_sleeping:
 		return
 
@@ -79,10 +76,12 @@ func _start_sleep(player, target_hour: int, is_next_day: bool) -> void:
 		t.tween_property(transition_rect, "modulate:a", 1.0, 0.5)
 		await t.finished
 
-	_advance_time_to(target_hour, is_next_day)
-	
-	if time_manager.has_method("restore_energy"):
-		time_manager.restore_energy()
+	if time_manager and time_manager.has_method("request_sleep"):
+		time_manager.request_sleep()
+	else:
+		_advance_time_to(6, true)
+		if time_manager and time_manager.has_method("restore_energy"):
+			time_manager.restore_energy()
 
 	player.global_position = bed_position
 	if player.has_method("update_idle_animation"):

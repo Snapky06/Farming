@@ -9,7 +9,7 @@ signal energy_updated(current, max)
 
 enum Seasons { SPRING, SUMMER, AUTUMN, WINTER }
 
-const REAL_SECONDS_PER_GAME_DAY: float = 480.0
+const REAL_SECONDS_PER_GAME_DAY: float = 360.0
 const GAME_SECONDS_PER_DAY: float = 86400.0
 const TIME_SCALE: float = GAME_SECONDS_PER_DAY / REAL_SECONDS_PER_GAME_DAY
 
@@ -19,9 +19,9 @@ const MONTH_NAMES: Array[String] = [
 	"July", "August", "September", "October", "November", "December"
 ]
 
-var start_hour: int = 6
-var start_minute: int = 0
-var _loaded_from_save: bool = false
+const WAKE_HOUR_SLEEP: int = 6
+const WAKE_HOUR_FAINT: int = 15
+
 var current_time_seconds: float = 0.0
 var current_day: int = 20
 var current_month: int = 6
@@ -39,15 +39,16 @@ var current_energy: float = 100.0
 var last_half_hour_check: int = -1
 
 var _water_level_key: String = ""
+var _pending_sleep_reason: String = ""
+var _loaded_from_save: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	if not _loaded_from_save and current_time_seconds <= 0.0:
-		current_time_seconds = float(start_hour) * 3600.0 + float(start_minute) * 60.0
+		current_time_seconds = float(WAKE_HOUR_SLEEP) * 3600.0
 	last_hour = int(current_time_seconds / 3600.0) % 24
 	last_half_hour_check = int(current_time_seconds / 1800.0)
 	recalculate_season()
-
 
 func _process(delta: float) -> void:
 	if get_tree().paused:
@@ -77,15 +78,19 @@ func _process(delta: float) -> void:
 				_check_auto_sleep_penalty()
 				if auto_sleep_penalty_applied:
 					break
+	else:
+		last_hour = int(current_time_seconds / 3600.0) % 24
 
-	if is_gameplay_active and not auto_sleep_penalty_applied and cur_half_index != prev_half_index:
-		for hh in range(prev_half_index + 1, cur_half_index + 1):
-			last_half_hour_check = hh
+	if is_gameplay_active and not auto_sleep_penalty_applied and cur_hour_index != prev_hour_index:
+		for hh in range(prev_hour_index + 1, cur_hour_index + 1):
 			_consume_energy(5.0)
 			if auto_sleep_penalty_applied:
 				break
 
 	emit_time_signal()
+
+func _day_serial() -> int:
+	return int(current_year) * 500 + int(current_month) * 40 + int(current_day)
 
 func advance_date() -> void:
 	current_day += 1
@@ -162,25 +167,57 @@ func emit_date_signal() -> void:
 	var date_str: String = "%s %d" % [MONTH_NAMES[current_month], current_day]
 	date_updated.emit(date_str)
 
-func _check_auto_sleep_penalty() -> void:
-	var current_hour: int = int(current_time_seconds / 3600.0) % 24
+func reset_to_start() -> void:
+	_loaded_from_save = false
+	auto_sleep_penalty_applied = false
+	_pending_sleep_reason = ""
+	current_time_seconds = float(WAKE_HOUR_SLEEP) * 3600.0
+	current_energy = max_energy
+	last_hour = int(current_time_seconds / 3600.0) % 24
+	last_half_hour_check = int(current_time_seconds / 1800.0)
+	recalculate_season()
+	emit_all_signals()
 
-	if current_hour < 2 and current_energy > 0:
+func _check_auto_sleep_penalty() -> void:
+	var t := float(current_time_seconds)
+	var is_late_night := (t >= 2.0 * 3600.0) and (t < float(WAKE_HOUR_SLEEP) * 3600.0)
+
+	if not is_late_night and current_energy > 0:
 		auto_sleep_penalty_applied = false
 		return
 
-	if not auto_sleep_penalty_applied and (current_hour >= 2 or current_energy <= 0):
+	if not auto_sleep_penalty_applied and (is_late_night or current_energy <= 0):
 		auto_sleep_penalty_applied = true
+		if is_late_night:
+			_pending_sleep_reason = "late"
+		else:
+			_pending_sleep_reason = "tired"
 		_do_auto_sleep_penalty()
 
+func request_sleep() -> void:
+	if auto_sleep_penalty_applied:
+		return
+	auto_sleep_penalty_applied = true
+	_pending_sleep_reason = "sleep"
+	_do_auto_sleep_penalty()
 
+func request_faint() -> void:
+	if auto_sleep_penalty_applied:
+		return
+	auto_sleep_penalty_applied = true
+	if _pending_sleep_reason == "":
+		_pending_sleep_reason = "tired"
+	_do_auto_sleep_penalty()
 
 func _do_auto_sleep_penalty() -> void:
 	var root: Node = get_tree().current_scene
 	if not root:
+		auto_sleep_penalty_applied = false
 		return
+
 	var player: Node2D = root.find_child("Player", true, false)
 	if not player:
+		auto_sleep_penalty_applied = false
 		return
 
 	player.set("is_movement_locked", true)
@@ -198,7 +235,7 @@ func _do_auto_sleep_penalty() -> void:
 				if grand is ColorRect:
 					transition_rect = grand
 
-	if sprite and sprite.sprite_frames.has_animation("sleep_down"):
+	if sprite and sprite.sprite_frames and sprite.sprite_frames.has_animation("sleep_down"):
 		sprite.play("sleep_down")
 		await sprite.animation_finished
 
@@ -207,21 +244,23 @@ func _do_auto_sleep_penalty() -> void:
 		t.tween_property(transition_rect, "modulate:a", 1.0, 0.5)
 		await t.finished
 
-	var target_hour: int = 15
-	var current_hour: int = int(current_time_seconds / 3600.0) % 24
-	var hours_to_advance: int = 0
-	if current_hour < target_hour:
-		hours_to_advance = target_hour - current_hour
-	else:
-		hours_to_advance = (24 - current_hour) + target_hour
+	var reason := _pending_sleep_reason
+	_pending_sleep_reason = ""
 
-	for i in range(hours_to_advance):
-		current_hour = (current_hour + 1) % 24
-		if current_hour == 0:
-			advance_date()
-		current_time_seconds = float(current_hour) * 3600.0
-		last_hour = current_hour
-		hour_passed.emit()
+	var hour_now := int(current_time_seconds / 3600.0) % 24
+	var is_am := hour_now < 12
+
+	if reason == "sleep":
+		_advance_to_next_day_hour(WAKE_HOUR_SLEEP)
+	elif reason == "late":
+		_advance_to_same_day_hour(WAKE_HOUR_FAINT)
+	elif reason == "tired":
+		if is_am:
+			_advance_to_same_day_hour(WAKE_HOUR_FAINT)
+		else:
+			_advance_to_next_day_hour(WAKE_HOUR_SLEEP)
+	else:
+		_advance_to_same_day_hour(WAKE_HOUR_FAINT)
 
 	restore_energy()
 	auto_sleep_penalty_applied = false
@@ -245,6 +284,38 @@ func _do_auto_sleep_penalty() -> void:
 			t2.tween_property(transition_rect, "modulate:a", 0.0, 1.0)
 			await t2.finished
 
+func _advance_to_same_day_hour(target_hour: int) -> void:
+	var ch: int = int(current_time_seconds / 3600.0) % 24
+	if ch == target_hour:
+		current_time_seconds = float(target_hour) * 3600.0
+		last_hour = target_hour
+		return
+	if ch > target_hour:
+		current_time_seconds = float(target_hour) * 3600.0
+		last_hour = target_hour
+		return
+	while ch < target_hour:
+		ch += 1
+		current_time_seconds = float(ch) * 3600.0
+		last_hour = ch
+		hour_passed.emit()
+
+func _advance_to_next_day_hour(target_hour: int) -> void:
+	var ch: int = int(current_time_seconds / 3600.0) % 24
+	while ch < 23:
+		ch += 1
+		current_time_seconds = float(ch) * 3600.0
+		last_hour = ch
+		hour_passed.emit()
+	current_time_seconds = 0.0
+	advance_date()
+	last_hour = 0
+	for i in range(target_hour):
+		var nh := i + 1
+		current_time_seconds = float(nh) * 3600.0
+		last_hour = nh
+		hour_passed.emit()
+
 func get_save_data() -> Dictionary:
 	return {
 		"time_seconds": current_time_seconds,
@@ -258,7 +329,7 @@ func get_save_data() -> Dictionary:
 
 func load_save_data(data: Dictionary) -> void:
 	_loaded_from_save = true
-	current_time_seconds = float(data.get("time_seconds", 8.0 * 3600.0))
+	current_time_seconds = float(data.get("time_seconds", float(WAKE_HOUR_SLEEP) * 3600.0))
 	current_day = int(data.get("day", current_day))
 	current_month = int(data.get("month", current_month))
 	current_year = int(data.get("year", current_year))
@@ -276,6 +347,7 @@ func _consume_energy(amount: float) -> void:
 		current_energy = 0
 		if is_gameplay_active and not auto_sleep_penalty_applied:
 			auto_sleep_penalty_applied = true
+			_pending_sleep_reason = "tired"
 			_do_auto_sleep_penalty()
 	energy_updated.emit(current_energy, max_energy)
 
@@ -331,21 +403,3 @@ func load_watered_tiles() -> Dictionary:
 	for ks in src.keys():
 		out[str(ks)] = src[ks]
 	return out
-
-func request_faint() -> void:
-	if auto_sleep_penalty_applied:
-		return
-	auto_sleep_penalty_applied = true
-	_do_auto_sleep_penalty()
-
-func _day_serial() -> int:
-	return int(current_year) * 500 + int(current_month) * 40 + int(current_day)
-
-func reset_to_start() -> void:
-	auto_sleep_penalty_applied = false
-	current_time_seconds = 6.0 * 3600.0
-	current_energy = max_energy
-	last_hour = int(current_time_seconds / 3600.0) % 24
-	last_half_hour_check = int(current_time_seconds / 1800.0)
-	recalculate_season()
-	emit_all_signals()

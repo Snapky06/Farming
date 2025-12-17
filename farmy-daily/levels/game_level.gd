@@ -9,6 +9,7 @@ extends Node2D
 @onready var ground_layer: TileMapLayer = find_child("Ground")
 
 var tree_sort_index: int = 10
+var level_state_loaded: bool = false
 
 func _ready() -> void:
 	add_to_group("persist_level")
@@ -177,13 +178,18 @@ func save_level_state() -> void:
 		save_manager.save_level_data(_get_level_key(), level_data)
 
 func load_level_state() -> void:
+	level_state_loaded = false
+
 	if not save_manager:
+		level_state_loaded = true
 		return
 
 	var data: Dictionary = {}
 	if save_manager.has_method("get_level_data_dynamic"):
 		data = save_manager.get_level_data_dynamic(_get_level_key())
+
 	if data.is_empty():
+		level_state_loaded = true
 		return
 
 	if ground_layer and data.has("tiles"):
@@ -195,6 +201,7 @@ func load_level_state() -> void:
 	_free_all_runtime_crops_in_this_level()
 
 	if not data.has("crops"):
+		level_state_loaded = true
 		return
 
 	await get_tree().process_frame
@@ -230,3 +237,5 @@ func load_level_state() -> void:
 				comp.call("update_visuals")
 			if comp.has_method("simulate_catch_up"):
 				comp.call_deferred("simulate_catch_up", last_save_day)
+
+	level_state_loaded = true
