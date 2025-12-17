@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=5 format=3 uid="uid://p5s7aajjju75"]
+
+[ext_resource type="Resource" uid="uid://du6n0xx8qne15" path="res://Item/items/grows/seeds/corn_seeds.tres" id="1_lk47v"]
+[ext_resource type="Script" uid="uid://g1x8er4svwyj" path="res://quests/quest_data.gd" id="1_p6oh7"]
+[ext_resource type="Script" uid="uid://k0kmi5ep0tqv" path="res://quests/quest_step_data.gd" id="2_lk47v"]
+
+[sub_resource type="Resource" id="Resource_uydv7"]
+script = ExtResource("2_lk47v")
+event_name = "Carroting"
+target_id = "Carrot"
+required_count = 5
+description = "Bring Carrots"
+metadata/_custom_type_script = "uid://k0kmi5ep0tqv"
+
+[resource]
+script = ExtResource("1_p6oh7")
+id = "quest_carrot"
+title = "Bunny Time"
+description = "You Should Bring 5 Carrots "
+steps = Array[ExtResource("2_lk47v")]([SubResource("Resource_uydv7")])
+start_dialog = Array[String](["Okay Kai, Now That You Have Your Tools", "You Can Start Growing Some Crops, Go To The Farmland South From Here"])
+active_dialog = Array[String](["Get Some Planting Done And Bring Me 5 Carrots"])
+complete_dialog = Array[String](["This Soup Is Going To Be The Bomb, Thanks Kai"])
+reward_items = Array[Resource]([ExtResource("1_lk47v")])
+reward_amount = 10
+metadata/_custom_type_script = "uid://g1x8er4svwyj"

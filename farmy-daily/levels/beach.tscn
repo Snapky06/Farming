@@ -1,9 +1,11 @@
-[gd_scene load_steps=103 format=4 uid="uid://bkye40nxsmsfb"]
+[gd_scene load_steps=105 format=4 uid="uid://bkye40nxsmsfb"]
 
 [ext_resource type="Script" uid="uid://bthykutaq31ch" path="res://levels/game_level.gd" id="1_8evx3"]
 [ext_resource type="Texture2D" uid="uid://bryk1xvleeayb" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Sand/sand - dark.png" id="2_ek8fe"]
 [ext_resource type="PackedScene" uid="uid://d2r82qv7leyyl" path="res://interactable/npcs/fisherman.tscn" id="2_w6t0c"]
 [ext_resource type="Texture2D" uid="uid://daljx36kinbjm" path="res://sprites/Hana Caraka - Farming n Foraging/Hana Caraka - Farming n Foraging/misc.png" id="3_0x3b2"]
+[ext_resource type="Script" uid="uid://g1x8er4svwyj" path="res://quests/quest_data.gd" id="3_k5ef3"]
+[ext_resource type="Resource" uid="uid://5ehk5ltfcmpt" path="res://quests/the_corn_quest.tres" id="4_k20u0"]
 [ext_resource type="Texture2D" uid="uid://whiivm7fffny" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Tileset/Dirt/dirt path.png" id="4_w6t0c"]
 [ext_resource type="Texture2D" uid="uid://bqowlbc4bmtvq" path="res://sprites/Hana Caraka - Topdown Tileset/Hana Caraka - Topdown Tileset/Props/Sign.png" id="5_47bmc"]
 [ext_resource type="PackedScene" uid="uid://0fd882p2dmgx" path="res://interactable/pickables/leftlittlestone.tscn" id="6_0ln3g"]
@@ -1451,6 +1453,7 @@ navigation_polygon = SubResource("NavigationPolygon_b0sm6")
 [node name="Fisherman" parent="NavRegion" instance=ExtResource("2_w6t0c")]
 z_index = 4
 position = Vector2(40, 71)
+quest_list = Array[ExtResource("3_k5ef3")]([ExtResource("4_k20u0")])
 
 [node name="Ground" type="TileMapLayer" parent="NavRegion"]
 z_index = -1

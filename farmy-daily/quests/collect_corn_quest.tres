@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=3 format=3 uid="uid://cq05dk67leu7l"]
+
+[ext_resource type="Script" uid="uid://g1x8er4svwyj" path="res://quests/quest_data.gd" id="1_au4bq"]
+[ext_resource type="Script" uid="uid://k0kmi5ep0tqv" path="res://quests/quest_step_data.gd" id="2_rkvn3"]
+
+[resource]
+script = ExtResource("1_au4bq")
+metadata/_custom_type_script = "uid://g1x8er4svwyj"

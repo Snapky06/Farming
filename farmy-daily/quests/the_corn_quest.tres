@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="QuestData" load_steps=5 format=3 uid="uid://5ehk5ltfcmpt"]
+
+[ext_resource type="Resource" uid="uid://l2bmulcmsset" path="res://Item/items/grows/seeds/spinach_seeds.tres" id="1_0ooa5"]
+[ext_resource type="Script" uid="uid://g1x8er4svwyj" path="res://quests/quest_data.gd" id="2_1cu5e"]
+[ext_resource type="Script" uid="uid://k0kmi5ep0tqv" path="res://quests/quest_step_data.gd" id="3_aqp3q"]
+
+[sub_resource type="Resource" id="Resource_uydv7"]
+script = ExtResource("3_aqp3q")
+event_name = "Corning"
+target_id = "Corn"
+required_count = 5
+description = "Bring Corn Cobs"
+metadata/_custom_type_script = "uid://k0kmi5ep0tqv"
+
+[resource]
+script = ExtResource("2_1cu5e")
+id = "quest_corn"
+title = "Get Me Some Popcorn"
+description = "Bring Me 7 Corn Cobs"
+steps = Array[ExtResource("3_aqp3q")]([SubResource("Resource_uydv7")])
+start_dialog = Array[String](["Hey Stranger, Haven't Seen You Before", "Well That Doesn't Matter Tell Me Who You Are", "Oh You're A Farmer"])
+active_dialog = Array[String](["I've Really Craved Some Popcorn", "Bring Me 5 Corn Cobs So I Could Do Some"])
+complete_dialog = Array[String](["Haven't Seen A Better Farmer", "This Spinach Can Make You Better"])
+reward_items = Array[Resource]([ExtResource("1_0ooa5")])
+reward_amount = 10
+metadata/_custom_type_script = "uid://g1x8er4svwyj"

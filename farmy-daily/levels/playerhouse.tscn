@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=4 uid="uid://4dp808w623li"]
+[gd_scene load_steps=41 format=4 uid="uid://4dp808w623li"]
 
 [ext_resource type="Texture2D" uid="uid://tbil2uhcba15" path="res://sprites/Hana Caraka - Fantasy Interior [sample]/Hana Caraka - Fantasy Interior [sample]/Floor/Floor - all.png" id="1_w4fnf"]
 [ext_resource type="Script" uid="uid://bthykutaq31ch" path="res://levels/game_level.gd" id="1_wb8r5"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" uid="uid://g1x8er4svwyj" path="res://quests/quest_data.gd" id="15_7nxju"]
 [ext_resource type="Resource" uid="uid://cm0ukfsy4o0en" path="res://quests/collect_wheat_quest.tres" id="16_aaw6y"]
 [ext_resource type="Resource" uid="uid://d35hc24jtnvcx" path="res://quests/sharpening_quest.tres" id="17_aaw6y"]
+[ext_resource type="Resource" uid="uid://p5s7aajjju75" path="res://quests/carroting_quest.tres" id="18_rw4x1"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_b0sm6"]
 vertices = PackedVector2Array(-150, 38, -150, -88.25781, -142.78125, -74.328125, -102, -104.71094, -103.92969, -104.65625, -95.61719, -111.25, -138, -73.47656, -138, -72.03125, -131.77344, 27.148438, -133.53906, 38, -133.52344, -71.86719, -132.1875, -63.1875, -114.02344, 30.101563, -116.86719, -58.070313, -90.46875, 27.34375, -74, 38, -91.078125, 38, -74, -111.24219, 13.5703125, -58, -45.296875, -70, -45.84375, -86, -22, -86, 13.53125, -70, -45.4375, -58, -45.84375, -70, -106.046875, -66.890625, -106.046875, -70.953125, -102, -70.82031, -64.50781, -118, 73.38281, -118, 73.25, -110.84375, 38, -111.24219, 13.7109375, -70, 38, -111.0625, 22, -111.24219, -64.84375, -112.02344, 6, -111.24219, 22, -111.0625, 6, -111.0625, -10, -111.24219, -10, -86, 13.7109375, -86, -58, -111.24219, -58, -111.0625, -22, -110.84375, -90, -110.421875, -90, -111.17969, -97.21875, -101.671875, -102, -102.50781, -102, -72.546875, -99.36719, -72.6875, -89.71094, -87.17969, 58, -79.953125, 61.890625, -80.09375, 59.640625, -79.22656, 58, -79.13281, 63.882813, -58, 42, -58, 42, -79.34375, 71.82031, -83.86719, 62.757813, -80.421875, 63.09375, -86, 71.89844, -86, -140.63281, -103.3125, -150, -89.25, -150, -106.78125, -136.39063, -104.3125, -138, -103.89844, -133.09375, -106.921875, -133.53125, -104, -138, -103.4375, 74.328125, -94.78125, 74, -92.89844, 74, -105.46094, 86, -100.82031, 86, -104.53906)
@@ -477,7 +478,7 @@ position = Vector2(50, -63)
 [node name="Aunt" parent="NavRegion" instance=ExtResource("12_27qvp")]
 z_index = 1
 position = Vector2(-120, -104)
-quest_list = Array[ExtResource("15_7nxju")]([ExtResource("16_aaw6y"), ExtResource("17_aaw6y")])
+quest_list = Array[ExtResource("15_7nxju")]([ExtResource("16_aaw6y"), ExtResource("17_aaw6y"), ExtResource("18_rw4x1")])
 
 [node name="Bed" parent="." instance=ExtResource("12_c3bqx")]
 z_index = 0

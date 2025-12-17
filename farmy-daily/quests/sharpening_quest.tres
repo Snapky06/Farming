@@ -13,7 +13,7 @@ metadata/_custom_type_script = "uid://k0kmi5ep0tqv"
 
 [resource]
 script = ExtResource("2_ajuy0")
-id = "sharpening"
+id = "quest_sharpening"
 title = "The Sharpening"
 description = "You Have To Sharpen The Axe"
 steps = Array[ExtResource("3_urx1q")]([SubResource("Resource_rn0o1")])
