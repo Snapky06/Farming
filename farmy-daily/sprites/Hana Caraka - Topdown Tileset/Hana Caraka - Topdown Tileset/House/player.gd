@@ -567,6 +567,22 @@ func spawn_tree(pos: Vector2) -> void:
 
 			consume_equipped_item()
 
+func _get_level_root_for_runtime_objects() -> Node:
+	var wrapper := get_tree().current_scene
+	if wrapper and wrapper.has_method("get_level_root"):
+		var lr = wrapper.call("get_level_root")
+		if lr:
+			return lr
+	return get_parent()
+
+func _request_level_state_save(level_root: Node) -> void:
+	if level_root and level_root.has_method("save_level_state"):
+		level_root.call("save_level_state")
+	elif get_parent() and get_parent().has_method("save_level_state"):
+		get_parent().call("save_level_state")
+	elif has_node("/root/SaveManager") and get_node("/root/SaveManager").has_method("save_game"):
+		get_node("/root/SaveManager").call("save_game")
+
 func spawn_crop(pos: Vector2) -> void:
 	if equipped_slot_index == -1 or not inventory_data:
 		return
@@ -582,12 +598,18 @@ func spawn_crop(pos: Vector2) -> void:
 		if crop_scene:
 			var crop: Node2D = crop_scene.instantiate()
 			crop.global_position = snap_pos
+			crop.set_meta("crop_scene_path", equipped_item.get("crop_scene_path"))
 			get_parent().add_child(crop)
 
-			if crop.has_method("_save_persistence"):
-				crop.call("_save_persistence")
+			var crop_script: Node = find_crop_script(crop)
+			if crop_script and crop_script.has_method("_save_persistence"):
+				crop_script.call("_save_persistence")
+
+			if get_parent().has_method("save_level_state"):
+				get_parent().call("save_level_state")
 
 			consume_equipped_item()
+
 
 func consume_equipped_item() -> void:
 	if not inventory_data.slot_datas[equipped_slot_index]:

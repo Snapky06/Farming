@@ -22,6 +22,7 @@ var is_watered_today = false
 var seed_positions: Array[Vector2] = []
 
 func _ready():
+	add_to_group("runtime_crop")
 	collision_layer = 4 
 	collision_mask = 0
 	
@@ -295,18 +296,26 @@ func _ensure_persist_id() -> void:
 	set_meta("persist_id", level_key + "|CROP|" + str(cell_pos.x) + "," + str(cell_pos.y))
 
 func _save_persistence():
-	if has_node("/root/SaveManager"):
-		get_node("/root/SaveManager").save_object_state(self, { 
-			"stage": current_stage, 
-			"watered": is_watered_today, 
-			"hours": total_hours_watered,
-			"unwatered": days_unwatered
-		})
+	if not is_inside_tree():
+		return
+	var sm: Node = get_tree().root.get_node_or_null("SaveManager")
+	if sm == null:
+		return
+	sm.save_object_state(self, {
+		"stage": current_stage,
+		"watered": is_watered_today,
+		"hours": total_hours_watered,
+		"unwatered": days_unwatered
+	})
 
 func _load_persistence():
-	if has_node("/root/SaveManager"):
-		var data = get_node("/root/SaveManager").get_object_state(self)
-		current_stage = data.get("stage", current_stage)
-		is_watered_today = data.get("watered", is_watered_today)
-		total_hours_watered = data.get("hours", total_hours_watered)
-		days_unwatered = data.get("unwatered", days_unwatered)
+	if not is_inside_tree():
+		return
+	var sm: Node = get_tree().root.get_node_or_null("SaveManager")
+	if sm == null:
+		return
+	var data: Dictionary = sm.get_object_state(self)
+	current_stage = data.get("stage", current_stage)
+	is_watered_today = data.get("watered", is_watered_today)
+	total_hours_watered = data.get("hours", total_hours_watered)
+	days_unwatered = data.get("unwatered", days_unwatered)

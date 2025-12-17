@@ -17,6 +17,16 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	save_level_state()
 
+func _get_level_key() -> String:
+	var wrapper := get_tree().current_scene
+	if wrapper and wrapper.has_method("get_active_level_path"):
+		var p := str(wrapper.call("get_active_level_path"))
+		if p != "":
+			return p
+	if scene_file_path != "":
+		return scene_file_path
+	return name
+
 func use_hoe(pos: Vector2) -> void:
 	if not ground_layer:
 		return
@@ -51,7 +61,7 @@ func get_tile_center_position(pos: Vector2) -> Vector2:
 	if not ground_layer:
 		return pos
 	var map_pos: Vector2i = ground_layer.local_to_map(ground_layer.to_local(pos))
-	return ground_layer.map_to_local(map_pos)
+	return ground_layer.to_global(ground_layer.map_to_local(map_pos))
 
 func _crop_component_is(node: Node) -> bool:
 	if node == null:
@@ -80,16 +90,26 @@ func _crop_tile_pos(world_pos: Vector2) -> Vector2i:
 		return Vector2i.ZERO
 	return ground_layer.local_to_map(ground_layer.to_local(world_pos))
 
-func _make_crop_persist_id(scene_path: String, tile_pos: Vector2i) -> String:
-	return "CROP|" + scene_path + "|" + str(tile_pos.x) + "," + str(tile_pos.y)
+func _get_wrapper() -> Node:
+	return get_tree().current_scene
 
-func _find_crop_root_at(tile_pos: Vector2i) -> Node2D:
-	var nodes: Array = find_children("*", "", true, false)
+func _find_all_crop_roots_in_wrapper() -> Array:
+	var wrapper := _get_wrapper()
+	if not wrapper:
+		return []
+	var nodes: Array = wrapper.find_children("*", "", true, false)
+	var out: Array = []
 	for n in nodes:
 		if n is Node2D and _is_crop_root(n):
-			var tp := _crop_tile_pos((n as Node2D).global_position)
-			if tp == tile_pos:
-				return n
+			out.append(n)
+	return out
+
+func _find_crop_root_at(tile_pos: Vector2i) -> Node2D:
+	var roots := _find_all_crop_roots_in_wrapper()
+	for n in roots:
+		var tp := _crop_tile_pos((n as Node2D).global_position)
+		if tp == tile_pos:
+			return n
 	return null
 
 func _find_crop_component_at(tile_pos: Vector2i) -> Node:
@@ -98,13 +118,10 @@ func _find_crop_component_at(tile_pos: Vector2i) -> Node:
 		return null
 	return _find_crop_component_in(root)
 
-func _free_all_runtime_crops() -> void:
-	var nodes: Array = find_children("*", "", true, false)
-	for n in nodes:
-		if n is Node2D and _is_crop_root(n):
-			var comp := _find_crop_component_in(n)
-			if comp != null and comp.owner == null:
-				(n as Node2D).queue_free()
+func _free_all_runtime_crops_in_wrapper() -> void:
+	var roots := _find_all_crop_roots_in_wrapper()
+	for r in roots:
+		(r as Node2D).queue_free()
 
 func save_level_state() -> void:
 	if not save_manager or not ground_layer:
@@ -121,57 +138,51 @@ func save_level_state() -> void:
 			tiles_data.append({"x": cell.x, "y": cell.y, "s": source, "ax": atlas.x, "ay": atlas.y})
 
 	var crops_data: Array = []
-	var nodes: Array = find_children("*", "", true, false)
-	for n in nodes:
-		if not (n is Node2D):
-			continue
-		if not _is_crop_root(n):
-			continue
+	var roots := _find_all_crop_roots_in_wrapper()
+	for n in roots:
 		var root2d := n as Node2D
 		var comp := _find_crop_component_in(root2d)
-		if comp == null or comp.owner != null:
+		if comp == null:
 			continue
 
-		var sp := root2d.scene_file_path
-		if sp == "":
-			sp = ""
-			var p := root2d.get_parent()
-			while p:
-				if p is Node and (p as Node).scene_file_path != "":
-					sp = (p as Node).scene_file_path
-					break
-				p = p.get_parent()
+		var sp := ""
+		if root2d.scene_file_path != "":
+			sp = root2d.scene_file_path
+		elif root2d.has_meta("crop_scene_path"):
+			sp = str(root2d.get_meta("crop_scene_path"))
 		if sp == "":
 			continue
 
 		var tp := _crop_tile_pos(root2d.global_position)
-		var pid := _make_crop_persist_id(sp, tp)
-		comp.set_meta("persist_id", pid)
 		if comp.has_method("_save_persistence"):
 			comp.call("_save_persistence")
 
 		crops_data.append({
 			"scene_path": sp,
 			"tile_x": tp.x,
-			"tile_y": tp.y,
-			"world_x": root2d.global_position.x,
-			"world_y": root2d.global_position.y
+			"tile_y": tp.y
 		})
 
 	var day_index: int = 0
 	if time_manager:
 		day_index = int(time_manager.current_day + (time_manager.current_month * 31) + (time_manager.current_year * 400))
 
-	var level_data: Dictionary = {"tiles": tiles_data, "crops": crops_data, "last_day_index": day_index}
+	var level_data: Dictionary = {
+		"tiles": tiles_data,
+		"crops": crops_data,
+		"last_day_index": day_index
+	}
+
 	if save_manager.has_method("save_level_data"):
-		save_manager.save_level_data(scene_file_path, level_data)
+		save_manager.save_level_data(_get_level_key(), level_data)
 
 func load_level_state() -> void:
 	if not save_manager:
 		return
+
 	var data: Dictionary = {}
 	if save_manager.has_method("get_level_data_dynamic"):
-		data = save_manager.get_level_data_dynamic(scene_file_path)
+		data = save_manager.get_level_data_dynamic(_get_level_key())
 	if data.is_empty():
 		return
 
@@ -180,40 +191,45 @@ func load_level_state() -> void:
 			ground_layer.set_cell(Vector2i(t["x"], t["y"]), int(t["s"]), Vector2i(t["ax"], t["ay"]))
 
 	var last_save_day: int = int(data.get("last_day_index", 0))
-	_free_all_runtime_crops()
+
+	_free_all_runtime_crops_in_wrapper()
 
 	if not data.has("crops"):
 		return
 
 	await get_tree().process_frame
 
+	var wrapper := _get_wrapper()
+	if not wrapper:
+		return
+
 	for c in data["crops"]:
 		var sp := str(c.get("scene_path", ""))
 		if sp == "" or not ResourceLoader.exists(sp):
-			continue
-		var scene: PackedScene = load(sp)
-		if scene == null:
 			continue
 
 		var tile_x := int(c.get("tile_x", 0))
 		var tile_y := int(c.get("tile_y", 0))
 		var tp := Vector2i(tile_x, tile_y)
-		var pid := _make_crop_persist_id(sp, tp)
+
+		var scene: PackedScene = load(sp)
+		if scene == null:
+			continue
 
 		var inst: Node2D = scene.instantiate()
+		inst.set_meta("crop_scene_path", sp)
+		wrapper.add_child(inst)
+
+		var local_center := ground_layer.map_to_local(tp)
+		inst.global_position = ground_layer.to_global(local_center)
+
 		var comp := _find_crop_component_in(inst)
 		if comp != null:
-			comp.set_meta("persist_id", pid)
-
-		add_child(inst)
-
-		if ground_layer:
-			var local_center := ground_layer.map_to_local(tp)
-			inst.global_position = ground_layer.to_global(local_center)
-		else:
-			inst.global_position = Vector2(float(c.get("world_x", 0.0)), float(c.get("world_y", 0.0)))
-
-		if inst.has_method("simulate_catch_up"):
-			inst.call_deferred("simulate_catch_up", last_save_day)
-		elif comp != null and comp.has_method("simulate_catch_up"):
-			comp.call_deferred("simulate_catch_up", last_save_day)
+			if comp.has_method("_ensure_persist_id"):
+				comp.call("_ensure_persist_id")
+			if comp.has_method("_load_persistence"):
+				comp.call("_load_persistence")
+			if comp.has_method("update_visuals"):
+				comp.call("update_visuals")
+			if comp.has_method("simulate_catch_up"):
+				comp.call_deferred("simulate_catch_up", last_save_day)
